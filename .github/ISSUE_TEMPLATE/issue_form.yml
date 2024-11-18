@@ -13,15 +13,6 @@ body:
       required: true
 
   - type: input
-    id: branch
-    attributes:
-      label: '🌳 브랜치명(Branch)'
-      description: '기능을 영어 소문자로 간단하게 작성해주세요. 이후 브랜치명의 일부가 됩니다.'
-      placeholder: 'feature'
-    validations:
-      required: true
-
-  - type: input
     id: feature
     attributes:
       label: '⚒️ 구현할 기능'

@@ -27,11 +27,6 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           EPIC_ISSUE_KEY="${{ steps.extract-values.outputs.epic }}"
 
-          BRANCH=$(echo "${{ github.event.issue.body }}" | sed -n '/### 🌳 브랜치명(Branch)/,/###/p' | grep -v '###' | sed 's/^[[:space:]]*//')
-          echo "branch<<EOF" >> $GITHUB_OUTPUT
-          echo "$BRANCH" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
           FEATURE=$(echo "${{ github.event.issue.body }}" | sed -n '/### ⚒️ 구현할 기능/,/###/p' | grep -v '###' | sed 's/^[[:space:]]*//')
           echo "feature<<EOF" >> $GITHUB_OUTPUT
           echo "$FEATURE" >> $GITHUB_OUTPUT
@@ -93,23 +88,6 @@ jobs:
           echo "Create Issue result:"
           echo "Outputs: ${{ toJSON(steps.create.outputs) }}"
           echo "Error: ${{ steps.create.error }}"
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: dev
-
-      - name: Create Branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TICKET_NUMBER="${{ steps.create.outputs.issue }}"
-          BRANCH_INPUT=$(echo "${{ steps.extract-values.outputs.branch }}" | tr -d '\n\r' | tr -d ' ')
-          BRANCH_NAME="dev/feature/${BRANCH_INPUT}/${TICKET_NUMBER}"
-          echo "Generated Branch Name: ${BRANCH_NAME}"
-
-          git checkout -b "${BRANCH_NAME}"
-          git push origin "${BRANCH_NAME}"
 
       - name: Add Labels to Issue
         env:
