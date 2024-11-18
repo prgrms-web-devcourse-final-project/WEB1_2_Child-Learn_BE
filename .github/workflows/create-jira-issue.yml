@@ -105,7 +105,7 @@ jobs:
         run: |
           TICKET_NUMBER="${{ steps.create.outputs.issue }}"
           BRANCH_INPUT=$(echo "${{ steps.extract-values.outputs.branch }}" | tr -d '\n\r' | tr -d ' ')
-          BRANCH_NAME="feature/${BRANCH_INPUT}/${TICKET_NUMBER}"
+          BRANCH_NAME="dev/feature/${BRANCH_INPUT}/${TICKET_NUMBER}"
           echo "Generated Branch Name: ${BRANCH_NAME}"
 
           git checkout -b "${BRANCH_NAME}"
