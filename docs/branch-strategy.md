@@ -11,11 +11,15 @@
 
 ### 브랜치 네이밍
 * Issue 에서 브랜치 생성
-* release 브랜치에서 모든 테스트가 통과하고 릴리즈 노트를 작성한 후 main 브랜치로 병합
-* hotfix 브랜치는 긴급 상황에서만 사용, 즉시 테스트 및 배포되어야 함
+* main : 프로젝트가 최종적으로 배포되는 중심 브랜치입니다.
+* dev : 개발이 진행되는 브랜치입니다. dev 브랜치가 배포할 수준의 기능을 갖추면 release 브랜치로 머지됩니다.
+* feature : 기능을 개발하는 브랜치입니다. dev 브랜치에서 파생되는 브랜치이며, dev 브랜치로 머지합니다.
+* release 브랜치에서 모든 테스트가 통과한 후 main 브랜치로 병합
+  * CI/CD가 되어 있는 상태에서 바로 main 브랜치로 병합 시 배포 실패가 뜨는 것을 방지하고,
+    추가 에러가 있는지 확인하는 과정이라고 생각해주세요.
+* hotfix 브랜치는 배포 된 후 생긴 에러의 긴급 상황에서 사용, 즉시 테스트 및 배포되어야 함
 * 필요 시 작업 별로 구분하기 위해서 Issue Tracker ID 사용  
   `dev/feat/{기능명}/{#이슈번호}`
-* 프론트와 백엔드를 한 레포지안에 사용 할 때 dev의 하위로 frontend와 backend로 나누기로 함
 
 | 분류 | 내용 | 명명규칙 |
 | --- | --- | --- |
@@ -26,9 +30,7 @@
 | release | 배포를 준비하는 브랜치 | release/{버전} |
 | hotfix | 배포 된 후 발생한 버그를 수정하는 브랜치 | hotfix/(#이슈번호) |
 
-* main : 프로젝트가 최종적으로 배포되는 중심 브랜치입니다.
-* dev : 개발이 진행되는 브랜치입니다. dev 브랜치가 배포할 수준의 기능을 갖추면 main 브랜치로 머지됩니다.
-* feature : 기능을 개발하는 브랜치입니다. dev 브랜치에서 파생되는 브랜치이며, dev 브랜치로 머지합니다.
+※ 배포를 준비하는 브랜치는 dev 또는 release 에서 현재와 다르게 추후 변경될 수 있습니다.
 
 <br>
 
@@ -36,13 +38,11 @@
 ```markdown
 main
 
-develop
+dev/feature/login/#1
 
-dev/front/feature/login/#1
+dev/feature/register/#12
 
-dev/back/feature/register/#12
-
-dev/back/refactor/login
+dev/refactor/login
 
 release/1.0.0
 
