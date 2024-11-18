@@ -1,0 +1,120 @@
+name: Create Jira Issue and Link to Epic
+on:
+  issues:
+    types:
+      - opened
+jobs:
+  create-issue:
+    name: Create Jira Issue and Link to Epic
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Jira
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+
+      - name: Extract Issue Form Values
+        id: extract-values
+        run: |
+          echo "Raw Issue Body:"
+          echo "${{ github.event.issue.body }}"
+          
+          EPIC=$(echo "${{ github.event.issue.body }}" | sed -n '/### 🎟️ 상위 작업/,/###/p' | grep -v '###' | grep -oE '[A-Z]+-[0-9]+')
+          echo "epic<<EOF" >> $GITHUB_OUTPUT
+          echo "$EPIC" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          EPIC_ISSUE_KEY="${{ steps.extract-values.outputs.epic }}"
+
+          BRANCH=$(echo "${{ github.event.issue.body }}" | sed -n '/### 🌳 브랜치명(Branch)/,/###/p' | grep -v '###' | sed 's/^[[:space:]]*//')
+          echo "branch<<EOF" >> $GITHUB_OUTPUT
+          echo "$BRANCH" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          FEATURE=$(echo "${{ github.event.issue.body }}" | sed -n '/### ⚒️ 구현할 기능/,/###/p' | grep -v '###' | sed 's/^[[:space:]]*//')
+          echo "feature<<EOF" >> $GITHUB_OUTPUT
+          echo "$FEATURE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Log Parsed Values
+        run: |
+          echo "Parsed Issue Form Values:"
+          echo "Epic: ${{ steps.extract-values.outputs.epic }}"
+          echo "Branch: ${{ steps.extract-values.outputs.branch }}"
+          echo "Feature: ${{ steps.extract-values.outputs.feature }}"
+
+      - name: Convert Markdown to Jira Syntax
+        uses: peter-evans/jira2md@v1
+        id: md2jira
+        with:
+          input-text: |
+            ### Github Issue Link
+            - ${{ github.event.issue.html_url }}
+            ${{ github.event.issue.body }}
+          mode: md2jira
+
+      - name: Create Jira Issue (Story)
+        id: create
+        uses: atlassian/gajira-create@v3
+        with:
+          project: SCRUM
+          issuetype: Story
+          summary: "${{ github.event.issue.title }}"
+          description: "${{ steps.md2jira.outputs.output-text }}"
+          fields: |
+            {
+              "customfield_10037": "${{ github.actor }}"
+            }
+
+      - name: Set Epic Link
+        run: |
+          STORY_ISSUE_KEY="${{ steps.create.outputs.issue }}"
+          EPIC_ISSUE_KEY="${{ steps.extract-values.outputs.epic }}"
+          
+          if [ ! -z "$EPIC_ISSUE_KEY" ]; then
+            echo "Setting Epic Link for ${STORY_ISSUE_KEY} to Epic ${EPIC_ISSUE_KEY}"
+          
+            curl -X PUT \
+            -H "Content-Type: application/json" \
+            -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+            -d '{
+              "fields": {
+                "parent": {
+                  "key": "'"${EPIC_ISSUE_KEY}"'"
+                }
+              }
+            }' "${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/${STORY_ISSUE_KEY}"
+          fi
+
+      - name: Log Create Issue Result
+        if: always()
+        run: |
+          echo "Create Issue result:"
+          echo "Outputs: ${{ toJSON(steps.create.outputs) }}"
+          echo "Error: ${{ steps.create.error }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+
+      - name: Create Branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TICKET_NUMBER="${{ steps.create.outputs.issue }}"
+          BRANCH_INPUT=$(echo "${{ steps.extract-values.outputs.branch }}" | tr -d '\n\r' | tr -d ' ')
+          BRANCH_NAME="feature/${BRANCH_INPUT}/${TICKET_NUMBER}"
+          echo "Generated Branch Name: ${BRANCH_NAME}"
+
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
+
+      - name: Add Labels to Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} \
+            --add-label '"✨ Feature"' \
+            --repo ${{ github.repository }}

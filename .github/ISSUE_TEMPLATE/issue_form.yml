@@ -1,0 +1,68 @@
+name: 'Feature request template'
+description: '기능 구현에 사용해주세요. 생성된 이슈는 Jira와 연동됩니다.'
+labels: '✨ Feature'
+title: '[Feat]'
+body:
+  - type: input
+    id: epic
+    attributes:
+      label: '🎟️ 상위 작업'
+      description: '상위 작업의 Ticket Number를 기입해주세요.'
+      placeholder: 'SCRUM-00'
+    validations:
+      required: true
+
+  - type: input
+    id: branch
+    attributes:
+      label: '🌳 브랜치명(Branch)'
+      description: '기능을 영어 소문자로 간단하게 작성해주세요. 이후 브랜치명의 일부가 됩니다.'
+      placeholder: 'feature'
+    validations:
+      required: true
+
+  - type: input
+    id: feature
+    attributes:
+      label: '⚒️ 구현할 기능'
+      description: '구현할 기능을 간단히 적어주세요.'
+      placeholder: '회원 가입 기능 구현'
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: '🎯 기능이 필요한 이유'
+      description: '구현이 필요한 이유를 적어주세요.'
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: '📝 작업 상세 내용'
+      value: |
+        - [ ] 내용 1
+        - [ ] 내용 2
+    validations:
+      required: true
+
+  - type: input
+    id: schedule
+    attributes:
+      label: '🗓️ 개발 일정'
+      description: '예상 기간을 작성해주세요.'
+      placeholder: '00월 00일 ~ 00월 00일'
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: '🌱 나누고 싶은 점'
+      description: '기능 관련 나누고 싶은 내용 작성해주세요. ex) 기능 구현에 참고한 내용 [링크](https://soo-develop.tistory.com/43)입니다.'
+      value: |
+        - Reference1
+    validations:
+      required: false
