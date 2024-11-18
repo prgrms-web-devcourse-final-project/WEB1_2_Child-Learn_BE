@@ -64,7 +64,7 @@ jobs:
           description: "${{ steps.md2jira.outputs.output-text }}"
           fields: |
             {
-              "customfield_10037": "${{ github.actor }}"
+              "customfield_10079": "${{ github.actor }}"
             }
 
       - name: Set Epic Link
