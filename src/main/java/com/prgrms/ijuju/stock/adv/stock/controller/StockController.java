@@ -1,7 +1,7 @@
 package com.prgrms.ijuju.stock.adv.stock.controller;
 
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
-import com.prgrms.ijuju.stock.adv.stock.dto.FinnhubCandleResponse;
+import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.stock.adv.stock.entity.Stock;
 import com.prgrms.ijuju.stock.adv.stock.service.StockDataFetcher;
 import com.prgrms.ijuju.stock.adv.stock.service.StockService;
@@ -46,7 +46,7 @@ public class StockController {
             @RequestParam DataType dataType,
             @RequestParam long from,
             @RequestParam long to) {
-        FinnhubCandleResponse response = stockDataFetcher.fetchStockData(symbol, from, to);
+        PolygonCandleResponse response = stockDataFetcher.fetchStockData(symbol, from, to);
         Stock savedStock = stockService.saveStockData(symbol, symbol + " Name", response, dataType);
         return ResponseEntity.ok(savedStock);
     }

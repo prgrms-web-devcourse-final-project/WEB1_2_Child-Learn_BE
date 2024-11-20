@@ -1,7 +1,7 @@
 package com.prgrms.ijuju.stock.adv.stock.service;
 
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
-import com.prgrms.ijuju.stock.adv.stock.dto.FinnhubCandleResponse;
+import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.stock.adv.stock.entity.Stock;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public interface StockService {
 
     Stock getLiveData(String symbol, int hour);
 
-    Stock saveStockData(String symbol, String name, FinnhubCandleResponse response, DataType dataType);
+    Stock saveStockData(String symbol, String name, PolygonCandleResponse response, DataType dataType);
 
     void deleteByDataType(DataType dataType);
 }

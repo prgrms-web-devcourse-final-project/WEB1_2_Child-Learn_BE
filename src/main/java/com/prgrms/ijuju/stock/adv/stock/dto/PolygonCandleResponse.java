@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 해당 DTO 는 Finnhub API 와 소통하기 위한 DTO 로, 저희 프론트 측과는 관계 없습니다. 내부적으로만 사용되는 dto 입니다.
  */
-public class FinnhubCandleResponse {
+public class PolygonCandleResponse {
     private List<Double> c; // 종가
     private List<Double> h; // 고가
     private List<Double> l; // 저가

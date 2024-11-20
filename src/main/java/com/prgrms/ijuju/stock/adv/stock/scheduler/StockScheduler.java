@@ -1,10 +1,11 @@
 package com.prgrms.ijuju.stock.adv.stock.scheduler;
 
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
-import com.prgrms.ijuju.stock.adv.stock.dto.FinnhubCandleResponse;
+import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.stock.adv.stock.repository.StockRepository;
 import com.prgrms.ijuju.stock.adv.stock.service.StockDataFetcher;
 import com.prgrms.ijuju.stock.adv.stock.service.StockService;
+import com.prgrms.ijuju.stock.adv.stock.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -32,27 +33,25 @@ public class StockScheduler {
     @Scheduled(cron = "0 0 7 * * ?", zone = "Asia/Seoul")
     public void fetchAndUpdateStockDataDaily() {
 
+        //괴거 데이터 삭제용. 7시 리셋시 모든 데이터를 날린다
         stockRepository.deleteByDataType(DataType.REFERENCE);
         stockRepository.deleteByDataType(DataType.LIVE);
 
         //테스트 용으로 일단 5개만 넣어뒀습니다.
         String[] symbols = {"AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"};
 
+        String referenceStartDate = DateUtil.getReferenceStartDate();
+        String referenceEndDate = DateUtil.getReferenceEndDate();
+        String liveDate = DateUtil.getLiveDate();
+
         for (String symbol : symbols) {
-            long from = calculateUnixTimestamp(2, 0); // 2주 전
-            long to = calculateUnixTimestamp(1, 0) - 1;   // 1주 전
-            FinnhubCandleResponse referenceData = stockDataFetcher.fetchStockData(symbol, from, to);
+            PolygonCandleResponse referenceData = stockDataFetcher.fetchStockData(symbol, 1, "hour", referenceStartDate, referenceEndDate);
             stockService.saveStockData(symbol, symbol + " Name", referenceData, DataType.REFERENCE);
 
-            from = calculateUnixTimestamp(1, 0); // 1주 전
-            to = calculateUnixTimestamp(1, 1) - 1;   // 1주 전 하루
-            FinnhubCandleResponse liveData = stockDataFetcher.fetchStockData(symbol, from, to);
+            // Live 데이터 저장
+            PolygonCandleResponse liveData = stockDataFetcher.fetchStockData(symbol, 1, "hour", liveDate, liveDate);
             stockService.saveStockData(symbol, symbol + " Name", liveData, DataType.LIVE);
         }
-    }
 
-    private long calculateUnixTimestamp(int weeksAgo, int daysOffset) {
-        long now = System.currentTimeMillis() / 1000;
-        return now - (weeksAgo * 7L + daysOffset) * 24 * 60 * 60;
     }
 }

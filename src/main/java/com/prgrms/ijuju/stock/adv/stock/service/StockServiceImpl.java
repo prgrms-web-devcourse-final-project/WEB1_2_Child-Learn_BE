@@ -1,10 +1,9 @@
 package com.prgrms.ijuju.stock.adv.stock.service;
 
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
-import com.prgrms.ijuju.stock.adv.stock.dto.FinnhubCandleResponse;
+import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.stock.adv.stock.entity.Stock;
 import com.prgrms.ijuju.stock.adv.stock.repository.StockRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,7 +53,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public Stock saveStockData(String symbol, String name, FinnhubCandleResponse response, DataType dataType) {
+    public Stock saveStockData(String symbol, String name, PolygonCandleResponse response, DataType dataType) {
         Stock stock = Stock.builder()
                 .symbol(symbol)
                 .name(name)
