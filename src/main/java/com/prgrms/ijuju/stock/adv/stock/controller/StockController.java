@@ -3,6 +3,7 @@ package com.prgrms.ijuju.stock.adv.stock.controller;
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
 import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.stock.adv.stock.entity.Stock;
+import com.prgrms.ijuju.stock.adv.stock.scheduler.StockScheduler;
 import com.prgrms.ijuju.stock.adv.stock.service.StockDataFetcher;
 import com.prgrms.ijuju.stock.adv.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class StockController {
 
     private final StockService stockService;
     private final StockDataFetcher stockDataFetcher;
+    private final StockScheduler stockScheduler;
 
 
     @GetMapping("/reference")
@@ -39,16 +41,10 @@ public class StockController {
         return ResponseEntity.ok(liveData);
     }
 
-
-    @PostMapping("/fetch")
-    public ResponseEntity<Stock> fetchAndSaveStockData(
-            @RequestParam String symbol,
-            @RequestParam DataType dataType,
-            @RequestParam long from,
-            @RequestParam long to) {
-        PolygonCandleResponse response = stockDataFetcher.fetchStockData(symbol, from, to);
-        Stock savedStock = stockService.saveStockData(symbol, symbol + " Name", response, dataType);
-        return ResponseEntity.ok(savedStock);
+    @PostMapping("/trigger-scheduler")
+    public ResponseEntity<String> triggerSchedulerManually() {
+        stockScheduler.fetchAndUpdateStockDataDaily(); // 기존 Scheduler 메서드 호출
+        return ResponseEntity.ok("스케줄러 로직이 수동으로 실행되었습니다.");
     }
 
 

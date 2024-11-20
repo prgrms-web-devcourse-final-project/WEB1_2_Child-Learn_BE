@@ -2,9 +2,9 @@ package com.prgrms.ijuju.stock.adv.stock.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.Clock;
 
 public class DateUtil {
-
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     // Reference 데이터의 시작일 (2주 전)
