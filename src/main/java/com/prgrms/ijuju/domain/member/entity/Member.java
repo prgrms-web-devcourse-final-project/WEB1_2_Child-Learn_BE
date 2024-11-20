@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "member")
 public class Member {
 
     @Id
