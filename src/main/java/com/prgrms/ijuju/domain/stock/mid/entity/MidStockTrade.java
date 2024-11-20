@@ -2,13 +2,13 @@ package com.prgrms.ijuju.domain.stock.mid.entity;
 
 import com.prgrms.ijuju.common.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = {"id", "tradePoint", "pricePerStock", "tradeType"})
 public class MidStockTrade extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +29,17 @@ public class MidStockTrade extends BaseTimeEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "member_id")
 //    private Member member;
+
+
+    public MidStockTrade(Long id, long tradePoint, long pricePerStock, TradeType tradeType, MidStock midStock) {
+        this.id = id;
+        this.tradePoint = tradePoint;
+        this.pricePerStock = pricePerStock;
+        this.tradeType = tradeType;
+        if (midStock != null) {
+            setMidStock(midStock);
+        }
+    }
 
     public void setMidStock(MidStock midStock) {
         this.midStock = midStock;

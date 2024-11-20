@@ -14,6 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = {"id", "stockName"})
 public class MidStock extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,4 +26,8 @@ public class MidStock extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "midStock", cascade = CascadeType.ALL)
     private List<MidStockTrade> trades = new ArrayList<>();
+
+    public MidStock(String stockName) {
+        this.stockName = stockName;
+    }
 }

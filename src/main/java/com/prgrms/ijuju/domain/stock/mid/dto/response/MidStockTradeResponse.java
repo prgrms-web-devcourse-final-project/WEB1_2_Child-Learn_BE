@@ -14,13 +14,13 @@ public record MidStockTradeResponse(
         TradeType tradeType,
         String midName
 ) {
-    public static MidStockTradeResponse of (MidStockTrade midStockTrade, String midName) {
+    public static MidStockTradeResponse of (MidStockTrade midStockTrade) {
         return new MidStockTradeResponse(
                 midStockTrade.getTradePoint(),
                 midStockTrade.getPricePerStock(),
                 midStockTrade.getCreateDate(),
                 midStockTrade.getTradeType(),
-                midName
+                midStockTrade.getMidStock().getStockName()
         );
     }
 }

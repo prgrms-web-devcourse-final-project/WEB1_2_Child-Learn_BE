@@ -1,8 +1,8 @@
 package com.prgrms.ijuju.domain.stock.mid.dto.request;
 
-import lombok.Getter;
+import jakarta.validation.constraints.Positive;
 
-@Getter
-public class MidStockSellRequest {
-    private int midStockId;
-}
+public record MidStockSellRequest(
+        @Positive(message = "종목 ID는 양수여야 합니다")
+        int midStockId
+) {}

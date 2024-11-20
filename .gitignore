@@ -37,7 +37,6 @@ out/
 ### VS Code ###
 .vscode/
 
-
-/src/main/resources/application.yml
-/src/main/resources/application-test.yml
-/src/main/resources/application-dev.yml
+# Ignore H2 database files
+*.mv.db
+*.trace.db
