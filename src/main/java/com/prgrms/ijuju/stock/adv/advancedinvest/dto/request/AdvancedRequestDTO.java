@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.stock.adv.advancedInvest.dto.response;
+package com.prgrms.ijuju.stock.adv.advancedinvest.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class AdvancedResponseDTO {
+public class AdvancedRequestDTO {
 }
