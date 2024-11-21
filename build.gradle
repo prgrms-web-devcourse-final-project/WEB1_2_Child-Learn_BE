@@ -44,18 +44,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-//    compileOnly 'org.projectlombok:lombok'
-//    annotationProcessor 'org.projectlombok:lombok' // 추가 필요
-//    testCompileOnly 'org.projectlombok:lombok'
-//    testAnnotationProcessor 'org.projectlombok:lombok'
-
     // devtools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // DB
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
-    implementation 'mysql:mysql-connector-java:8.0.33' // 추가한 의존성
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

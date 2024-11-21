@@ -36,3 +36,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### H2 DB file ###
+*.mv.db
+*.trace.db

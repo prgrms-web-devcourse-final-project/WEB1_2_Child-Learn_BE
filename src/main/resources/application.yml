@@ -1,30 +1,25 @@
-#spring:
-#  profiles:
-#    active: dev
-#  threads:
-#    virtual:
-#      enabled: true
-#  jpa:
-#    properties:
-#      hibernate:
-#        default_batch_fetch_size: 100
-#        format_sql: true
-#        highlight_sql: true
-#        use_sql_comments: true
-
 spring:
-  output:
-    ansi:
-      enabled: always
+  profiles:
+    active: dev
+  threads:
+    virtual:
+      enabled: true
   datasource:
-    url: jdbc:h2:mem:ijuju_test;MODE=MYSQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
   jpa:
-    hibernate:
-      ddl-auto: create
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
 
 logging:
   level:
-    root: INFO
+    com.prgrms.ijuju: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
