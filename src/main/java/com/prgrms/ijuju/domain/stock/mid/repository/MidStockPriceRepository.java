@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+
 
 public interface MidStockPriceRepository extends JpaRepository<MidStockPrice, Long>, MidStockPriceRepositoryCustom {
 
@@ -35,4 +34,5 @@ public interface MidStockPriceRepository extends JpaRepository<MidStockPrice, Lo
 //            "AND DATE(p.priceDate) = CURRENT_DATE " +
 //            "ORDER BY p.priceDate DESC LIMIT 1")
 //    Optional<MidStockPrice> findTodayPrice(@Param("stockId") Long stockId);
+
 }

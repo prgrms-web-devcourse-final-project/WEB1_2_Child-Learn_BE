@@ -11,9 +11,6 @@ import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockTradeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +35,7 @@ public class MidStockService {
                 .map(MidStockResponse::of)
                 .collect(Collectors.toList());
     }
+
 
 //     나중에 멤버아이디를 받아서 그걸로 찾아야됨 수정 필요
     @Transactional(readOnly = true)

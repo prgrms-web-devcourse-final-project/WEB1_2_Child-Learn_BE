@@ -71,6 +71,7 @@ public class MidStockTradeService {
         return 0;
     }
 
+
     // 올인하였을때 경고 판단  이게 애매하네?  남은돈을 다 투자했을때 경고로
 
 
