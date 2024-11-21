@@ -2,10 +2,7 @@ server:
   port: 8090
 spring:
   datasource:
-    url: jdbc:h2:./ijuju_dev;MODE=MYSQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:h2:./ijuju_dev;MODE=MySQL
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,9 +10,3 @@ spring:
     console:
       enabled: true
       path: /h2-console
-logging:
-  level:
-    com.example.com.programs.ijuju: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.orm.jdbc.extract: TRACE
