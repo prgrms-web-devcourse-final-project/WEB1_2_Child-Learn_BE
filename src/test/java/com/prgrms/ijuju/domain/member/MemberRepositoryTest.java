@@ -26,35 +26,25 @@ public class MemberRepositoryTest {
     @DisplayName("회원가입 테스트")
     public void joinTest() {
 
-        Member member = new Member("test123", "password", "Test User", "test@example.com", LocalDate.now(), 1000L);
+        // Given
+        Member member = Member.builder()
+                .loginId("test1234")
+                .pw("test1234@")
+                .username("test")
+                .email("test@test.com")
+                .birth(LocalDate.parse("1998-07-13"))
+                .build();
 
         // When
         Member savedMember = memberRepository.save(member);
 
         // Then
-        assertNotNull(savedMember.getId());  // ID가 자동으로 생성되어야 함
-        assertEquals("test123", savedMember.getLoginId());
-        assertEquals("Test User", savedMember.getUsername());
-//        // Given
-//        Member member = Member.builder()
-//                .loginId("test1234")
-//                .pw("test1234@")
-//                .username("test")
-//                .email("test@test.com")
-//                .birth(LocalDate.parse("1998-07-13"))
-//                .points(1000L)
-//                .build();
-//
-//        // When
-//        Member savedMember = memberRepository.save(member);
-//
-//        // Then
-//        assertNotNull(savedMember);
-//        assertEquals("test1234", savedMember.getLoginId());
-//        assertEquals("test1234@", savedMember.getPw());
-//        assertEquals("test", savedMember.getUsername());
-//        assertEquals("test@test.com", savedMember.getEmail());
-//        assertEquals(LocalDate.parse("1998-07-13"), savedMember.getBirth());
+        assertNotNull(savedMember);
+        assertEquals("test1234", savedMember.getLoginId());
+        assertEquals("test1234@", savedMember.getPw());
+        assertEquals("test", savedMember.getUsername());
+        assertEquals("test@test.com", savedMember.getEmail());
+        assertEquals(LocalDate.parse("1998-07-13"), savedMember.getBirth());
 
 
     }

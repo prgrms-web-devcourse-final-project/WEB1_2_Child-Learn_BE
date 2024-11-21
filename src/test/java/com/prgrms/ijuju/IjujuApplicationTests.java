@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @EnableJpaAuditing
 class IjujuApplicationTests {
 
