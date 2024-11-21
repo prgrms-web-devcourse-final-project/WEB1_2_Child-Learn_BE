@@ -4,6 +4,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  datasource:
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
     properties:
       hibernate:
@@ -11,3 +15,11 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+
+logging:
+  level:
+    com.prgrms.ijuju: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
