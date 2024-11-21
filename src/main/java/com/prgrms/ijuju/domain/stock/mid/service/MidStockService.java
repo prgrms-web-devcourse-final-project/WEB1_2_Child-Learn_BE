@@ -2,7 +2,7 @@ package com.prgrms.ijuju.domain.stock.mid.service;
 
 import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockResponse;
-import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockTradeResponse;
+import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockWithTradesResponse;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockTrade;
@@ -11,12 +11,14 @@ import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockTradeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,20 +39,30 @@ public class MidStockService {
                 .collect(Collectors.toList());
     }
 
-    // 나중에 멤버아이디를 받아서 그걸로 찾아야됨 수정 필요
+//     나중에 멤버아이디를 받아서 그걸로 찾아야됨 수정 필요
     @Transactional(readOnly = true)
-    public Page<MidStockTradeResponse> findAllStocksTrade(int page, int size) {
-        log.info("중급 종목 거래내역 찾기");
-        PageRequest pageRequest = PageRequest.of(page, size);
+    public List<MidStockWithTradesResponse> getMemberStocksAndTrades(Long memberId) {
+        log.info("중급 보유 주식 조회");
+        // 회원의 모든 buy 거래 데이터 조회
+        List<MidStockTrade> buyTrades = midStockTradeRepository.findAllBuyMidStock(memberId);
 
-        Page<MidStockTrade> tradePage = midStockTradeRepository.findAllWithMidStock(pageRequest);
+        // 거래 데이터를 종목별로 그룹화
+        Map<Long, List<MidStockTrade>> tradeByStockId = buyTrades.stream()
+                .collect(Collectors.groupingBy(trade -> trade.getMidStock().getId()));
 
-        return tradePage.map(MidStockTradeResponse::of);
+        // 그룹화된 데이터를 MidStockWithTradesResponse로 변환
+        return tradeByStockId.entrySet().stream()
+                .map(entry -> {
+                    Long stockId = entry.getKey();
+                    List<MidStockTrade> trades = entry.getValue();
+                    return MidStockWithTradesResponse.of(trades);
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<MidStockPriceResponse> findStockChartInfo(Long midStockId) {
-        log.info("중급 종목 차트 정보 찾기");
+        log.info("중급 종목 차트 정보 2주치");
         List<MidStockPrice> priceResponses = midStockPriceRepository.find2WeeksPriceInfo(midStockId);
         return priceResponses.stream()
                 .map(MidStockPriceResponse::of)

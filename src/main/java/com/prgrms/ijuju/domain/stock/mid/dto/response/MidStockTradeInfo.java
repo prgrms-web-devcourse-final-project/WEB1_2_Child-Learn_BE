@@ -7,20 +7,18 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record MidStockTradeResponse(
+public record MidStockTradeInfo(
         long tradePoint,
         long pricePerStock,
         LocalDateTime tradeDate,
-        TradeType tradeType,
-        String midName
+        TradeType tradeType
 ) {
-    public static MidStockTradeResponse of (MidStockTrade midStockTrade) {
-        return new MidStockTradeResponse(
+    public static MidStockTradeInfo of (MidStockTrade midStockTrade) {
+        return new MidStockTradeInfo(
                 midStockTrade.getTradePoint(),
                 midStockTrade.getPricePerStock(),
                 midStockTrade.getCreateDate(),
-                midStockTrade.getTradeType(),
-                midStockTrade.getMidStock().getStockName()
+                midStockTrade.getTradeType()
         );
     }
 }

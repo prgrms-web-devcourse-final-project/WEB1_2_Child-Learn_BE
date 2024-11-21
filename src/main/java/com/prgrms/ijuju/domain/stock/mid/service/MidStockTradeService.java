@@ -49,6 +49,9 @@ public class MidStockTradeService {
     // 매도 주문
     public long sellStock(Long midStockId) {
 
+
+
+        return calculateSellProfit(midStockId);
     }
 
 
@@ -64,7 +67,9 @@ public class MidStockTradeService {
     }
 
     // 매도 수익 계산
-
+    private long calculateSellProfit(Long midStockId) {
+        return 0;
+    }
 
     // 올인하였을때 경고 판단  이게 애매하네?  남은돈을 다 투자했을때 경고로
 

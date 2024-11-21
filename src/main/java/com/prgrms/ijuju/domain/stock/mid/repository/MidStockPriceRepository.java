@@ -12,27 +12,27 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface MidStockPriceRepository extends JpaRepository<MidStockPrice, Long> {
+public interface MidStockPriceRepository extends JpaRepository<MidStockPrice, Long>, MidStockPriceRepositoryCustom {
 
-    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock.id = :stockId")
-    List<MidStockPrice> findByMidStockId(@Param("stockId") Long stockId);
+//    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock.id = :stockId")
+//    List<MidStockPrice> findByMidStockId(@Param("stockId") Long stockId);
 
     @Modifying
     @Query("DELETE FROM MidStockPrice  p WHERE p.priceDate < :date")
     void deleteOldData(@Param("date")LocalDateTime date);
 
-    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock = :stock ORDER BY p.priceDate DESC LIMIT 1")
-    Optional<MidStockPrice> findLatestPrice(@Param("stock") MidStock stock);
+//    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock = :stock ORDER BY p.priceDate DESC LIMIT 1")
+//    Optional<MidStockPrice> findLatestPrice(@Param("stock") MidStock stock);
 
-    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock = :stock ORDER BY p.priceDate DESC")
-    List<MidStockPrice> findPriceHistory(@Param("stock") MidStock stock, Pageable pageable);
+//    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock = :stock ORDER BY p.priceDate DESC")
+//    List<MidStockPrice> findPriceHistory(@Param("stock") MidStock stock, Pageable pageable);
 
-    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock.id = :midStockId ORDER BY p.priceDate LIMIT 14")
-    List<MidStockPrice> find2WeeksPriceInfo(@Param("midStockId") Long midStockId);
+//    @Query("SELECT p FROM MidStockPrice p WHERE p.midStock.id = :midStockId ORDER BY p.priceDate LIMIT 14")
+//    List<MidStockPrice> find2WeeksPriceInfo(@Param("midStockId") Long midStockId);
 
-    @Query("SELECT p FROM MidStockPrice p " +
-            "WHERE p.midStock.id = :stockId " +
-            "AND DATE(p.priceDate) = CURRENT_DATE " +
-            "ORDER BY p.priceDate DESC LIMIT 1")
-    Optional<MidStockPrice> findTodayPrice(@Param("stockId") Long stockId);
+//    @Query("SELECT p FROM MidStockPrice p " +
+//            "WHERE p.midStock.id = :stockId " +
+//            "AND DATE(p.priceDate) = CURRENT_DATE " +
+//            "ORDER BY p.priceDate DESC LIMIT 1")
+//    Optional<MidStockPrice> findTodayPrice(@Param("stockId") Long stockId);
 }
