@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.stock.adv.stock.constant;
+package com.prgrms.ijuju.stock.adv.advstock.constant;
 
 public enum DataType {
     REFERENCE,  //2주전부터 1주 전까지의 데이터

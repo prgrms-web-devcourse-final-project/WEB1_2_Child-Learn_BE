@@ -1,8 +1,7 @@
-package com.prgrms.ijuju.stock.adv.stock.util;
+package com.prgrms.ijuju.stock.adv.advstock.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.Clock;
 
 public class DateUtil {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");

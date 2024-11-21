@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.stock.adv.stock.dto;
+package com.prgrms.ijuju.stock.adv.advstock.dto;
 
 import lombok.Getter;
 

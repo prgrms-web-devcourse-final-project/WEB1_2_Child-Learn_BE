@@ -1,6 +1,6 @@
-package com.prgrms.ijuju.stock.adv.stock.entity;
+package com.prgrms.ijuju.stock.adv.advstock.entity;
 
-import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
+import com.prgrms.ijuju.stock.adv.advstock.constant.DataType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(value = { AuditingEntityListener.class })
-public class Stock {
+public class AdvStock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

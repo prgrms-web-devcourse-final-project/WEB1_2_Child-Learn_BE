@@ -1,6 +1,6 @@
-package com.prgrms.ijuju.stock.adv.stock.service;
+package com.prgrms.ijuju.stock.adv.advstock.service;
 
-import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
+import com.prgrms.ijuju.stock.adv.advstock.dto.PolygonCandleResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClient;
  */
 
 @Service
-public class StockDataFetcher {
+public class AdvStockDataFetcher {
 
     private final RestClient restClient = RestClient.builder().build();
     private static final String POLYGON_API_KEY = " ";  //보안상 이슈로 삭제. 나중에 properties 로 옮기고 환경변수 설정 예정
