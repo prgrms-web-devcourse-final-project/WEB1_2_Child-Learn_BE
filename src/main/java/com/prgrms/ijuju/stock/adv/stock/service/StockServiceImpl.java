@@ -2,6 +2,7 @@ package com.prgrms.ijuju.stock.adv.stock.service;
 
 import com.prgrms.ijuju.stock.adv.stock.constant.DataType;
 import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResponse;
+import com.prgrms.ijuju.stock.adv.stock.dto.PolygonCandleResult;
 import com.prgrms.ijuju.stock.adv.stock.entity.Stock;
 import com.prgrms.ijuju.stock.adv.stock.repository.StockRepository;
 import org.springframework.stereotype.Service;
@@ -54,15 +55,23 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public Stock saveStockData(String symbol, String name, PolygonCandleResponse response, DataType dataType) {
+        List<Double> openPrices = response.getResults().stream().map(PolygonCandleResult::getO).toList();
+        List<Double> highPrices = response.getResults().stream().map(PolygonCandleResult::getH).toList();
+        List<Double> lowPrices = response.getResults().stream().map(PolygonCandleResult::getL).toList();
+        List<Double> closePrices = response.getResults().stream().map(PolygonCandleResult::getC).toList();
+        List<Long> volumes = response.getResults().stream().map(PolygonCandleResult::getV).toList();
+        List<Long> timestamps = response.getResults().stream().map(PolygonCandleResult::getT).toList();
+
+        // Stock 엔티티 생성
         Stock stock = Stock.builder()
                 .symbol(symbol)
                 .name(name)
-                .openPrices(response.getOpenPrices())
-                .highPrices(response.getHighPrices())
-                .lowPrices(response.getLowPrices())
-                .closePrices(response.getClosePrices())
-                .volumes(response.getVolumes())
-                .timestamps(response.getTimestamps())
+                .openPrices(openPrices)
+                .highPrices(highPrices)
+                .lowPrices(lowPrices)
+                .closePrices(closePrices)
+                .volumes(volumes)
+                .timestamps(timestamps)
                 .dataType(dataType)
                 .build();
 

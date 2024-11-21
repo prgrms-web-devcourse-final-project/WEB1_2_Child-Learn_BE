@@ -37,6 +37,7 @@ public class StockScheduler {
         stockRepository.deleteByDataType(DataType.REFERENCE);
         stockRepository.deleteByDataType(DataType.LIVE);
 
+
         //테스트 용으로 일단 5개만 넣어뒀습니다.
         String[] symbols = {"AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"};
 
