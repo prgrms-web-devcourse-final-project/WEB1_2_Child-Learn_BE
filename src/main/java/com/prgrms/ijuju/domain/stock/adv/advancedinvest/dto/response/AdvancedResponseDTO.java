@@ -1,9 +1,8 @@
-package com.prgrms.ijuju.domain.stock.advanced.dto.response;
+package com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder

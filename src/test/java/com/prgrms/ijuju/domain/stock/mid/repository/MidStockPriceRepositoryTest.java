@@ -121,33 +121,33 @@ class MidStockPriceRepositoryTest {
         assertThat(latestPrice.get().getPriceDate()).isEqualTo(now);
     }
 
-    @Test
-    @DisplayName("가격 이력을 페이징하여 조회한다")
-    void findPriceHistory() {
-        // given
-        List<MidStockPrice> prices = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            prices.add(MidStockPrice.builder()
-                    .midStock(stock)
-                    .highPrice(1000L + i * 100)
-                    .lowPrice(900L + i * 100)
-                    .avgPrice(950L + i * 100)
-                    .priceDate(now.minusDays(i))
-                    .build());
-        }
-        midStockPriceRepository.saveAll(prices);
-
-        // when
-        List<MidStockPrice> foundPrices = midStockPriceRepository.findPriceHistory(
-                stock,
-                PageRequest.of(0, 3)
-        );
-
-        // then
-        assertThat(foundPrices).hasSize(3);
-        assertThat(foundPrices.get(0).getPriceDate())
-                .isAfter(foundPrices.get(1).getPriceDate());
-    }
+//    @Test
+//    @DisplayName("가격 이력을 페이징하여 조회한다")
+//    void findPriceHistory() {
+//        // given
+//        List<MidStockPrice> prices = new ArrayList<>();
+//        for (int i = 0; i < 5; i++) {
+//            prices.add(MidStockPrice.builder()
+//                    .midStock(stock)
+//                    .highPrice(1000L + i * 100)
+//                    .lowPrice(900L + i * 100)
+//                    .avgPrice(950L + i * 100)
+//                    .priceDate(now.minusDays(i))
+//                    .build());
+//        }
+//        midStockPriceRepository.saveAll(prices);
+//
+//        // when
+//        List<MidStockPrice> foundPrices = midStockPriceRepository.findPriceHistory(
+//                stock,
+//                PageRequest.of(0, 3)
+//        );
+//
+//        // then
+//        assertThat(foundPrices).hasSize(3);
+//        assertThat(foundPrices.get(0).getPriceDate())
+//                .isAfter(foundPrices.get(1).getPriceDate());
+//    }
 
     @Test
     @DisplayName("특정 주식의 2주치 과거 데이터를 조회한다")

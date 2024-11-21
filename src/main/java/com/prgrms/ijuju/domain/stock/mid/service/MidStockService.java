@@ -38,25 +38,25 @@ public class MidStockService {
 
 
 //     나중에 멤버아이디를 받아서 그걸로 찾아야됨 수정 필요
-    @Transactional(readOnly = true)
-    public List<MidStockWithTradesResponse> getMemberStocksAndTrades(Long memberId) {
-        log.info("중급 보유 주식 조회");
-        // 회원의 모든 buy 거래 데이터 조회
-        List<MidStockTrade> buyTrades = midStockTradeRepository.findAllBuyMidStock(memberId);
-
-        // 거래 데이터를 종목별로 그룹화
-        Map<Long, List<MidStockTrade>> tradeByStockId = buyTrades.stream()
-                .collect(Collectors.groupingBy(trade -> trade.getMidStock().getId()));
-
-        // 그룹화된 데이터를 MidStockWithTradesResponse로 변환
-        return tradeByStockId.entrySet().stream()
-                .map(entry -> {
-                    Long stockId = entry.getKey();
-                    List<MidStockTrade> trades = entry.getValue();
-                    return MidStockWithTradesResponse.of(trades);
-                })
-                .toList();
-    }
+//    @Transactional(readOnly = true)
+//    public List<MidStockWithTradesResponse> getMemberStocksAndTrades(Long memberId) {
+//        log.info("중급 보유 주식 조회");
+//        // 회원의 모든 buy 거래 데이터 조회
+//        List<MidStockTrade> buyTrades = midStockTradeRepository.findAllBuyMidStock(memberId);
+//
+//        // 거래 데이터를 종목별로 그룹화
+//        Map<Long, List<MidStockTrade>> tradeByStockId = buyTrades.stream()
+//                .collect(Collectors.groupingBy(trade -> trade.getMidStock().getId()));
+//
+//        // 그룹화된 데이터를 MidStockWithTradesResponse로 변환
+//        return tradeByStockId.entrySet().stream()
+//                .map(entry -> {
+//                    Long stockId = entry.getKey();
+//                    List<MidStockTrade> trades = entry.getValue();
+//                    return MidStockWithTradesResponse.of(trades);
+//                })
+//                .toList();
+//    }
 
     @Transactional(readOnly = true)
     public List<MidStockPriceResponse> findStockChartInfo(Long midStockId) {
