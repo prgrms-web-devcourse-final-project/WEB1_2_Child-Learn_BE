@@ -23,7 +23,7 @@ public class MidStockChartService {
 
     public void generateDailyPrice(MidStock midStock) {
         log.info("중급 하루 한번 가격 생성");
-
+        // 15일 이전 데이터 삭제
         LocalDateTime twoWeekDaysAgo = LocalDateTime.now().minusDays(DAYS_TO_KEEP);
         midStockPriceRepository.deleteOldData(twoWeekDaysAgo);
 
@@ -37,6 +37,7 @@ public class MidStockChartService {
         midStockPriceRepository.save(newPrice);
     }
 
+    // 가격 생성
     public MidStockPrice generatePrice(MidStock stock, long lastAvgPrice, LocalDateTime date) {
         long baseMinPrice;
 
@@ -71,6 +72,7 @@ public class MidStockChartService {
         }
     }
 
+    // 기본 최소 가격
     private static long getBaseMinPrice(MidStock stock) {
         long basePrice;
         if (stock.getId() % 3 == 1) {
