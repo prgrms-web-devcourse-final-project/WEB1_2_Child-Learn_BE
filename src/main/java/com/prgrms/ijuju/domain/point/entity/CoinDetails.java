@@ -1,0 +1,43 @@
+package com.prgrms.ijuju.domain.point.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import jakarta.validation.constraints.NotNull;
+
+import com.prgrms.ijuju.domain.member.entity.Member;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class CoinDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "coin_id", nullable = false)
+    private Coin coin;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @NotNull
+    private Long coinAmount;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+}
