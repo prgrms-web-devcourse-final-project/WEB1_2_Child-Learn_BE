@@ -67,6 +67,8 @@ public class MidStockTradeService {
 
     // 매도 주문
     public long sellStock(Long memberId, Long midStockId) {
+        long totalPoints = 0; // 매도시 포인트
+        long investedPoints = 0; //투자한 포인트
         // 보유중인 주식 조회
         List<MidStockTrade> buyMidStock = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
         if (buyMidStock.isEmpty()) {
@@ -78,9 +80,17 @@ public class MidStockTradeService {
             midStockTrade.changeTradeType(TradeType.SELL);
         }
 
+        // 수익 계산
+        long todayAvgPrice = midStockPriceRepository.findTodayAvgPrice(midStockId);
+        for (MidStockTrade midStockTrade : buyMidStock) {
+            double rate = (double) todayAvgPrice / midStockTrade.getPricePerStock();
+            totalPoints += Math.round(midStockTrade.getTradePoint() * rate);
+            investedPoints += midStockTrade.getTradePoint();
+        }
+
         // 포인트 처리 로직 추가해야함
 
-        return calculateSellProfit(memberId, midStockId);
+        return totalPoints - investedPoints;
     }
 
 
@@ -97,21 +107,6 @@ public class MidStockTradeService {
                 .map(MidStockPrice::getAvgPrice)
                 .orElseThrow(PriceNotFoundException::new);
     }
-
-    // 매도 수익 계산
-    private long calculateSellProfit(Long memberId, Long midStockId) {
-        long totalProfit = 0;
-
-        long todayAvgPrice = midStockPriceRepository.findTodayAvgPrice(midStockId);
-        List<MidStockTrade> buyMidStock = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
-        for (MidStockTrade midStockTrade : buyMidStock) {
-            double rate = (double) todayAvgPrice / midStockTrade.getPricePerStock();
-            totalProfit += Math.round(midStockTrade.getTradePoint() * rate);
-        }
-
-        return totalProfit;
-    }
-
 
     // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
     private boolean isAllInWarning(Member member, long tradePoint) {
