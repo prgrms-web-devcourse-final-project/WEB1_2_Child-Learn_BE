@@ -2,6 +2,7 @@ package com.prgrms.ijuju.domain.stock.mid.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.stock.mid.dto.response.TradeAvailableResponse;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockTrade;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +80,7 @@ public class MidStockTradeService {
 
         // 포인트 처리 로직 추가해야함
 
-        return calculateSellProfit(midStockId);
+        return calculateSellProfit(memberId, midStockId);
     }
 
 
@@ -97,8 +99,17 @@ public class MidStockTradeService {
     }
 
     // 매도 수익 계산
-    private long calculateSellProfit(Long midStockId) {
-        return 0;
+    private long calculateSellProfit(Long memberId, Long midStockId) {
+        long totalProfit = 0;
+
+        long todayAvgPrice = midStockPriceRepository.findTodayAvgPrice(midStockId);
+        List<MidStockTrade> buyMidStock = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
+        for (MidStockTrade midStockTrade : buyMidStock) {
+            double rate = (double) todayAvgPrice / midStockTrade.getPricePerStock();
+            totalProfit += Math.round(midStockTrade.getTradePoint() * rate);
+        }
+
+        return totalProfit;
     }
 
 
@@ -106,6 +117,29 @@ public class MidStockTradeService {
     private boolean isAllInWarning(Member member, long tradePoint) {
         Long points = member.getPoints();
         return points == tradePoint;
+    }
+
+    // 하루한번 거래가능 체크
+    public TradeAvailableResponse isTradeAvailable(Long memberId, Long midStockId) {
+        boolean isPossibleBuy;
+        boolean isPossibleSell;
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+
+        MidStock midStock = midStockRepository.findById(midStockId)
+                .orElseThrow(StockNotFoundException::new);
+
+        Optional<MidStockTrade> todayBuyMidStock = midStockTradeRepository.findTodayBuyMidStock(memberId, midStockId);
+        Optional<MidStockTrade> todaySellMidStock = midStockTradeRepository.findTodaySellMidStock(memberId, midStockId);
+
+        isPossibleBuy = todayBuyMidStock.isEmpty();
+        isPossibleSell = todaySellMidStock.isEmpty();
+
+        return TradeAvailableResponse.builder()
+                .isPossibleBuy(isPossibleBuy)
+                .isPossibleSell(isPossibleSell)
+                .build();
     }
 
 }

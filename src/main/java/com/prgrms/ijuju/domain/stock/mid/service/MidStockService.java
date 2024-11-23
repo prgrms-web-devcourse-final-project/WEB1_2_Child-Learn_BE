@@ -2,6 +2,7 @@ package com.prgrms.ijuju.domain.stock.mid.service;
 
 import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockResponse;
+import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockTradeInfo;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockWithTradesResponse;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
@@ -37,8 +38,17 @@ public class MidStockService {
     }
 
     @Transactional(readOnly = true)
+    public List<MidStockTradeInfo> findStockTrades(Long memberId, Long midStockId) {
+        log.info("중급 특정 종목 보유 주식 조회");
+        List<MidStockTrade> trades = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
+        return trades.stream()
+                .map(MidStockTradeInfo::of)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<MidStockWithTradesResponse> getMemberStocksAndTrades(Long memberId) {
-        log.info("중급 보유 주식 조회");
+        log.info("중급 모든 보유 주식 조회");
         // 회원의 모든 buy 거래 데이터 조회
         List<MidStockTrade> buyTrades = midStockTradeRepository.findAllBuyMidStock(memberId);
 
