@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface PointDetailsRepository extends JpaRepository<PointDetails, Long> {
-    List<PointDetails> findByMemberIdAndPointTypeAndPointStatus(Long memberId, PointType pointType, PointStatus pointStatus);
+    List<PointDetails> findByDetails (Long memberId, PointType pointType, PointStatus pointStatus);
     List<PointDetails> findByMemberId(Long memberId);
-    List<PointDetails> findByMemberIdAndCreatedAtBetween(Long memberId, LocalDateTime startDate, LocalDateTime endDate);
+    List<PointDetails> findByDate(Long memberId, LocalDateTime startDate, LocalDateTime endDate);
 }

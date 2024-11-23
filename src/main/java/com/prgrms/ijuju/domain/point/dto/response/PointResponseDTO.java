@@ -12,6 +12,6 @@ import java.util.List;
 public class PointResponseDTO { // 포인트 응답 DTO
     private Long currentPoints;
     private Long currentCoins;
-    private List<PointDetailsDTO> pointHistory;
+    private List<PointDetailsResponseDTO> pointHistory;
 }
 
