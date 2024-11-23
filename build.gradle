@@ -31,8 +31,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // security
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
-    //testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3', 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
 
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -50,6 +55,7 @@ dependencies {
     // DB
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'mysql:mysql-connector-java:8.0.33'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

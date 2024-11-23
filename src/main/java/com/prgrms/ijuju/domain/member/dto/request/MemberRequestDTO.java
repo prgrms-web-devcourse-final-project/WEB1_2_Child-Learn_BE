@@ -2,6 +2,7 @@ package com.prgrms.ijuju.domain.member.dto.request;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -10,13 +11,14 @@ import java.time.LocalDate;
 
 public class MemberRequestDTO {
 
-    @Getter
+
+    // 회원가입
     @Builder
     @Data
     public static class CreateRequestDTO {
 
         @NotBlank(message = "로그인 ID는 반드시 입력해야 합니다.")
-        @Size(min=5, max = 20)
+        @Size(min = 5, max = 20)
         private String loginId;
 
         @NotBlank(message = "비밀번호는 반드시 입력해야 합니다.")
@@ -32,13 +34,13 @@ public class MemberRequestDTO {
         private String email;
 
         @NotBlank(message = "닉네임은 반드시 입력해야 합니다")
-        @Size(min=2, max = 30)
+        @Size(min = 2, max = 30)
         private String username;
 
         @NotNull(message = "생년월일(YYYY-MM-DD) 8자리를 반드시 입력해야 합니다")
         private LocalDate birth;
 
-        public Member toEntity(){
+        public Member toEntity() {
             return Member.builder()
                     .loginId(loginId)
                     .pw(pw)
@@ -47,7 +49,35 @@ public class MemberRequestDTO {
                     .birth(birth)
                     .build();
         }
-
-
     }
+
+    // 로그인
+    @Data
+    public static class LoginRequestDTO {
+
+        @NotBlank(message = "로그인 ID를 입력해주세요.")
+        private String loginId;
+
+        @NotBlank(message = "비밀번호를 입력해주세요.")
+        private String pw;
+    }
+
+    // refreshToken 요청
+    @Data
+    public static class RefreshAccessTokenRequestDTO {
+        private String refreshToken;
+    }
+
+    // 회원 정보 업데이트
+    @Data
+    @AllArgsConstructor
+    public static class updateMyInfoRequestDTO {
+        private Long id;
+        //private String loginId;
+        private String pw;
+        private String username;
+    }
+
+
+
 }

@@ -71,9 +71,8 @@ public class Member {
         //this.pw=passwordEncoder.encode(pw);
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
+    public void updateRefreshToken(String refreshToken){
         this.refreshToken=refreshToken;
-        this.resetPwTokenExpiryDate=expiryDate;
     }
 
 }

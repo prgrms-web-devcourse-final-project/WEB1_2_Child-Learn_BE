@@ -29,15 +29,16 @@
 //                                .requestMatchers(
 //                                        PathRequest.toStaticResources().atCommonLocations(),
 //                                        new AntPathRequestMatcher("/resources/**"), // 정적 리소스 허용
-//                                        new AntPathRequestMatcher("/h2-console/**"), // H2 콘솔 접근 허용
-//                                        new AntPathRequestMatcher("/api/v1/member/join") // 회원가입 경로 추가
+//                                        new AntPathRequestMatcher("/h2-console/**") // H2 콘솔 접근 허용
+////                                        new AntPathRequestMatcher("/api/v1/member/join"), // 회원가입 경로 추가
+////                                        new AntPathRequestMatcher("/api/v1/member/login") // 로그인 경로 추가 (비인증 허용)
 //                                )
 //                                .permitAll()
 ////                                .requestMatchers(
 ////                                        "/adm/**"
 ////                                )
 ////                                .hasRole("ADMIN")
-//                                .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
 //                )
 //                .headers(
 //                        headers -> headers
@@ -46,13 +47,23 @@
 //                                                XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN) // H2 Console을 iframe으로 로드할 수 있도록 SAMEORIGIN 설정
 //                                )
 //                )
+//                //.csrf(csrf -> csrf.disable())
+////                        (
+////                        csrf -> csrf
+////                                .ignoringRequestMatchers("/h2-console/**", "/api/v1/member/join") // H2 Console에 대해 CSRF 비활성화
+////                                .disable()  // 개발용으로 CSRF 를 완전히 비활성화
+////
+////                )
 //                .csrf(
 //                        csrf -> csrf
-//                                .ignoringRequestMatchers("/h2-console/**", "/api/v1/member/join") // H2 Console에 대해 CSRF 비활성화
-//                                .disable()  // 개발용으로 CSRF 를 완전히 비활성화
-//
-//                ).formLogin(form -> form.disable())
-//                .httpBasic(Customizer.withDefaults()); // 기본 로그인 폼 설정
+//                                .ignoringRequestMatchers(
+//                                        "/h2-console/**"
+//                                )
+//                )
+//                //.formLogin(form -> form.disable());
+//                //.httpBasic(Customizer.withDefaults()); // 기본 로그인 폼 설정
+//                .formLogin(Customizer.withDefaults()); // 기본 로그인 폼 설정
+//                //.httpBasic(Customizer.withDefaults()); // HTTP 기본 인증 사용
 //
 //
 //        return http.build();
