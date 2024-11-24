@@ -30,7 +30,6 @@ public interface MidStockTradeRepository extends JpaRepository<MidStockTrade, Lo
     //오늘 매수했는지 확인
     @Query("SELECT t FROM MidStockTrade t " +
             "WHERE t.member.id = :memberId " +
-            "AND t.tradeType = 'BUY' " +
             "AND t.midStock.id = :midStockId " +
             "AND FUNCTION('DATE', t.createDate) = CURRENT_DATE")
     Optional<MidStockTrade> findTodayBuyMidStock(@Param("memberId") Long memberId, @Param("midStockId") Long midStockId);
@@ -38,7 +37,6 @@ public interface MidStockTradeRepository extends JpaRepository<MidStockTrade, Lo
     // 오늘 매도했는지 확인
     @Query("SELECT t FROM MidStockTrade t " +
             "WHERE t.member.id = :memberId " +
-            "AND t.tradeType = 'SELL' " +
             "AND t.midStock.id = :midStockId " +
             "AND FUNCTION('DATE', t.modifiedDate) = CURRENT_DATE")
     Optional<MidStockTrade> findTodaySellMidStock(@Param("memberId") Long memberId, @Param("midStockId") Long midStockId);

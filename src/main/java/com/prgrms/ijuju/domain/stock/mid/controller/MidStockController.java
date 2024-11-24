@@ -64,8 +64,9 @@ public class MidStockController {
     @GetMapping("/{midStockId}/available")
     public ResponseEntity<TradeAvailableResponse> isTradeAvailable(@PathVariable Long midStockId) {
         Long memberId = 1L; // 임시로 memberId 1로 설정
+        log.info("midStockId: {}", midStockId);
         TradeAvailableResponse response = midStockTradeService.isTradeAvailable(memberId, midStockId);
-
+        log.info("response: {}", response);
         return ResponseEntity.ok(response);
     }
 
