@@ -7,10 +7,7 @@ import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockTrade;
 import com.prgrms.ijuju.domain.stock.mid.entity.TradeType;
-import com.prgrms.ijuju.domain.stock.mid.exception.MemberNotFoundException;
-import com.prgrms.ijuju.domain.stock.mid.exception.PointsNotEnoughException;
-import com.prgrms.ijuju.domain.stock.mid.exception.PriceNotFoundException;
-import com.prgrms.ijuju.domain.stock.mid.exception.StockNotFoundException;
+import com.prgrms.ijuju.domain.stock.mid.exception.*;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockTradeRepository;
@@ -35,14 +32,20 @@ public class MidStockTradeService {
     // 매수 주문  3가지의 구현이 필요함 (멤버, 포인트 필요)
     public boolean buyStock(Long memberId, Long midStockId, long tradePoint) {
         MidStock midStock = midStockRepository.findById(midStockId)
-                .orElseThrow(StockNotFoundException::new);
+                .orElseThrow(MidStockNotFoundException::new);
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+                .orElseThrow(MidMemberNotFoundException::new);
 
-        // 거래 가능 여부 확인 추가해야함  tradePoint 와 멤버의 잔여 포인트 그거 계산
+        // 오늘 매수 했는지 확인
+        Optional<MidStockTrade> todayBuyMidStock = midStockTradeRepository.findTodayBuyMidStock(memberId, midStockId);
+        if (todayBuyMidStock.isPresent()) {
+            throw new MidAlreadyBoughtException();
+        }
+
+        // 포인트가 충분한지 거래 가능 여부 확인 추가해야함  tradePoint 와 멤버의 잔여 포인트 그거 계산
         if (!isTradeAvailable(member, tradePoint)) {
-            throw new PointsNotEnoughException();
+            throw new MidPointsNotEnoughException();
         }
 
         // 포인트로 save하는 거 추가 해야함 (SPENT로) ,
@@ -72,7 +75,13 @@ public class MidStockTradeService {
         // 보유중인 주식 조회
         List<MidStockTrade> buyMidStock = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
         if (buyMidStock.isEmpty()) {
-            throw new StockNotFoundException();
+            throw new MidStockNotFoundException();
+        }
+
+        // 오늘 매도 했는지 확인
+        Optional<MidStockTrade> todaySellMidStock = midStockTradeRepository.findTodaySellMidStock(memberId, midStockId);
+        if (todaySellMidStock.isPresent()) {
+            throw new MidAlreadySoldException();
         }
 
         // 매수 -> 매도
@@ -105,7 +114,7 @@ public class MidStockTradeService {
     private long getCurrentStockPrice(Long midStockId) {
         return midStockPriceRepository.findTodayPrice(midStockId)
                 .map(MidStockPrice::getAvgPrice)
-                .orElseThrow(PriceNotFoundException::new);
+                .orElseThrow(MidPriceNotFoundException::new);
     }
 
     // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
@@ -120,10 +129,10 @@ public class MidStockTradeService {
         boolean isPossibleSell;
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+                .orElseThrow(MidMemberNotFoundException::new);
 
         MidStock midStock = midStockRepository.findById(midStockId)
-                .orElseThrow(StockNotFoundException::new);
+                .orElseThrow(MidStockNotFoundException::new);
 
         Optional<MidStockTrade> todayBuyMidStock = midStockTradeRepository.findTodayBuyMidStock(memberId, midStockId);
         Optional<MidStockTrade> todaySellMidStock = midStockTradeRepository.findTodaySellMidStock(memberId, midStockId);

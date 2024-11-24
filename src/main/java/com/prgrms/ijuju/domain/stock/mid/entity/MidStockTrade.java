@@ -25,7 +25,7 @@ public class MidStockTrade extends BaseTimeEntity {
     @JoinColumn(name = "mid_stock_id")
     private MidStock midStock;
 
-//    멤버 엔티티가 생성될시 추가 단방향
+    //    멤버 엔티티가 생성될시 추가 단방향
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

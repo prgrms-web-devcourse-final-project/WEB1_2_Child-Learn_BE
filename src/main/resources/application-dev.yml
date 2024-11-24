@@ -6,7 +6,7 @@ spring:
     url: jdbc:h2:./ijuju_dev;MODE=MySQL
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   h2:
     console:
       enabled: true

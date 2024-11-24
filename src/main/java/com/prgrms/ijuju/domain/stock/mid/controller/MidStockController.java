@@ -1,8 +1,10 @@
 package com.prgrms.ijuju.domain.stock.mid.controller;
 
+import com.prgrms.ijuju.domain.stock.mid.dto.request.MidStockTradePointRequest;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.*;
 import com.prgrms.ijuju.domain.stock.mid.service.MidStockService;
 import com.prgrms.ijuju.domain.stock.mid.service.MidStockTradeService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +67,6 @@ public class MidStockController {
     public ResponseEntity<TradeAvailableResponse> isTradeAvailable(@PathVariable Long midStockId) {
         Long memberId = 1L; // 임시로 memberId 1로 설정
         TradeAvailableResponse response = midStockTradeService.isTradeAvailable(memberId, midStockId);
-
         return ResponseEntity.ok(response);
     }
 
@@ -73,8 +74,9 @@ public class MidStockController {
     @PostMapping("/{midStockId}/buy")
     public ResponseEntity<Map<String, Boolean>> buyMidStock(
             @PathVariable @Positive Long midStockId,
-            @RequestBody @Positive long tradePoint) {
+            @RequestBody @Valid MidStockTradePointRequest tradePointRequest) {
         Long memberId = 1L; // 임시로 memberId 1로 설정
+        long tradePoint = tradePointRequest.getTradePoint();
         boolean warning = midStockTradeService.buyStock(memberId, midStockId, tradePoint);
         Map<String, Boolean> response = Map.of("warning", warning);
 
