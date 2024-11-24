@@ -192,7 +192,7 @@ public class PointService {
             endDate = LocalDateTime.MAX;
         }
 
-        return pointDetailsRepository.findPointHistory(memberId, type, status, startDate, endDate);
+        return pointDetailsRepository.findByMemberIdAndCreatedAtBetweenAndPointType(memberId, startDate, endDate, type);
     }
 
     // 포인트에서 코인으로 환전된 거래내역 조회

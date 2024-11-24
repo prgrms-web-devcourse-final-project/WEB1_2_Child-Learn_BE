@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface ExchangeRepository extends JpaRepository<ExchangeDetails, Long> {
-    List<ExchangeDetails> ExchangeHistory(Long memberId, LocalDateTime startDate, LocalDateTime endDate);
+    List<ExchangeDetails> findByMemberIdAndCreatedAtBetween(Long memberId, LocalDateTime startDate, LocalDateTime endDate);
 
     List<ExchangeDetails> findByMemberId(Long memberId);
 }
