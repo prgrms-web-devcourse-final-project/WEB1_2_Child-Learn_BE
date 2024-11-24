@@ -11,9 +11,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -50,9 +53,12 @@ public class MemberService {
         }
     }
 
+    // 로그인 시 같은 아이디 검증 메서드
+
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw) {
         Optional<Member> findMember = memberRepository.findByLoginId(loginId);
+
         if (findMember.isEmpty()) {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
@@ -117,25 +123,32 @@ public class MemberService {
     // -------------------------------------------------------------
 
     // 나의 회원 정보 조회
-    public MemberResponseDTO.readMyInfoResponseDTO readMyInfo(Long id) {
+    public MemberResponseDTO.ReadMyInfoResponseDTO readMyInfo(Long id) {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
-            return new MemberResponseDTO.readMyInfoResponseDTO(member);
+            return new MemberResponseDTO.ReadMyInfoResponseDTO(member);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
     }
 
     // 다른 회원 정보 조회
-    public MemberResponseDTO.readOthersInfoResponseDTO readOthersInfo(Long id) {
+    public MemberResponseDTO.ReadOthersInfoResponseDTO readOthersInfo(Long id) {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
-            return new MemberResponseDTO.readOthersInfoResponseDTO(member);
+            return new MemberResponseDTO.ReadOthersInfoResponseDTO(member);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
+    }
+
+    // 모든 회원 목록
+    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto) {
+        Pageable pageable = dto.getPageable();
+        Page<Member> memberPage = memberRepository.findAll(pageable);
+        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
     }
 
     // 회원 탈퇴
@@ -152,20 +165,21 @@ public class MemberService {
 
     // 회원 정보 수정
     @Transactional
-    public MemberResponseDTO.updateMyInfoResponseDTO update(MemberRequestDTO.updateMyInfoRequestDTO dto) {
+    public MemberResponseDTO.UpdateMyInfoResponseDTO update(MemberRequestDTO.UpdateMyInfoRequestDTO dto) {
         Optional<Member> opMember = memberRepository.findById(dto.getId());
 
         if (opMember.isPresent()) {
             Member member = opMember.get();
-            member.changePw(passwordEncoder.encode(dto.getPw()));
-            member.changeUsername(dto.getUsername());
+            if (dto.getPw() != null) {
+                member.changePw(passwordEncoder.encode(dto.getPw()));
+            }
+
+            if (dto.getUsername() != null) {
+                member.changeUsername(dto.getUsername());
+            }
             memberRepository.save(member);
 
-            return new MemberResponseDTO.updateMyInfoResponseDTO(
-                    member.getId(),
-                    member.getPw(),
-                    member.getUsername()
-            );
+            return new MemberResponseDTO.UpdateMyInfoResponseDTO("회원 정보 수정이 완료되었습니다.");
         } else {
             throw MemberException.MEMBER_NOT_MODIFIED.getMemberTaskException();
         }
@@ -185,7 +199,7 @@ public class MemberService {
     // 아이디 마스킹 처리....
     private String maskLoginId(String loginId) {
 
-        int maskLength = loginId.length() - 2;
+        int maskLength = loginId.length() - 4;
         StringBuilder masked = new StringBuilder();
         masked.append(loginId.substring(0, 2)); // 앞의 두 글자는 그대로 보여줌
 
@@ -193,22 +207,24 @@ public class MemberService {
             masked.append("*");
         }
 
+        masked.append(loginId.substring(loginId.length() - 2));
         return masked.toString();
     }
 
-    // 비밀번호 찾기
+    // 비밀번호 재설정
     @Transactional
-    public String setTemplatePw(String loginId, String email) {
+    public String resetPw(String loginId, String email) {
         Optional<Member> opMember = memberRepository.findByLoginIdAndEmail(loginId, email);
         if (opMember.isPresent()) {
             Member member = opMember.get();
             String templatePw = PasswordUtil.generateTempPassword();
-            member.changePw(templatePw);
+            member.changePw(passwordEncoder.encode(templatePw));
+            memberRepository.save(member);
+
             return templatePw;
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
     }
-
 
 }

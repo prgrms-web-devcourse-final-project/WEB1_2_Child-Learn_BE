@@ -56,10 +56,10 @@ public class MemberResponseDTO {
 
     // 로그아웃
     @Data
-    public static class logoutResponseDTO {
+    public static class LogoutResponseDTO {
         private String message;
 
-        public logoutResponseDTO(String message) {
+        public LogoutResponseDTO(String message) {
             this.message = message;
         }
     }
@@ -67,7 +67,7 @@ public class MemberResponseDTO {
     // 나의 회원 정보 조회
     @Data
     @AllArgsConstructor
-    public static class readMyInfoResponseDTO {
+    public static class ReadMyInfoResponseDTO {
         private long id;
         private String loginId;
         private String email;
@@ -78,7 +78,7 @@ public class MemberResponseDTO {
         private LocalDate birth;
         private long points;
 
-        public readMyInfoResponseDTO(Member member) {
+        public ReadMyInfoResponseDTO(Member member) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.email = member.getEmail();
@@ -93,14 +93,14 @@ public class MemberResponseDTO {
 
     // 다른 회원의 정보 조회
     @Data
-    public static class readOthersInfoResponseDTO {
+    public static class ReadOthersInfoResponseDTO {
         private long id;
         private String loginId;
         private String username;
         private LocalDateTime createdAt;
         private long points;
 
-        public readOthersInfoResponseDTO(Member member) {
+        public ReadOthersInfoResponseDTO(Member member) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
@@ -112,11 +112,22 @@ public class MemberResponseDTO {
     // 회원 정보 수정
     @Data
     @AllArgsConstructor
-    public static class updateMyInfoResponseDTO {
-        private Long id;
-        //private String loginId;
-        private String pw;
-        private String username;
+    public static class UpdateMyInfoResponseDTO {
+
+        private String message;
     }
 
+    // 모든 회원 목록 조회
+    @Data
+    public static class ReadAllResponseDTO {
+        private Long id;
+        private String loginId;
+        private String username;
+
+        public ReadAllResponseDTO(Member member) {
+            this.id = member.getId();
+            this.loginId = member.getLoginId();
+            this.username = member.getUsername();
+        }
+    }
 }

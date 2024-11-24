@@ -1,11 +1,15 @@
 package com.prgrms.ijuju.domain.member.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 
@@ -71,11 +75,48 @@ public class MemberRequestDTO {
     // 회원 정보 업데이트
     @Data
     @AllArgsConstructor
-    public static class updateMyInfoRequestDTO {
+    public static class UpdateMyInfoRequestDTO {
         private Long id;
-        //private String loginId;
+
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,30}$",
+                message = "비밀번호는 최소 8자 이상 30자 이하여야 하고, 적어도 하나의 영문자, 숫자, 특수문자를 포함해야 합니다."
+        )
         private String pw;
         private String username;
+    }
+
+    // 비밀번호 재설정
+    @Data
+    public static class ResetPwRequestDTO {
+
+        @NotBlank
+        private String loginId;
+
+        @NotBlank
+        @Email
+        private String email;
+    }
+
+    // 회원 목록 페이징처리
+    @Data
+    public static class PageRequestDTO {
+        private int page;
+        private int size;
+        private String sortField;
+        private String sortDirection;
+
+        public PageRequestDTO() {
+            this.page = 0;
+            this.size = 10;
+            this.sortField = "id";
+            this.sortDirection = "ASC";
+        }
+
+        public Pageable getPageable() {
+            Sort sort = Sort.by(Sort.Direction.fromString(this.sortDirection), this.sortField);
+            return PageRequest.of(this.page, this.size, sort);
+        }
     }
 
 

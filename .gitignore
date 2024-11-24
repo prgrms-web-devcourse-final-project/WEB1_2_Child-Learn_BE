@@ -40,3 +40,6 @@ out/
 ### H2 DB file ###
 *.mv.db
 *.trace.db
+
+#secret yml#
+application-secret.yml
