@@ -1,12 +1,13 @@
 package com.prgrms.ijuju.domain.stock.begin.repository;
 
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStock;
-import org.junit.jupiter.api.Assertions;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -15,54 +16,64 @@ import java.util.Locale;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class BeginStockRepositoryTest {
+public class BeginStockGraphRepositoryTest {
     @Autowired
     private BeginStockGraphRepository beginStockGraphRepository;
 
-    @DisplayName("엔티티를 통한 최신 가격과 요일을 조회한다")
+    @DisplayName("마지막으로 등록된 가격과 요일을 조회한다")
     @Test
     void getLastSavedPriceByEntity() {
         // given
         for (int i = 0; i < 7; i++) {
             LocalDate date = LocalDate.now().plusDays(i);
-            BeginStock beginStock = BeginStock.builder()
+            BeginStockGraph beginStock = BeginStockGraph.builder()
                     .tradeDay(date.getDayOfWeek()
                             .getDisplayName(TextStyle.SHORT, Locale.KOREAN))
                     .price(1000 * i)
+                    .stockDate(date)
                     .build();
             beginStockGraphRepository.save(beginStock);
         }
 
         // when
-        BeginStock lastSaved = beginStockGraphRepository.findTopByOrderByBeginIdDesc().orElse(null);
+        BeginStockGraph lastSaved = beginStockGraphRepository.findTopByOrderByBeginIdDesc().orElse(null);
 
         // then
-        Assertions.assertEquals(6000, lastSaved.getPrice());
+        assertEquals(6000, lastSaved.getPrice());
+        assertEquals(LocalDate.now().plusDays(6), lastSaved.getStockDate());
 
         String nowDay = LocalDate.now().plusDays(6).getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
-        Assertions.assertEquals(nowDay, lastSaved.getTradeDay());
+        assertEquals(nowDay, lastSaved.getTradeDay());
     }
 
     @DisplayName("최근 등록순으로 7개의 데이터를 조회한다")
     @Test
     void getLatest7BeginStocks() {
         // given
-        for (int i = 0; i < 7; i++) {
-            LocalDate date = LocalDate.now().plusDays(i);
-            BeginStock beginStock = BeginStock.builder()
+        LocalDate today = LocalDate.now();
+        for (int i = 4; i <= 11; i++) {
+            LocalDate date = today.plusDays(i);
+            BeginStockGraph beginStock = BeginStockGraph.builder()
                     .tradeDay(date.getDayOfWeek()
                             .getDisplayName(TextStyle.SHORT, Locale.KOREAN))
                     .price(1000 * i)
+                    .stockDate(date)
                     .build();
             beginStockGraphRepository.save(beginStock);
         }
 
         // when
-        List<BeginStock> beginStocks = beginStockGraphRepository.findTop7ByOrderByBeginIdDesc();
+        List<BeginStockGraph> beginStocks = beginStockGraphRepository.find7BeginStockData(today.plusDays(4), today.plusDays(11));
+
+        for (BeginStockGraph beginStock : beginStocks) {
+            System.out.println(beginStock.getTradeDay() + " " + beginStock.getStockDate() + " " + beginStock.getPrice());
+        }
 
         // then
-        Assertions.assertEquals(beginStocks.get(0).getPrice(), 1000);
-        Assertions.assertEquals(beginStocks.get(0).getTradeDay(), LocalDate.now().plusDays(7));
+        assertEquals(beginStocks.get(0).getPrice(), 4000);
+
+        String nowDay = LocalDate.now().plusDays(4).getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+        assertEquals(beginStocks.get(0).getTradeDay(), nowDay);
     }
 
 }
