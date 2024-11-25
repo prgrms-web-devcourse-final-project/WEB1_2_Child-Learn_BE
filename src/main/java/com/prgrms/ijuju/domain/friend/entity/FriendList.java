@@ -9,8 +9,6 @@ import com.prgrms.ijuju.domain.member.entity.Member;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,21 +35,15 @@ public class FriendList {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "send_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     @NotNull
-    private Member sender;
+    private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "receive_id", nullable = false)
+    @JoinColumn(name = "friend_id", nullable = false)
     @NotNull
-    private Member receiver;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private RelationshipStatus status;
+    private Member friend;
 
     @CreatedDate
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

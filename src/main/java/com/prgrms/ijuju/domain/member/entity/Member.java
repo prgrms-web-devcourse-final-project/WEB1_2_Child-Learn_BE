@@ -42,6 +42,12 @@ public class Member {
     @Column(nullable = false)
     private Long points = 1000L; // 초기 금액 설정
 
+    @Column(nullable = false)
+    private String profileImage; // 프로필 이미지
+
+    @Column(nullable = false)
+    private boolean isActive = true; // 회원 활동 상태
+
     // pw 초기화 관련
     private String resetPwToken;
     private LocalDateTime resetPwTokenExpiryDate;

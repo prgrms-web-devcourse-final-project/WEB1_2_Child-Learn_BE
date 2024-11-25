@@ -37,18 +37,20 @@ public class FriendRequest {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "send_id", nullable = false)
     @NotNull
-    private Member member;
+    private Member sender; // 친구 요청한 사람
 
     @ManyToOne
-    @JoinColumn(name = "friend_id", nullable = false)
+    @JoinColumn(name = "receive_id", nullable = false)
     @NotNull
-    private Member friend;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
+    private Member receiver; // 친구 요청 받은 사람
 
     @Enumerated(EnumType.STRING)
-    private requestStatus status;
-}       
+    private RequestStatus status; // 친구 요청 상태
+
+    @CreatedDate
+    private LocalDateTime createdAt; // 친구 요청 시간
+
+    private LocalDateTime updatedAt;
+}

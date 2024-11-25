@@ -1,6 +1,6 @@
 package com.prgrms.ijuju.domain.friend.entity;
 
-public enum requestStatus {
+public enum RequestStatus {
     PENDING,
     ACCEPTED,
     REJECTED

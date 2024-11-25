@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FriendResponseDto {
+public class FriendResponseDto { // 친구 조회 응답 DTO
     private Long id;
     private String username;
     private String profileImage;
