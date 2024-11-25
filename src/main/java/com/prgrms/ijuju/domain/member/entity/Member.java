@@ -80,7 +80,7 @@ public class Member {
         this.refreshToken=refreshToken;
     }
 
-    public void updateBeginQuizCount() {
+    public void increaseBeginStockPlayCount() {
         this.BeginStockPlayCount++;
     }
 

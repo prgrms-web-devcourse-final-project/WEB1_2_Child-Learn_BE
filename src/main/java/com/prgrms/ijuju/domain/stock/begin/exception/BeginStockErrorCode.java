@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum BeginStockErrorCode {
 
     STOCK_NOT_FOUND("BEGIN_STOCK_001", "주식 데이터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    ALREADY_HAVE_GAME("BEGIN_STOCK_002", "이미 오늘의 게임을 진행하였습니다.", HttpStatus.BAD_REQUEST);
+    ALREADY_PLAYED_GAME("BEGIN_STOCK_002", "이미 오늘의 게임을 진행하였습니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

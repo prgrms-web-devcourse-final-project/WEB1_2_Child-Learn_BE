@@ -239,15 +239,9 @@ public class MemberService {
         }
     }
 
-    public Member getMemberByMemberId(Long memberId) {
-        Optional<Member> member = memberRepository.findById(memberId);
-        return member.orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-    }
-
-    // beginStock 게임 진행 완료 시 진행 횟수 증가
     @Transactional
-    public void updateBeginStockPlayCount(Member member) {
-        member.updateBeginQuizCount();
+    public void increaseBeginStockPlayCount(Member member) {
+        member.increaseBeginStockPlayCount();
         memberRepository.save(member);
     }
 

@@ -26,7 +26,7 @@ public class LimitBeginStockRepositoryTest {
     private MemberRepository memberRepository;
 
     @Test
-    @DisplayName("새로운 회원의 첫 플레이 시 기록을 생성한다.")
+    @DisplayName("새로운 회원의 첫 플레이 기록을 생성한다.")
     void createNewPlayRecord() {
         // given
         Member member = Member.builder()
@@ -41,10 +41,8 @@ public class LimitBeginStockRepositoryTest {
 
         // when
         LimitBeginStock limitBeginStock = limitBeginStockRepository.findByMemberId(savedMember.getId())
-                .orElseGet(() -> {
-                    LimitBeginStock newLimitDate =  new LimitBeginStock(savedMember);
-                    return limitBeginStockRepository.save(newLimitDate);
-                });
+                .orElse(new LimitBeginStock(savedMember));
+        limitBeginStockRepository.save(limitBeginStock);
 
         // then
         assertEquals(limitBeginStock.getPlayer().getUsername(), savedMember.getUsername());
@@ -52,8 +50,8 @@ public class LimitBeginStockRepositoryTest {
     }
 
     @Test
-    @DisplayName("기존 멤버 플레이 시 마지막 플레이 일자를 갱신한다.")
-    void updateExisitingPlayRecord() {
+    @DisplayName("기존 회원의 이전 플레이 일자를 갱신한다.")
+    void updatePlayRecord() {
         //given
         Member member = Member.builder()
                 .loginId("tester2")
@@ -72,10 +70,8 @@ public class LimitBeginStockRepositoryTest {
 
         // when
         LimitBeginStock updatedLimit = limitBeginStockRepository.findByMemberId(savedMember.getId())
-                .orElseGet(() -> {
-                    LimitBeginStock newLimitDate =  new LimitBeginStock(savedMember);
-                    return limitBeginStockRepository.save(newLimitDate);
-                });
+                .orElse(new LimitBeginStock(savedMember));
+        limitBeginStockRepository.save(updatedLimit);
 
         // then
         assertEquals(updatedLimit.getLastPlayedDate(), LocalDate.now());

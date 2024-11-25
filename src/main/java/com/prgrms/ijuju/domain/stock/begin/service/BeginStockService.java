@@ -1,12 +1,16 @@
 package com.prgrms.ijuju.domain.stock.begin.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
+import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockGraphResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockQuizResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockResponse;
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
 import com.prgrms.ijuju.domain.stock.begin.entity.LimitBeginStock;
+import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockErrorCode;
+import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockException;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockGraphRepository;
 import com.prgrms.ijuju.domain.stock.begin.repository.LimitBeginStockRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 public class BeginStockService {
     private final ChatGptService chatGptService;
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
     private final BeginStockGraphRepository beginStockGraphRepository;
     private final LimitBeginStockRepository limitBeginStockRepository;
 
@@ -49,19 +54,20 @@ public class BeginStockService {
         return new BeginStockResponse(stockData, quizResponse);
     }
 
-    public LimitBeginStock getOrCreateLimitBeginStock(Long memberId) {
-        log.info("사용자 id를 통해 마지막 게임 시간 신규 생성 및 갱신");
+    public void playBeginStockQuiz(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
-        Member member = memberService.getMemberByMemberId(memberId);
-        return limitBeginStockRepository.findByMemberId(memberId)
-                .orElseGet(() -> limitBeginStockRepository.save( new LimitBeginStock(member)));
-    }
+        LimitBeginStock limitBeginStock = limitBeginStockRepository.findByMemberId(member.getId())
+                .orElse(new LimitBeginStock(member));
 
-    public void updateBeginQuiz(Long memberId) {
-        log.info("사용자의 초급 모의투자 플레이 횟수 +1");
+        if (limitBeginStock.getLastPlayedDate().equals(LocalDate.now())) {
+            throw new BeginStockException(BeginStockErrorCode.ALREADY_PLAYED_GAME);
+        }
 
-        LimitBeginStock limitBeginStock = getOrCreateLimitBeginStock(memberId);
-        memberService.updateBeginStockPlayCount(limitBeginStock.getPlayer());
+        limitBeginStock.updateLastPlayedDate();
+        limitBeginStockRepository.save(limitBeginStock);
+        memberService.increaseBeginStockPlayCount(member);
     }
 
 }
