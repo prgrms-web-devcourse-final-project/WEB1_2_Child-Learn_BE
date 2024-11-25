@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.common;
+package com.prgrms.ijuju.global.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
