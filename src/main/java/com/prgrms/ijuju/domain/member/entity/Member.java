@@ -47,10 +47,6 @@ public class Member {
     @Column(nullable = false)
     private Long coins = 1000L; // 초기 코인 설정
 
-    // pw 초기화 관련
-    private String resetPwToken;
-    private LocalDateTime resetPwTokenExpiryDate;
-
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
 
@@ -77,9 +73,8 @@ public class Member {
         //this.pw=passwordEncoder.encode(pw);
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
+    public void updateRefreshToken(String refreshToken){
         this.refreshToken=refreshToken;
-        this.resetPwTokenExpiryDate=expiryDate;
     }
 
 }

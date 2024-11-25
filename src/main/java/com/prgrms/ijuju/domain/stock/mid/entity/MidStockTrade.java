@@ -1,6 +1,6 @@
 package com.prgrms.ijuju.domain.stock.mid.entity;
 
-import com.prgrms.ijuju.common.BaseTimeEntity;
+import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
