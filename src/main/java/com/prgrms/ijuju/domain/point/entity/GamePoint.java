@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,10 +23,12 @@ public class GamePoint {
     @JoinColumn(name = "member_id", nullable = false)
     @NotNull
     private Member member;
-
+    
+    @Setter
     @NotNull
     private GameType gameType;
 
+    @Setter
     @NotNull
     private Long points_earned;
 
@@ -35,5 +36,7 @@ public class GamePoint {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    @Setter
+    @NotNull
     private boolean isWin;
 } 
