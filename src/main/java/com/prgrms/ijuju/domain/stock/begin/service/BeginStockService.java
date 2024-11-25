@@ -4,14 +4,16 @@ import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
-import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockGraphResponse;
+import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockQuizResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockResponse;
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginQuiz;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
 import com.prgrms.ijuju.domain.stock.begin.entity.LimitBeginStock;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockErrorCode;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockException;
-import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockGraphRepository;
+import com.prgrms.ijuju.domain.stock.begin.repository.BeginQuizRepository;
+import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.begin.repository.LimitBeginStockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,29 +29,32 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class BeginStockService {
-    private final ChatGptService chatGptService;
     private final MemberService memberService;
     private final MemberRepository memberRepository;
-    private final BeginStockGraphRepository beginStockGraphRepository;
+    private final BeginStockPriceRepository beginStockGraphRepository;
     private final LimitBeginStockRepository limitBeginStockRepository;
+    private final BeginQuizRepository beginQuizRepository;
 
     @Transactional(readOnly = true)
-    public List<BeginStockGraphResponse> getBeginStockData() {
+    public List<BeginStockPriceResponse> getBeginStockData() {
         log.info("당일을 기준으로 -3일 ~ +3일의 주식 데이터 조회");
 
         LocalDate today = LocalDate.now();
-        List<BeginStockGraph> weeklyBeginStockData = beginStockGraphRepository.find7BeginStockData(today.minusDays(3), today.plusDays(3));
+        List<BeginStockPrice> weeklyBeginStockData = beginStockGraphRepository.find7BeginStockData(today.minusDays(3), today.plusDays(3));
 
         return weeklyBeginStockData.stream()
-                .map(BeginStockGraphResponse::from)
+                .map(BeginStockPriceResponse::from)
                 .collect(Collectors.toList());
     }
 
-    // 주식 데이터를 Gpt에게 넘겨주고 최종 응답 생성
     @Transactional(readOnly = true)
     public BeginStockResponse getBeginStockDataWithQuiz() {
-        List<BeginStockGraphResponse> stockData = getBeginStockData();
-        List<BeginStockQuizResponse> quizResponse = chatGptService.generateBeginQuiz(stockData);
+        List<BeginStockPriceResponse> stockData = getBeginStockData();
+        List<BeginStockQuizResponse> quizResponse = beginQuizRepository.findByCreatedDate(LocalDate.now())
+                .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND))
+                .stream()
+                .map(BeginStockQuizResponse::from)
+                .collect(Collectors.toList());
 
         return new BeginStockResponse(stockData, quizResponse);
     }

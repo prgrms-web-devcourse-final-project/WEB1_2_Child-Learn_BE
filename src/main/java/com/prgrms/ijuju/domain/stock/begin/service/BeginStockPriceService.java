@@ -1,29 +1,61 @@
 package com.prgrms.ijuju.domain.stock.begin.service;
 
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
+import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockErrorCode;
+import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockException;
+import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 @Slf4j
-@Component
-public class BeginStockGeneratorService {
-    private final Random random = new Random();
-    private final double MAX_CHANGE_RATE = 0.3; // 변동폭
-    private final int UNIT = 100;
+@RequiredArgsConstructor
+@Service
+public class BeginStockPriceService {
+    private static final Random random = new Random();
+    private static final double MAX_CHANGE_RATE = 0.3; // 변동폭
+    private static final int UNIT = 100;
 
-    // baseDate : 그래프 생성 기준 날짜
-    public List<BeginStockGraph> generateWeeklyBeginStockData(LocalDate startDate, int lastPrice) {
-        List<BeginStockGraph> beginStocks = new ArrayList<>();
+    private final BeginStockPriceRepository beginStockPriceRepository;
+
+    public void createWeeklyStockPrice() {
+        BeginStockPrice latestStock = beginStockPriceRepository.findTopByOrderByBeginIdDesc()
+                .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.STOCK_NOT_FOUND));
+
+        int lastPrice = latestStock.getPrice();
+        long recordCount = beginStockPriceRepository.count();
+        LocalDate startDate = LocalDate.now().plusDays(1);
+
+        if (isGenerationDate(recordCount, latestStock)) {
+            log.info("초급 주식 주식 가격 일주일 데이터 생성");
+            List<BeginStockPrice> newWeeklyStocks = generateWeeklyBeginStockData(startDate, lastPrice);
+            beginStockPriceRepository.saveAll(newWeeklyStocks);
+        }
+    }
+
+    private boolean isGenerationDate(long recordCount, BeginStockPrice latestStock) {
+        LocalDate lastCreatedDate = latestStock.getStockDate();
+        LocalDate today = LocalDate.now();
+
+        return (recordCount == 7 && today.equals(lastCreatedDate.plusDays(3))) ||
+                (recordCount > 7 && today.equals(lastCreatedDate.plusDays(7)));
+    }
+
+    public List<BeginStockPrice> generateWeeklyBeginStockData(LocalDate startDate, int lastPrice) {
+        List<BeginStockPrice> beginStocks = new ArrayList<>();
 
         for (int i = 0; i < 7; i++) {
             LocalDate date = startDate.plusDays(i);
             int newPrice = generatePrice(lastPrice);
             beginStocks.add(
-                    BeginStockGraph.builder()
+                    BeginStockPrice.builder()
                             .tradeDay(date.getDayOfWeek()
                                     .getDisplayName(TextStyle.SHORT, Locale.KOREAN))
                             .price(newPrice)

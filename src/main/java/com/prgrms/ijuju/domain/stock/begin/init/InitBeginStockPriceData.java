@@ -14,18 +14,18 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class InitBeginStockPriceData {
-    private final BeginStockPriceRepository beginStockGraphRepository;
-    private final BeginStockPriceService beginStockDataGenerator;
+    private final BeginStockPriceRepository beginStockPriceRepository;
+    private final BeginStockPriceService beginStockPriceService;
 
     @PostConstruct
     @Transactional
     public void init() {
-        if (beginStockGraphRepository.count() == 0) {
+        if (beginStockPriceRepository.count() == 0) {
             LocalDate startDate = LocalDate.now().minusDays(3);
             int initPrice = 500; // 일단 고정
 
-            List<BeginStockPrice> beginStocks = beginStockDataGenerator.generateWeeklyBeginStockData(startDate, initPrice);
-            beginStockGraphRepository.saveAll(beginStocks);
+            List<BeginStockPrice> beginStocks = beginStockPriceService.generateWeeklyBeginStockData(startDate, initPrice);
+            beginStockPriceRepository.saveAll(beginStocks);
         }
     }
 }

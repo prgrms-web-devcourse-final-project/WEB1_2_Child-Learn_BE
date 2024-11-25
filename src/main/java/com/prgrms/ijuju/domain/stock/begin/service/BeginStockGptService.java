@@ -1,23 +1,23 @@
-package com.prgrms.ijuju.domain.stock.begin.scheduler;
+package com.prgrms.ijuju.domain.stock.begin.service;
 
 import com.prgrms.ijuju.domain.stock.begin.dto.request.BeginChatGptMessage;
 import com.prgrms.ijuju.domain.stock.begin.dto.request.ChatGptRequest;
-import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockGraphResponse;
-import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockQuizResponse;
+import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.ChatGptResponse;
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginQuiz;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginQuizRepository;
-import com.prgrms.ijuju.domain.stock.begin.service.BeginStockService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
-public class BeginStockGptScheduler {
+public class BeginStockGptService {
     private final RestClient chatGptRestClient;
     private final BeginQuizRepository beginQuizRepository;
     private final BeginStockService beginStockService;
@@ -35,14 +35,19 @@ public class BeginStockGptScheduler {
     private final double TEMPERATURE = 0.6; // 0일수록 일관되고 예측 가능, 1일수록 창의적이고 다양한 응답
 
     public void generateBeginQuiz() {
-        List<BeginStockGraphResponse> graphData = beginStockService.getBeginStockData();
+        List<BeginStockPriceResponse> graphData = beginStockService.getBeginStockData();
 
-        // 1. 주식 데이터를 문자열로 변환
         String stockData = graphData.stream()
                 .map(stock -> stock.tradeDay() + " : " + stock.price())
                 .collect(Collectors.joining("\n"));
 
-        // 2. GPT 요청 생성
+        String response = gptResponse(stockData);
+
+        BeginQuiz quiz = parseGptResponse(response);
+        beginQuizRepository.save(quiz);
+    }
+
+    private String gptResponse(String stockData) {
         List<BeginChatGptMessage> messages = List.of(
                 new BeginChatGptMessage(SYSTEM_ROLE, SYSTEM_CONTENT),
                 new BeginChatGptMessage(USER_ROLE, """
@@ -56,8 +61,7 @@ public class BeginStockGptScheduler {
 
         ChatGptRequest request = new ChatGptRequest(MODEL, messages, TEMPERATURE);
 
-        // 3. GPT API 호출 및 응답 받기
-        String response = chatGptRestClient.post()
+        return chatGptRestClient.post()
                 .uri("/chat/completions")
                 .body(request)
                 .retrieve()
@@ -66,21 +70,25 @@ public class BeginStockGptScheduler {
                 .get(0)
                 .message()
                 .content();
+    }
 
-        // 4. 응답 파싱
-        String[] seperate = response.split("\n");
-        String content = seperate[0].substring(3);
-        String oContent = seperate[1].substring(3);
-        String xContent = seperate[2].substring(3);
-        char answer = seperate[3].charAt(3);
+    private BeginQuiz parseGptResponse(String response) {
+        try {
+            String[] lines = response.split("\n");
+            String content = lines[0].replaceFirst("^1\\.", "").trim();
+            String oContent = lines[1].replaceFirst("^2\\.", "").trim();
+            String xContent = lines[2].replaceFirst("^3\\.", "").trim();
+            char answer = lines[3].replaceFirst("^4\\.", "").trim().charAt(3);
 
-        // 5. BeginQuiz 엔티티 생성 및 저장
-        BeginQuiz beginQuiz = BeginQuiz.builder()
-                .content(content)
-                .oContent(oContent)
-                .xContent(xContent)
-                .answer(answer)
-                .build();
-        beginQuizRepository.save(beginQuiz);
+            return BeginQuiz.builder()
+                    .content(content)
+                    .oContent(oContent)
+                    .xContent(xContent)
+                    .answer(answer)
+                    .build();
+        } catch (Exception e) {
+            log.error("GPT 응답 파싱 실패: {}", response, e);
+            throw new IllegalArgumentException("GPT 응답 파싱 에러 발생: " + response, e);
+        }
     }
 }
