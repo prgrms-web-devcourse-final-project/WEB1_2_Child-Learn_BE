@@ -92,6 +92,14 @@ public class MemberRequestDTO {
         private String username;
     }
 
+    // 아이디 찾기
+    @Data
+    public static class FindLoginIdRequestDTO {
+
+        private String email;
+        private LocalDate birth;
+    }
+
     // 비밀번호 재설정
     @Data
     public static class ResetPwRequestDTO {
@@ -102,6 +110,13 @@ public class MemberRequestDTO {
         @NotBlank
         @Email
         private String email;
+    }
+
+    // 회원 탈퇴
+    @Data
+    public static class DeleteRequestDTO {
+        private String email;
+        private String pw;
     }
 
     // 회원 목록 페이징처리

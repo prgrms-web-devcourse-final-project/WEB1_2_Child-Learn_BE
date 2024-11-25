@@ -119,10 +119,11 @@ public class MemberController {
     }
 
     // 회원 탈퇴
-    @DeleteMapping("/")
-    public ResponseEntity<Map<String, String>> delete(@AuthenticationPrincipal SecurityUser user) {
+    @PostMapping("/delete")
+    public ResponseEntity<Map<String, String>> delete(@AuthenticationPrincipal SecurityUser user, @RequestBody MemberRequestDTO.DeleteRequestDTO dto) {
+        // 비밀번호 확인
         long id = user.getId();
-        memberService.delete(id);
+        memberService.delete(id, dto.getPw());
         return ResponseEntity.ok(Map.of("result", "success"));
     }
 
@@ -148,11 +149,11 @@ public class MemberController {
     }
 
     // 아이디 찾기
-    @GetMapping("/find-id")
-    public ResponseEntity<String> findId(@RequestParam String email) {
-        String loginId = memberService.findLoginIdByEmail(email);
+    @PostMapping("/find-id")
+    public ResponseEntity<String> findId(@Validated @RequestBody MemberRequestDTO.FindLoginIdRequestDTO dto) {
+        String loginId = memberService.findLoginIdByEmail(dto.getEmail(), dto.getBirth());
 
-        return ResponseEntity.ok(loginId);
+        return ResponseEntity.ok("가입하신 LoginId 는 " + loginId + " 입니다.");
     }
 
     // 비밀번호 재설정

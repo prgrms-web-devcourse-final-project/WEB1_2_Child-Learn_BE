@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -159,10 +160,15 @@ public class MemberService {
 
     // 회원 탈퇴
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String pw) {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
+
+            if (!passwordEncoder.matches(pw, member.getPw())) {
+                throw new SecurityException("비밀번호가 일치하지 않습니다.");
+            }
+
             memberRepository.delete(member);
         } else {
             throw MemberException.MEMBER_NOT_REMOVED.getMemberTaskException();
@@ -192,8 +198,8 @@ public class MemberService {
     }
 
     // 아이디 찾기
-    public String findLoginIdByEmail(String email) {
-        Optional<Member> opMember = memberRepository.findByEmail(email);
+    public String findLoginIdByEmail(String email, LocalDate birth) {
+        Optional<Member> opMember = memberRepository.findLoginIdByEmailAndBirth(email, birth);
         if (opMember.isPresent()) {
             String loginId = opMember.get().getLoginId();
             return maskLoginId(loginId);
