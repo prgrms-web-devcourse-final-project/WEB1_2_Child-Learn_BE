@@ -47,7 +47,8 @@ public class Member {
     @Column(nullable = false)
     private Long coins = 1000L; // 초기 코인 설정
 
-    private int BeginStockPlayCount;
+    @Column(nullable = false)
+    private int BeginStockPlayCount = 0;
 
     // pw 초기화 관련
     private String resetPwToken;
