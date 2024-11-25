@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -36,24 +35,31 @@ public class MemberService {
         log.info("회원가입 요청 시작 : {} ", dto.getLoginId());
         try {
             // 입력한 loginId로 가입한 회원이 있는지 확인
+            log.info("아이디 중복 확인 : {}", dto.getLoginId());
             Optional<Member> member = memberRepository.findByLoginId(dto.getLoginId());
             if (member.isPresent()) {
-                throw new RuntimeException("이미 존재하는 아이디입니다");
+                log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
+                throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
             }
 
             // 비밀번호 암호화 처리
             String encodePw = dto.getPw();
             dto.setPw(passwordEncoder.encode(encodePw));
 
+            // 회원 저장
             Member savedMember = memberRepository.save(dto.toEntity());
-            return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
 
+            return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
         } catch (Exception e) {
             throw MemberException.MEMBER_NOT_REGISTERED.getMemberTaskException();
         }
     }
 
-    // 로그인 시 같은 아이디 검증 메서드
+    // 회원가입 시 같은 아이디 검증 메서드
+    public boolean checkLoginId(String loginId) {
+        log.info("아이디 중복 체크 : {}", loginId);
+        return memberRepository.findByLoginId(loginId).isPresent();
+    }
 
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw) {
@@ -196,7 +202,7 @@ public class MemberService {
         }
     }
 
-    // 아이디 마스킹 처리....
+    // 아이디 마스킹 처리
     private String maskLoginId(String loginId) {
 
         int maskLength = loginId.length() - 4;

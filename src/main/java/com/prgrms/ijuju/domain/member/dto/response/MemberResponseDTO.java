@@ -2,7 +2,6 @@ package com.prgrms.ijuju.domain.member.dto.response;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

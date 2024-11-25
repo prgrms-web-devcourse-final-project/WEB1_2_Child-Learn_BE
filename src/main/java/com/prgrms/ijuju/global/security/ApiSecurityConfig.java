@@ -34,7 +34,6 @@ public class ApiSecurityConfig {
                                 frameOptions.disable()
                         )
                 )
-                //.securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth
                         // 정적 리소스 허용
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
@@ -45,10 +44,10 @@ public class ApiSecurityConfig {
                         .requestMatchers(
                             "/api/v1/member/join",
                             "/api/v1/member/login",
-                            //"api/**",
                             "/api/v1/member/refresh",
                             "/api/v1/member/reset-pw",
-                            "/api/v1/member/find-id" ).permitAll() // 로그인과 토큰 갱신 허용
+                            "/api/v1/member/find-id",
+                            "/api/v1/member/check-id").permitAll() // 로그인과 토큰 갱신 허용
 
                         .anyRequest().authenticated()   // 나머지는 인증 필요
                 )

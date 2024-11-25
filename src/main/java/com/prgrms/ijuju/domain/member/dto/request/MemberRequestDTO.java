@@ -1,12 +1,10 @@
 package com.prgrms.ijuju.domain.member.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -53,6 +51,14 @@ public class MemberRequestDTO {
                     .birth(birth)
                     .build();
         }
+    }
+
+    // 회원가입 시 아이디 중복체크 : 현재 작동 x 추후 유효성 검사 추가 예정
+    @Data
+    public static class CheckLoginIdRequestDTO {
+
+        @Size(min = 5, max = 20)
+        private String loginId;
     }
 
     // 로그인

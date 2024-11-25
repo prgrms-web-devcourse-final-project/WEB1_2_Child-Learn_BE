@@ -28,18 +28,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    // 각 요청마다 JWT 토큰을 확인하고 인증 정보를 설정하는 역할
-    // spring security의 요청 처리 과정 중 특정 시점에 실행되어 jwt 토큰의 유효성을 검사하고 사용자 인증 수행
+    // 각 요청마다 JWT 토큰을 확인하고 인증 정보를 설정
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    // doFilterInternal 는 OncePerRequestFilter가 제공하는 메서드
-    // HTTP 요청이 들어올 때마다 한 번씩 호출
-    // jwt 토큰의 유효성을 검사하고, 필요한 경우 사용자 인증을 설정
 
         String bearerToken = request.getHeader("Authorization");
-        // HTTP 요청 헤더에서 "Authorization" 값을 가져옵니다.
-        // 클라이언트가 서버에 인증 토큰을 전달하기 위해 사용하는 헤더
+        // HTTP 요청 헤더에서 "Authorization" 값을 가져옴
 
         if (bearerToken != null) {
             try {
@@ -47,41 +42,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 위변조 체크 및 디코드
                 // JwtUtil 클래스의 decode() 메서드를 사용해 JWT 토큰을 디코딩하고 서명 위변조가 없는지 검사
-                // Claims : 사용자 ID, 권한, 만료시간 등과 같은 정보가 포함되는 토큰의 페이로드 부분에서 다양한 정보 추출
                 Claims claims = JwtUtil.decode(token);
 
                 //claim의 정보들 파싱
                 // JWT 토큰의 Claims에서 "data" 라는 키를 통해 데이터 맵을 얻어옴 => 여기에는 사용자의 상세 정보 포함
                 Map<String, Object> data = (Map<String, Object>) claims.get("data");
+
                 // 사용자 ID 추출 : 맵에서 "id"키에 해당하는 값을 추출 => 문자열 형태로 저장되어있기 때문에 Long 타입으로 변환해야함
                 long id = Long.parseLong((String) data.get("id"));
                 String loginId = (String) data.get("loginId");
 
-                // security GrantedAuthority 변환
                 // 사용자의 권한 정보(문자열)를 추출, GrantedAuthority 객체로 변환
-                // spring security 에서 권한을 관리하기 위해서는 GrantedAuthority 타입으로 권한을 설정해줘야
-                // 이 작업을 통해 사용자가 가지고 있는 권한 리스트를 GrantedAuthority
                 List<? extends GrantedAuthority> authorities = ((List<String>) data.get("authorities"))
                         .stream()
                         .map(SimpleGrantedAuthority::new)
                         .toList();
 
-                // SecurityUser 생성 (id, loginId, pw, authorities) => 스프링 시큐리티의 사용자 개체, 인증된 사용자에 대한 정보를 가지고 있음
                 // Jwt에서 추출한 사용자 정보로 SecurityUser 객체를 생성
-                // 사용자 ID, 로그인 ID, 비밀번호, 권한을 포함 / jwt 인증 과정에서는 비밀번호가 필요하지 않기 때문에 빈 문자열로 설정
                 SecurityUser user = new SecurityUser(id, loginId, "", authorities);
 
                 //SecurityContext에 넣을  Authenticiation 생성
-                // UsernamePasswordAuthenticationToken 객체를 생성하여 사용자를 인증 => 여기에는 인증된 사용자의 정보를 담고 있음
-                // 인증을 완료한 후 Spring Security 컨텍스트에 저장
-                // 이 단계가 중요한 것은 이후에 요청을 처리할 때 , 현재 사용자가 인증되었는지, 어떤 권한을 가지고 있는지 확인할 수 있도록 하기 위함
                 Authentication auth = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
 
                 //SecurityContext에 auth 넣기
-                // SecurityContextHolder 는 현재 요청에 대한 보안 정보를 저장하는 컨텍스트
-                // 인증된 Authentication 객체를 설정하여 현재 요청에 인증 정보를 추가
-                // 이후 해당 요청과 연결된 모든 코드에서 인증된 사용자의 정보에 접근할 수 있도록 해줌
-                // 이렇게 해야 해당 사용자가 인증된 상태로 요청을 계속 처리할 수 있음
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {

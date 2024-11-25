@@ -49,6 +49,13 @@ public class MemberController {
         return ResponseEntity.ok(createResponseDTO);
     }
 
+    // 아이디 중복 체크
+    @GetMapping("/check-id")
+    public ResponseEntity<Boolean> checkLoginId(@RequestParam String loginId) {
+        boolean checkLoginId = memberService.checkLoginId(loginId);
+        return ResponseEntity.ok(checkLoginId);
+    }
+
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<MemberResponseDTO.LoginResponseDTO> login(@Validated @RequestBody MemberRequestDTO.LoginRequestDTO dto) {
@@ -95,7 +102,7 @@ public class MemberController {
     @GetMapping("/my-info")
     public ResponseEntity<MemberResponseDTO.ReadMyInfoResponseDTO> readMyInfo(@AuthenticationPrincipal SecurityUser user) {
         long id = user.getId();
-        return ResponseEntity.ok(memberService.readMyInfo(id)); // read 메서드 더블체크
+        return ResponseEntity.ok(memberService.readMyInfo(id));
     }
 
     // 다른 회원 조회
