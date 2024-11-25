@@ -1,6 +1,6 @@
 package com.prgrms.ijuju.domain.stock.begin.repository;
 
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,9 @@ import java.util.Locale;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class BeginStockGraphRepositoryTest {
+public class BeginStockPriceRepositoryTest {
     @Autowired
-    private BeginStockGraphRepository beginStockGraphRepository;
+    private BeginStockPriceRepository beginStockPriceRepository;
 
     @DisplayName("마지막으로 등록된 가격과 요일을 조회한다")
     @Test
@@ -26,17 +26,17 @@ public class BeginStockGraphRepositoryTest {
         // given
         for (int i = 0; i < 7; i++) {
             LocalDate date = LocalDate.now().plusDays(i);
-            BeginStockGraph beginStock = BeginStockGraph.builder()
+            BeginStockPrice beginStock = BeginStockPrice.builder()
                     .tradeDay(date.getDayOfWeek()
                             .getDisplayName(TextStyle.SHORT, Locale.KOREAN))
                     .price(1000 * i)
                     .stockDate(date)
                     .build();
-            beginStockGraphRepository.save(beginStock);
+            beginStockPriceRepository.save(beginStock);
         }
 
         // when
-        BeginStockGraph lastSaved = beginStockGraphRepository.findTopByOrderByBeginIdDesc().orElse(null);
+        BeginStockPrice lastSaved = beginStockPriceRepository.findTopByOrderByBeginIdDesc().orElse(null);
 
         // then
         assertEquals(6000, lastSaved.getPrice());
@@ -53,19 +53,19 @@ public class BeginStockGraphRepositoryTest {
         LocalDate today = LocalDate.now();
         for (int i = 4; i <= 11; i++) {
             LocalDate date = today.plusDays(i);
-            BeginStockGraph beginStock = BeginStockGraph.builder()
+            BeginStockPrice beginStock = BeginStockPrice.builder()
                     .tradeDay(date.getDayOfWeek()
                             .getDisplayName(TextStyle.SHORT, Locale.KOREAN))
                     .price(1000 * i)
                     .stockDate(date)
                     .build();
-            beginStockGraphRepository.save(beginStock);
+            beginStockPriceRepository.save(beginStock);
         }
 
         // when
-        List<BeginStockGraph> beginStocks = beginStockGraphRepository.find7BeginStockData(today.plusDays(4), today.plusDays(11));
+        List<BeginStockPrice> beginStocks = beginStockPriceRepository.find7BeginStockData(today.plusDays(4), today.plusDays(11));
 
-        for (BeginStockGraph beginStock : beginStocks) {
+        for (BeginStockPrice beginStock : beginStocks) {
             System.out.println(beginStock.getTradeDay() + " " + beginStock.getStockDate() + " " + beginStock.getPrice());
         }
 

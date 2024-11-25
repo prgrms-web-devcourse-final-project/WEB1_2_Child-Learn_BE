@@ -1,8 +1,8 @@
 package com.prgrms.ijuju.domain.stock.begin.init;
 
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockGraph;
-import com.prgrms.ijuju.domain.stock.begin.service.BeginStockGeneratorService;
-import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockGraphRepository;
+import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
+import com.prgrms.ijuju.domain.stock.begin.service.BeginStockPriceService;
+import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,9 +13,9 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class InitBeginStockData {
-    private final BeginStockGraphRepository beginStockGraphRepository;
-    private final BeginStockGeneratorService beginStockDataGenerator;
+public class InitBeginStockPriceData {
+    private final BeginStockPriceRepository beginStockGraphRepository;
+    private final BeginStockPriceService beginStockDataGenerator;
 
     @PostConstruct
     @Transactional
@@ -24,7 +24,7 @@ public class InitBeginStockData {
             LocalDate startDate = LocalDate.now().minusDays(3);
             int initPrice = 500; // 일단 고정
 
-            List<BeginStockGraph> beginStocks = beginStockDataGenerator.generateWeeklyBeginStockData(startDate, initPrice);
+            List<BeginStockPrice> beginStocks = beginStockDataGenerator.generateWeeklyBeginStockData(startDate, initPrice);
             beginStockGraphRepository.saveAll(beginStocks);
         }
     }

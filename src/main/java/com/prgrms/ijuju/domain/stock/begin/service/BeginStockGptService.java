@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.domain.stock.begin.service;
+package com.prgrms.ijuju.domain.stock.begin.scheduler;
 
 import com.prgrms.ijuju.domain.stock.begin.dto.request.BeginChatGptMessage;
 import com.prgrms.ijuju.domain.stock.begin.dto.request.ChatGptRequest;
@@ -7,6 +7,7 @@ import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockQuizResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.ChatGptResponse;
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginQuiz;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginQuizRepository;
+import com.prgrms.ijuju.domain.stock.begin.service.BeginStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -16,9 +17,10 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class ChatGptService {
+public class BeginStockGptScheduler {
     private final RestClient chatGptRestClient;
     private final BeginQuizRepository beginQuizRepository;
+    private final BeginStockService beginStockService;
 
     private final String MODEL = "gpt-4";
     private final String SYSTEM_ROLE = "system";
@@ -32,8 +34,8 @@ public class ChatGptService {
         """;
     private final double TEMPERATURE = 0.6; // 0일수록 일관되고 예측 가능, 1일수록 창의적이고 다양한 응답
 
-    public List<BeginStockQuizResponse> generateBeginQuiz(List<BeginStockGraphResponse> graphData) {
-
+    public void generateBeginQuiz() {
+        List<BeginStockGraphResponse> graphData = beginStockService.getBeginStockData();
 
         // 1. 주식 데이터를 문자열로 변환
         String stockData = graphData.stream()
@@ -79,9 +81,6 @@ public class ChatGptService {
                 .xContent(xContent)
                 .answer(answer)
                 .build();
-
-        BeginQuiz savedQuiz = beginQuizRepository.save(beginQuiz);
-
-        return List.of(BeginStockQuizResponse.from(savedQuiz));
+        beginQuizRepository.save(beginQuiz);
     }
 }

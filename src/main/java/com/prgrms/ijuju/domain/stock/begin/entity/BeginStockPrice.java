@@ -10,9 +10,9 @@ import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name="begin_stock_graph")
+@Table(name="begin_stock_price")
 @Entity
-public class BeginStockGraph {
+public class BeginStockPrice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +28,7 @@ public class BeginStockGraph {
     private LocalDate stockDate;
 
     @Builder
-    public BeginStockGraph(int price, String tradeDay, LocalDate stockDate) {
+    public BeginStockPrice(int price, String tradeDay, LocalDate stockDate) {
         this.price = price;
         this.tradeDay = tradeDay;
         this.stockDate = stockDate;
