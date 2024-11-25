@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.point.dto.response.PointResponseDTO;
 import com.prgrms.ijuju.domain.point.entity.*;
 import com.prgrms.ijuju.domain.point.service.PointService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,12 +27,13 @@ class PointControllerTest {
     private PointService pointService;
 
     @BeforeEach
-    void setUp() { // 테스트 전 설정
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetCurrentPointsAndCoins() { // 현재 포인트와 코인 조회 테스트
+    @DisplayName(현재 포인트와 코인 조회 테스트"")
+    void testGetCurrentPointsAndCoins() {
         PointResponseDTO responseDTO = new PointResponseDTO(1000L, 10L);
         when(pointService.CurrentPointsAndCoins(1L)).thenReturn(responseDTO);
 
@@ -42,7 +44,8 @@ class PointControllerTest {
     }
 
     @Test
-    void testPlayMiniGame() { // 미니게임 테스트
+    @DisplayName("미니게임 테스트")
+    void testPlayMiniGame() {
         PointResponseDTO responseDTO = new PointResponseDTO(1100L, 10L);
         when(pointService.playMiniGame(any(Long.class), any(), any(Long.class), any(Boolean.class))).thenReturn(responseDTO);
 
@@ -57,7 +60,8 @@ class PointControllerTest {
     }
 
     @Test
-    void testExchangePointsToCoins() { // 환전 테스트
+    @DisplayName("환전 테스트")
+    void testExchangePointsToCoins() {
         PointResponseDTO responseDTO = new PointResponseDTO(800L, 12L);
         when(pointService.exchangePointsToCoins(any(Long.class), any(Long.class))).thenReturn(responseDTO);
 
@@ -73,7 +77,8 @@ class PointControllerTest {
     }
 
     @Test
-    void testGetFilteredPointHistory() { // 필터링된 포인트 내역 조회 테스트
+    @DisplayName("필터링된 포인트 내역 조회 테스트")
+    void testGetFilteredPointHistory() {
         List<PointDetails> history = List.of(new PointDetails());
         when(pointService.getFilteredPointHistory(any(Long.class), any(), any(), any())).thenReturn(history);
 
