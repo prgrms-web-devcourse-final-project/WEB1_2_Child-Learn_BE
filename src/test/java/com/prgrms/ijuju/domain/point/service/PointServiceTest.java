@@ -41,20 +41,20 @@ class PointServiceTest {
 
     private Member member;
     
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        member = Member.builder()
-            .loginId("testLoginId")
-            .pw("testPw")
-            .username("testUsername")
-            .email("testEmail")
-            .birth(LocalDate.now())
-            .points(1000L)
-            .coins(10L)
-            .build();
-        member.setId(1L);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.openMocks(this);
+//        member = Member.builder()
+//            .loginId("testLoginId")
+//            .pw("testPw")
+//            .username("testUsername")
+//            .email("testEmail")
+//            .birth(LocalDate.now())
+//            .points(1000L)
+//            .coins(10L)
+//            .build();
+//        member.setId(1L);
+//    }
 
     @Test
     @DisplayName("현재 포인트와 코인 조회 테스트")

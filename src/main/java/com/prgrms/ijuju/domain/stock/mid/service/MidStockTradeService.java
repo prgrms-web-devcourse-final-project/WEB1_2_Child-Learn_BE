@@ -67,7 +67,6 @@ public class MidStockTradeService {
         return isAllInWarning(member, tradePoint);
     }
 
-
     // 매도 주문
     public long sellStock(Long memberId, Long midStockId) {
         long totalPoints = 0; // 매도시 포인트
@@ -102,27 +101,6 @@ public class MidStockTradeService {
         return totalPoints - investedPoints;
     }
 
-
-    // 거래 가능 여부 확인
-    private boolean isTradeAvailable(Member member, long tradePoint) {
-        Long points = member.getPoints();
-        return points >= tradePoint;
-    }
-
-
-    // 현재 주식 가격 조회
-    private long getCurrentStockPrice(Long midStockId) {
-        return midStockPriceRepository.findTodayPrice(midStockId)
-                .map(MidStockPrice::getAvgPrice)
-                .orElseThrow(MidPriceNotFoundException::new);
-    }
-
-    // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
-    private boolean isAllInWarning(Member member, long tradePoint) {
-        Long points = member.getPoints();
-        return points == tradePoint;
-    }
-
     // 하루한번 거래가능 체크
     public TradeAvailableResponse isTradeAvailable(Long memberId, Long midStockId) {
         boolean isPossibleBuy;
@@ -146,4 +124,22 @@ public class MidStockTradeService {
                 .build();
     }
 
+    // 거래 가능 여부 확인
+    private boolean isTradeAvailable(Member member, long tradePoint) {
+        Long points = member.getPoints();
+        return points >= tradePoint;
+    }
+
+    // 현재 주식 가격 조회
+    private long getCurrentStockPrice(Long midStockId) {
+        return midStockPriceRepository.findTodayPrice(midStockId)
+                .map(MidStockPrice::getAvgPrice)
+                .orElseThrow(MidPriceNotFoundException::new);
+    }
+
+    // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
+    private boolean isAllInWarning(Member member, long tradePoint) {
+        Long points = member.getPoints();
+        return points == tradePoint;
+    }
 }
