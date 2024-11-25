@@ -148,9 +148,9 @@ public class MemberController {
     }
 
     // 아이디 찾기
-    @GetMapping("/find-id")
-    public ResponseEntity<String> findId(@RequestParam String email) {
-        String loginId = memberService.findLoginIdByEmail(email);
+    @PostMapping("/find-id")
+    public ResponseEntity<String> findId(@Validated @RequestBody MemberRequestDTO.FindLoginIdRequestDTO dto) {
+        String loginId = memberService.findLoginIdByEmail(dto.getEmail(), dto.getBirth());
 
         return ResponseEntity.ok(loginId);
     }
