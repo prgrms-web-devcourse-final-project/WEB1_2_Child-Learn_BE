@@ -1,22 +1,22 @@
-//package com.prgrms.ijuju.domain.member.service;
-//
-//import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
-//import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
-//import com.prgrms.ijuju.domain.member.entity.Member;
-//import com.prgrms.ijuju.domain.member.exception.MemberException;
-//import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-//import lombok.RequiredArgsConstructor;
+package com.prgrms.ijuju.domain.member.service;
+
+import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
+import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
+import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
+import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 //import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 //
-//import java.util.Optional;
-//
-//@Service
-//@Transactional(readOnly = true)
-//@RequiredArgsConstructor
-//public class MemberService {
-//    private final MemberRepository memberRepository;
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class MemberService {
+    private final MemberRepository memberRepository;
 //    private final PasswordEncoder passwordEncoder;
 //
 //    @Transactional
@@ -39,4 +39,15 @@
 //            throw MemberException.MEMBER_NOT_REGISTERED.getMemberTaskException();
 //        }
 //    }
-//}
+//
+    public Member getMemberByMemberId(Long memberId) {
+        // 추후 멤버 업데이트 후 로직 개선 예정
+        Optional<Member> member = memberRepository.findById(memberId);
+        return member.orElse(null);
+    }
+
+    public void updateBeginStockPlayCount(Member member) {
+        member.updateBeginQuizCount();
+        memberRepository.save(member);
+    }
+}
