@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.global.security;
+package com.prgrms.ijuju.global.auth;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

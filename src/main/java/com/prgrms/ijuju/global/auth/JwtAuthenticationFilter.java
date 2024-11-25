@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.global.security;
+package com.prgrms.ijuju.global.auth;
 
 import com.prgrms.ijuju.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;

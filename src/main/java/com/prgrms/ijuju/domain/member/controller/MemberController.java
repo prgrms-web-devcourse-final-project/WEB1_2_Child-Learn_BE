@@ -3,7 +3,7 @@ package com.prgrms.ijuju.domain.member.controller;
 import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.service.MemberService;
-import com.prgrms.ijuju.global.security.SecurityUser;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

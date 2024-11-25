@@ -1,5 +1,6 @@
-package com.prgrms.ijuju.global.security;
+package com.prgrms.ijuju.global.config;
 
+import com.prgrms.ijuju.global.auth.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
