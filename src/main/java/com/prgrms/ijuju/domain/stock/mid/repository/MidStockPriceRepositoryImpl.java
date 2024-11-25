@@ -42,7 +42,7 @@ public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCusto
                 .selectFrom(midStockPrice)
                 .where(midStockPrice.midStock.id.eq(midStockId))
                 .orderBy(midStockPrice.priceDate.asc())
-                .limit(14)
+                .limit(16)
                 .fetch();
     }
 

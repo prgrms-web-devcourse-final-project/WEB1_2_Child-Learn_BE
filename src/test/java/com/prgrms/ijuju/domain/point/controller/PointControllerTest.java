@@ -32,7 +32,7 @@ class PointControllerTest {
     }
 
     @Test
-    @DisplayName(현재 포인트와 코인 조회 테스트"")
+    @DisplayName("현재 포인트와 코인 조회 테스트")
     void testGetCurrentPointsAndCoins() {
         PointResponseDTO responseDTO = new PointResponseDTO(1000L, 10L);
         when(pointService.CurrentPointsAndCoins(1L)).thenReturn(responseDTO);
