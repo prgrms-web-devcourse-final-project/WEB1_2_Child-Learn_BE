@@ -12,6 +12,7 @@ import com.prgrms.ijuju.domain.point.entity.StockType;
 import com.prgrms.ijuju.domain.point.repository.ExchangeRepository;
 import com.prgrms.ijuju.domain.point.repository.PointDetailsRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,7 +42,7 @@ class PointServiceTest {
     private Member member;
     
     @BeforeEach
-    void setUp() { // 테스트 전 설정
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         member = Member.builder()
             .loginId("testLoginId")
@@ -56,7 +57,8 @@ class PointServiceTest {
     }
 
     @Test
-    void testCurrentPointsAndCoins() { // 현재 포인트와 코인 조회 테스트
+    @DisplayName("현재 포인트와 코인 조회 테스트")
+    void testCurrentPointsAndCoins() {
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
         PointResponseDTO response = pointService.CurrentPointsAndCoins(1L);
@@ -66,7 +68,8 @@ class PointServiceTest {
     }
 
     @Test
-    void testPlayMiniGame() { // 미니게임 테스트
+    @DisplayName("미니게임 테스트")
+    void testPlayMiniGame() {
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
         PointResponseDTO response = pointService.playMiniGame(1L, GameType.CARD_FLIP, 100L, true);
@@ -76,7 +79,8 @@ class PointServiceTest {
     }
 
     @Test
-    void testSimulateStockInvestment() { // 주식 테스트
+    @DisplayName("주식 테스트")
+    void testSimulateStockInvestment() {
         PointRequestDTO request = PointRequestDTO.builder()
             .memberId(1L)
             .pointAmount(200L)
@@ -91,7 +95,8 @@ class PointServiceTest {
     }
 
     @Test
-    void testExchangePointsToCoins() { // 환전 테스트
+    @DisplayName("환전 테스트")
+    void testExchangePointsToCoins() {
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
         PointResponseDTO response = pointService.exchangePointsToCoins(1L, 200L);
