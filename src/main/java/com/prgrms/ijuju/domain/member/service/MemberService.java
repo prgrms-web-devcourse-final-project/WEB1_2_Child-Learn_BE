@@ -160,10 +160,15 @@ public class MemberService {
 
     // 회원 탈퇴
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String pw) {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
+
+            if (!passwordEncoder.matches(pw, member.getPw())) {
+                throw new SecurityException("비밀번호가 일치하지 않습니다.");
+            }
+
             memberRepository.delete(member);
         } else {
             throw MemberException.MEMBER_NOT_REMOVED.getMemberTaskException();

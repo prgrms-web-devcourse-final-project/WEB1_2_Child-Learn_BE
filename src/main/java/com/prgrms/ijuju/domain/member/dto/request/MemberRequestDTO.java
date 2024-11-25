@@ -112,6 +112,13 @@ public class MemberRequestDTO {
         private String email;
     }
 
+    // 회원 탈퇴
+    @Data
+    public static class DeleteRequestDTO {
+        private String email;
+        private String pw;
+    }
+
     // 회원 목록 페이징처리
     @Data
     public static class PageRequestDTO {
