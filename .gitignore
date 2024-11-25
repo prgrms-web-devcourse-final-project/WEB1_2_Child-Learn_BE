@@ -41,5 +41,5 @@ out/
 *.mv.db
 *.trace.db
 
-### Secret ###
+#secret yml#
 application-secret.yml
