@@ -3,10 +3,11 @@ package com.prgrms.ijuju.domain.minigame.flipcard.entity;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -24,27 +25,34 @@ public class LimitCardGame {
 
     // 마지막 플레이 시간, 초기값은 현재시간 1달 전으로 설정
     @Column(nullable = false)
-    private LocalDateTime beginLastPlayed = LocalDateTime.now().minusMonths(1);;
+    private LocalDate beginLastPlayed = LocalDate.now().minusMonths(1);;
 
     @Column(nullable = false)
-    private LocalDateTime midLastPlayed = LocalDateTime.now().minusMonths(1);;
+    private LocalDate midLastPlayed = LocalDate.now().minusMonths(1);;
 
     @Column(nullable = false)
-    private LocalDateTime advLastPlayed = LocalDateTime.now().minusMonths(1);;
-
-    public LimitCardGame(Member member) {
-        this.member = member;
-    }
+    private LocalDate advLastPlayed = LocalDate.now().minusMonths(1);;
 
     public void updateBeginLastPlayed() {
-        this.beginLastPlayed = LocalDateTime.now();
+
+        this.beginLastPlayed = LocalDate.now();
     }
 
     public void updateMidLastPlayed() {
-        this.midLastPlayed = LocalDateTime.now();
+
+        this.midLastPlayed = LocalDate.now();
     }
 
     public void updateAdvLastPlayed() {
-        this.advLastPlayed = LocalDateTime.now();
+        this.advLastPlayed = LocalDate.now();
+    }
+
+    @Builder
+    public LimitCardGame(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("Member cannot be null");
+        }
+        this.member = member;
+//        this.id = member.getId(); // FK와 PK를 동일하게 설정하면 null identifier오류 발생
     }
 }
