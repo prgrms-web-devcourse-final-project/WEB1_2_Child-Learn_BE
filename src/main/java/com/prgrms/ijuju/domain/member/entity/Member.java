@@ -60,6 +60,9 @@ public class Member {
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
 
+    @Column(nullable = false)
+    private int BeginStockPlayCount = 0;
+
     @Builder
     public Member(String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins){
         this.loginId=loginId;
@@ -86,6 +89,10 @@ public class Member {
     public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
         this.refreshToken=refreshToken;
         this.resetPwTokenExpiryDate=expiryDate;
+    }
+
+    public void increaseBeginStockPlayCount() {
+        this.BeginStockPlayCount++;
     }
 
 }
