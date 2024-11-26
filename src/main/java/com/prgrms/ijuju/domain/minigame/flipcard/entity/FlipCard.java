@@ -1,10 +1,7 @@
 package com.prgrms.ijuju.domain.minigame.flipcard.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Getter
@@ -24,4 +21,12 @@ public class FlipCard {
 
     @Column(nullable = false)
     private String cardCategory;
+
+    @Builder
+    public FlipCard(Long id, String cardTitle, String cardContent, String cardCategory) {
+        this.id = id;
+        this.cardTitle = cardTitle;
+        this.cardContent = cardContent;
+        this.cardCategory = cardCategory;
+    }
 }
