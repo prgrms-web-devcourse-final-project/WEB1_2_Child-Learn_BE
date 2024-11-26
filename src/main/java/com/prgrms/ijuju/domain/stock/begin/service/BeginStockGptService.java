@@ -22,7 +22,7 @@ public class BeginStockGptService {
     private final BeginQuizRepository beginQuizRepository;
     private final BeginStockService beginStockService;
 
-    private final String MODEL = "gpt-4";
+    private final String MODEL = "gpt-3.5-turbo";
     private final String SYSTEM_ROLE = "system";
     private final String USER_ROLE = "user";
     private final String SYSTEM_CONTENT = """
