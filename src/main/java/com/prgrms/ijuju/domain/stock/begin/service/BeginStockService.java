@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,13 +51,14 @@ public class BeginStockService {
     @Transactional(readOnly = true)
     public BeginStockResponse getBeginStockDataWithQuiz() {
         List<BeginStockPriceResponse> stockData = getBeginStockData();
-        List<BeginStockQuizResponse> quizResponse = beginQuizRepository.findByCreatedDate(LocalDate.now())
-                .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND))
-                .stream()
-                .map(BeginStockQuizResponse::from)
-                .collect(Collectors.toList());
+        List<BeginQuiz> quizResponse = beginQuizRepository.findByCreatedDate(LocalDate.now())
+                        .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND));
 
-        return new BeginStockResponse(stockData, quizResponse);
+        Random random = new Random();
+        int randomIndex = random.nextInt(quizResponse.size());
+        List<BeginStockQuizResponse> randomQuizResponse = List.of(BeginStockQuizResponse.from(quizResponse.get(randomIndex)));
+
+        return new BeginStockResponse(stockData, randomQuizResponse);
     }
 
     public void playBeginStockQuiz(Long memberId) {
@@ -64,7 +66,11 @@ public class BeginStockService {
                 .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         LimitBeginStock limitBeginStock = limitBeginStockRepository.findByMemberId(member.getId())
-                .orElse(new LimitBeginStock(member));
+                        .orElseGet(() -> {
+                            LimitBeginStock newLimitBeginStock = new LimitBeginStock(member);
+                            limitBeginStockRepository.save(newLimitBeginStock);
+                            return newLimitBeginStock;
+                        });
 
         if (limitBeginStock.getLastPlayedDate().equals(LocalDate.now())) {
             throw new BeginStockException(BeginStockErrorCode.ALREADY_PLAYED_GAME);

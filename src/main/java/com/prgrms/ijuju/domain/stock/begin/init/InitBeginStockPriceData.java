@@ -1,6 +1,8 @@
 package com.prgrms.ijuju.domain.stock.begin.init;
 
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
+import com.prgrms.ijuju.domain.stock.begin.repository.BeginQuizRepository;
+import com.prgrms.ijuju.domain.stock.begin.service.BeginStockGptService;
 import com.prgrms.ijuju.domain.stock.begin.service.BeginStockPriceService;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +17,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InitBeginStockPriceData {
     private final BeginStockPriceRepository beginStockPriceRepository;
+    private final BeginQuizRepository beginQuizRepository;
     private final BeginStockPriceService beginStockPriceService;
+    private final BeginStockGptService beginStockGptService;
 
     @PostConstruct
     @Transactional
@@ -26,6 +30,10 @@ public class InitBeginStockPriceData {
 
             List<BeginStockPrice> beginStocks = beginStockPriceService.generateWeeklyBeginStockData(startDate, initPrice);
             beginStockPriceRepository.saveAll(beginStocks);
+        }
+
+        if (beginQuizRepository.count() == 0) {
+            beginStockGptService.generateBeginQuiz();
         }
     }
 }

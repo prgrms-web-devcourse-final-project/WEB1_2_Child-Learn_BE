@@ -21,7 +21,7 @@ public class LimitBeginStock {
     private Member player;
 
     @Column(nullable = false)
-    private LocalDate lastPlayedDate;
+    private LocalDate lastPlayedDate = LocalDate.parse("2024-11-11");
 
     public LimitBeginStock(Member player) {
         this.player = player;
