@@ -1,14 +1,14 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class AdvancedInvestRequestDto {
-    @NotNull(message = "Member ID는 필수입니다.")
-    private Long memberId; // 게임을 시작하는 유저의 ID
+    private Long memberId;
 }

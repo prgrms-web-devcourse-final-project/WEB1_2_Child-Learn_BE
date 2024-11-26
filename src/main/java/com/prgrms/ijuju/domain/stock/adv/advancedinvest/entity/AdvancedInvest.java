@@ -1,37 +1,33 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.entity;
 
-import com.prgrms.ijuju.domain.stock.adv.advancedinvest.constant.GameStage;
+import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.stock.adv.stockrecord.entity.StockRecord;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.List;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor
 public class AdvancedInvest {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long memberId; // 유저 ID
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    @Enumerated(EnumType.STRING)
-    private GameStage currentStage; // 현재 게임 단계 (PRE_MARKET, MARKET, POST_MARKET)
+    private long startTime;
 
-    private boolean paused; // 일시정지 상태
+    private boolean paused;
+    private boolean playedToday;
 
-    private boolean playedToday; // 오늘 게임 진행 여부
-
-    private LocalDateTime startTime; // 게임 시작 시간
-
-    private Duration remainingTime; // 남은 시간
+    @OneToMany(mappedBy = "advancedInvest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StockRecord> stockRecords;
 }

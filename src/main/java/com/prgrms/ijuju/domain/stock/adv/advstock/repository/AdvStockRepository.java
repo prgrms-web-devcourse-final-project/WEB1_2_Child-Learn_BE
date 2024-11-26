@@ -15,4 +15,8 @@ public interface AdvStockRepository extends JpaRepository<AdvStock, Long> {
 
     void deleteByDataType(DataType dataType); //전체 삭제입니다. 애초에 삭제가 자동인지라 사실 필요 없긴 합니다
 
+    List<AdvStock> findAllByDataType(String dataType);
+
+    List<AdvStock> findBySymbolAndAdvIdOrderByTimestampAsc(String symbol, Long advId);
+
 }
