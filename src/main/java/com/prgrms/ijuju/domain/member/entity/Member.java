@@ -1,5 +1,8 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.avatar.entity.Avatar;
+import com.prgrms.ijuju.domain.avatar.entity.Item;
+import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -8,13 +11,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "member")
-public class Member {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +34,6 @@ public class Member {
 
     @Column(unique = true)
     private String email;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private LocalDate birth;
@@ -60,6 +59,12 @@ public class Member {
         this.points=points != null ? points : 1000L;
         this.coins=coins != null ? coins : 1000L;
     }
+
+    @OneToOne(mappedBy = "member")
+    private Avatar avatar;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Item> purchasedItems;
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 
