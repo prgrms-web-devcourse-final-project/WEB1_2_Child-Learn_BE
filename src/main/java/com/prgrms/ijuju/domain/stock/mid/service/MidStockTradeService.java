@@ -2,6 +2,12 @@ package com.prgrms.ijuju.domain.stock.mid.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.point.dto.request.PointRequestDTO;
+import com.prgrms.ijuju.domain.point.entity.PointStatus;
+import com.prgrms.ijuju.domain.point.entity.PointType;
+import com.prgrms.ijuju.domain.point.entity.StockStatus;
+import com.prgrms.ijuju.domain.point.entity.StockType;
+import com.prgrms.ijuju.domain.point.service.PointService;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.TradeAvailableResponse;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
@@ -28,6 +34,7 @@ public class MidStockTradeService {
     private final MidStockRepository midStockRepository;
     private final MidStockPriceRepository midStockPriceRepository;
     private final MemberRepository memberRepository;
+    private final PointService pointService;
 
     // 매수 주문  3가지의 구현이 필요함 (멤버, 포인트 필요)
     public boolean buyStock(Long memberId, Long midStockId, long tradePoint) {
@@ -36,23 +43,24 @@ public class MidStockTradeService {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MidMemberNotFoundException::new);
-
         // 오늘 매수 했는지 확인
         Optional<MidStockTrade> todayBuyMidStock = midStockTradeRepository.findTodayBuyMidStock(memberId, midStockId);
         if (todayBuyMidStock.isPresent()) {
             throw new MidAlreadyBoughtException();
         }
-
         // 포인트가 충분한지 거래 가능 여부 확인 추가해야함  tradePoint 와 멤버의 잔여 포인트 그거 계산
         if (!isTradeAvailable(member, tradePoint)) {
             throw new MidPointsNotEnoughException();
         }
-
         // 포인트로 save하는 거 추가 해야함 (SPENT로) ,
         // 포인트 차감
-        
-
-
+        PointRequestDTO pointRequestDTO = PointRequestDTO.builder()
+                .memberId(memberId)
+                .pointAmount(tradePoint)
+                .pointType(PointType.STOCK)
+                .pointStatus(PointStatus.USED)
+                .build();
+        pointService.simulateStockInvestment(pointRequestDTO, StockType.MID, StockStatus.BUY);
         // 거래 내역 저장
         MidStockTrade trade = MidStockTrade.builder()
                 .midStock(midStock)
@@ -61,7 +69,6 @@ public class MidStockTradeService {
                 .pricePerStock(getCurrentStockPrice(midStockId))
                 .member(member)
                 .build();
-
         midStockTradeRepository.save(trade);
 
         return isAllInWarning(member, tradePoint);
@@ -97,6 +104,13 @@ public class MidStockTradeService {
         }
 
         // 포인트 처리 로직 추가해야함
+        PointRequestDTO pointRequestDTO = PointRequestDTO.builder()
+                .memberId(memberId)
+                .pointAmount(totalPoints)
+                .pointType(PointType.STOCK)
+                .pointStatus(PointStatus.EARNED)
+                .build();
+        pointService.simulateStockInvestment(pointRequestDTO, StockType.MID, StockStatus.SELL);
 
         return totalPoints - investedPoints;
     }
