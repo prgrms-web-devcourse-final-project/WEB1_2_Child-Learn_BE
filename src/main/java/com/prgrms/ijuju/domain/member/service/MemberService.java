@@ -239,4 +239,10 @@ public class MemberService {
         }
     }
 
+    @Transactional
+    public void increaseBeginStockPlayCount(Member member) {
+        member.increaseBeginStockPlayCount();
+        memberRepository.save(member);
+    }
+
 }
