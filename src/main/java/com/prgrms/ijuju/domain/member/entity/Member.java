@@ -49,6 +49,9 @@ public class Member extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
 
+    @Column(nullable = false)
+    private int BeginStockPlayCount = 0;
+
     @Builder
     public Member(String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins){
         this.loginId=loginId;
@@ -80,6 +83,10 @@ public class Member extends BaseTimeEntity {
 
     public void updateRefreshToken(String refreshToken){
         this.refreshToken=refreshToken;
+    }
+
+    public void increaseBeginStockPlayCount() {
+        this.BeginStockPlayCount++;
     }
 
 }
