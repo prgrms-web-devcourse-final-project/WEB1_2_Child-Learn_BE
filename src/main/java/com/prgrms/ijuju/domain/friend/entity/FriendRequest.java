@@ -37,12 +37,12 @@ public class FriendRequest {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "send_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = false)
     @NotNull
     private Member sender; // 친구 요청한 사람
 
     @ManyToOne
-    @JoinColumn(name = "receive_id", nullable = false)
+    @JoinColumn(name = "receiver_id", nullable = false)
     @NotNull
     private Member receiver; // 친구 요청 받은 사람
 

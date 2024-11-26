@@ -2,9 +2,11 @@ package com.prgrms.ijuju.domain.friend.repository;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface UserRepository extends JpaRepository<Member, Long> { // 사용자
+@Repository
+public interface UserRepository extends JpaRepository<Member, Long> {
     List<Member> findByUsernameContaining(String username);
 } 
