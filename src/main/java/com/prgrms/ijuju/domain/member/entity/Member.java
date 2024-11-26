@@ -47,10 +47,10 @@ public class Member {
     @Column(nullable = false)
     private Long coins = 1000L; // 초기 코인 설정
 
-    @Column(nullable = false)
+    @Column
     private String profileImage; // 프로필 이미지
 
-    @Column(nullable = false)
+    @Column
     private boolean isActive = true; // 회원 활동 상태
 
     // pw 초기화 관련
@@ -64,7 +64,8 @@ public class Member {
     private int BeginStockPlayCount = 0;
 
     @Builder
-    public Member(String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins){
+    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins, String profileImage, boolean isActive){
+        this.id = id;
         this.loginId=loginId;
         this.pw=pw;
         this.username=username;
@@ -72,6 +73,8 @@ public class Member {
         this.birth=birth;
         this.points=points != null ? points : 1000L;
         this.coins=coins != null ? coins : 1000L;
+        this.profileImage=profileImage;
+        this.isActive=isActive;
     }
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
