@@ -25,7 +25,7 @@ public class BeginQuiz {
     private String content;
 
     @Column(nullable = false)
-    private char answer;
+    private String answer;
 
     @Column(nullable = false)
     private String oContent;
@@ -38,7 +38,7 @@ public class BeginQuiz {
     private LocalDate createdDate;
 
     @Builder
-    public BeginQuiz(String content, String oContent, String xContent, char answer) {
+    public BeginQuiz(String content, String oContent, String xContent, String answer) {
         this.content = content;
         this.oContent = oContent;
         this.xContent = xContent;

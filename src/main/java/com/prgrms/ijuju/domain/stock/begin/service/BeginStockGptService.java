@@ -78,7 +78,7 @@ public class BeginStockGptService {
             String content = lines[0].replaceFirst("^1\\.", "").trim();
             String oContent = lines[1].replaceFirst("^2\\.", "").trim();
             String xContent = lines[2].replaceFirst("^3\\.", "").trim();
-            char answer = lines[3].replaceFirst("^4\\.", "").trim().charAt(3);
+            String answer = lines[3].replaceFirst("^4\\.", "").trim();
 
             return BeginQuiz.builder()
                     .content(content)

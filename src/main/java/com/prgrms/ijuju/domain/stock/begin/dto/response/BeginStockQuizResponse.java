@@ -6,7 +6,7 @@ public record BeginStockQuizResponse(
         String content,
         String oContent,
         String xContent,
-        char answer
+        String answer
 ) {
     public static BeginStockQuizResponse from(BeginQuiz beginQuiz) {
         return new BeginStockQuizResponse(
