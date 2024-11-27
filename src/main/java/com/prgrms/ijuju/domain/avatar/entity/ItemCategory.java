@@ -1,18 +1,18 @@
 package com.prgrms.ijuju.domain.avatar.entity;
 
-import jakarta.persistence.*;
+public enum ItemCategory {
+    BACKGROUND("background"),
+    PET("pet"),
+    HAT("hat");
 
-@Entity
-@Table(name = "item_category")
-public class ItemCategory {
+    private final String displayName;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    ItemCategory(String displayName) {
+        this.displayName = displayName;
+    }
 
-    private String name;    // Background, Pet, Hat
-
-
-
+    public String getDisplayName(){
+        return displayName;
+    }
 
 }

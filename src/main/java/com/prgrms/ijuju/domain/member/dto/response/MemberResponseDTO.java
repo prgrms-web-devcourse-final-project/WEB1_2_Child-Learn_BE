@@ -83,8 +83,8 @@ public class MemberResponseDTO {
             this.email = member.getEmail();
             this.pw = member.getPw();
             this.username = member.getUsername();
-            this.createdAt = member.getCreatedAt();
-            this.updatedAt = member.getUpdatedAt();
+//            this.createdAt = member.getCreatedAt();
+//            this.updatedAt = member.getUpdatedAt();
             this.birth = member.getBirth();
             this.points = member.getPoints();
         }
@@ -103,7 +103,7 @@ public class MemberResponseDTO {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
-            this.createdAt = member.getCreatedAt();
+//            this.createdAt = member.getCreatedAt();
             this.points = member.getPoints();
         }
     }

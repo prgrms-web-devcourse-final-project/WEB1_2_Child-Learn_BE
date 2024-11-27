@@ -1,6 +1,5 @@
 package com.prgrms.ijuju.domain.avatar.entity;
 
-
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -20,18 +19,40 @@ public class Avatar extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // member 객체와 연결
     @OneToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
     @OneToOne
+    @JoinColumn(name = "background_id")
     private Item background;
 
     @OneToOne
+    @JoinColumn(name = "pet_id")
     private Item pet;
 
     @OneToOne
+    @JoinColumn(name = "hat_id")
     private Item hat;
 
+    public void changeBackground(Item background) {
+        if (background.getCategory() != ItemCategory.BACKGROUND) {
+            throw new IllegalArgumentException("Item category must be BACKGROUND for background.");
+        }
+        this.background = background;
+    }
+
+    public void changePet(Item pet) {
+        if (pet.getCategory() != ItemCategory.PET) {
+            throw new IllegalArgumentException("Item category must be PET for pet.");
+        }
+        this.pet = pet;
+    }
+
+    public void changeHat(Item hat) {
+        if (hat.getCategory() != ItemCategory.HAT) {
+            throw new IllegalArgumentException("Item category must be HAT for hat.");
+        }
+        this.hat = hat;
+    }
 }

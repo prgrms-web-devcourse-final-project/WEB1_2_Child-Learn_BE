@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class MemberService {
@@ -37,8 +37,7 @@ public class MemberService {
         try {
             // 입력한 loginId로 가입한 회원이 있는지 확인
             log.info("아이디 중복 확인 : {}", dto.getLoginId());
-            Optional<Member> member = memberRepository.findByLoginId(dto.getLoginId());
-            if (member.isPresent()) {
+            if (checkLoginId(dto.getLoginId())) {
                 log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
                 throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
             }
@@ -126,8 +125,6 @@ public class MemberService {
         Member member = memberRepository.findById(id).get();
         member.updateRefreshToken(refreshToken);
     }
-
-    // -------------------------------------------------------------
 
     // 나의 회원 정보 조회
     public MemberResponseDTO.ReadMyInfoResponseDTO readMyInfo(Long id) {

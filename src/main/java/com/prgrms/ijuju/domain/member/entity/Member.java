@@ -1,16 +1,13 @@
 package com.prgrms.ijuju.domain.member.entity;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
-import com.prgrms.ijuju.domain.avatar.entity.Item;
+import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -66,8 +63,8 @@ public class Member extends BaseTimeEntity {
     @OneToOne(mappedBy = "member")
     private Avatar avatar;
 
-    @OneToMany(mappedBy = "owner")
-    private List<Item> purchasedItems;
+    @OneToMany(mappedBy = "member")
+    private List<Purchase> purchases;
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 
@@ -87,6 +84,11 @@ public class Member extends BaseTimeEntity {
 
     public void increaseBeginStockPlayCount() {
         this.BeginStockPlayCount++;
+    }
+
+    public void getRemainingCoins(Long coins, Long price) {
+        Long remainCoins = coins - price;
+        this.coins = remainCoins;
     }
 
 }
