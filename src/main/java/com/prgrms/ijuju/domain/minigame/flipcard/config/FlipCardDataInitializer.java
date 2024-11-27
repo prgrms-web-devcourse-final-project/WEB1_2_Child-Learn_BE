@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class FlipCardDataInitializer implements CommandLineRunner {
     private final FlipCardRepository flipCardRepository;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
         if (flipCardRepository.count() > 0) {
             log.info("FlipCard 데이터가 이미 존재합니다.");
