@@ -25,12 +25,10 @@ public class StockRecordController {
     // 거래 내역 저장
     @PostMapping
     public ResponseEntity<StockRecord> saveRecord(@RequestBody StockRecordRequestDto requestDto) {
-        // DTO에서 memberId를 받아 Member 객체를 조회
         Long memberId = requestDto.getMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다: " + memberId));
 
-        // 서비스로 RequestDto와 Member 객체 전달
         StockRecord record = stockRecordService.saveRecord(requestDto, member);
         return ResponseEntity.ok(record);
     }

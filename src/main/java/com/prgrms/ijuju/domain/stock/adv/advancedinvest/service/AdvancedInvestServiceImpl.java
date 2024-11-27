@@ -18,13 +18,13 @@ import com.prgrms.ijuju.domain.stock.adv.stockrecord.constant.TradeType;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.dto.request.StockRecordRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.service.StockRecordService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,12 +44,16 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
 
+        Optional<AdvancedInvest> existingInvest = advancedInvestRepository.findByMemberIdAndPlayedTodayTrue(request.getMemberId());
+        if (existingInvest.isPresent()) {
+            throw new IllegalStateException("오늘 이미 게임을 실행했습니다.");
+        }
+
         AdvancedInvest advancedInvest = advancedInvestRepository.save(
                 AdvancedInvest.builder()
                         .member(member)
                         .startTime(System.currentTimeMillis())
                         .paused(false)
-                        .playedToday(true)
                         .build()
         );
         return AdvancedInvestResponseDto.from(advancedInvest);
@@ -74,7 +78,15 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     public void endGame(Long advId) {
         AdvancedInvest advancedInvest = getAdvancedInvestById(advId);
         advancedInvest.setPlayedToday(false);
+        advancedInvest.setPlayedToday(true);
         advancedInvestRepository.save(advancedInvest);
+    }
+
+    //7시에 모든 유저 PlayedToday = false;
+    @Scheduled(cron = "0 0 7 * * ?") //
+    @Transactional
+    public void resetPlayedTodayStatus() {
+        advancedInvestRepository.resetPlayedToday();
     }
 
     @Transactional(readOnly = true)
@@ -167,4 +179,4 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         return advancedInvestRepository.findById(advId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게임입니다."));
     }
-}}
+}
