@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+/**
+ * WebSocket 사용을 하기 때문에 해당 컨트롤러는 더이상 사용되지 않습니다.
+ */
+
+/*
 @RestController
 @RequestMapping("/api/v1/advanced-invest")
 @RequiredArgsConstructor
@@ -69,3 +75,5 @@ public class AdvancedInvestController {
         return ResponseEntity.ok().build();
     }
 }
+
+ */

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AdvancedInvestRepository extends JpaRepository<AdvancedInvest, Long> {
@@ -15,4 +16,8 @@ public interface AdvancedInvestRepository extends JpaRepository<AdvancedInvest, 
     @Modifying
     @Query("UPDATE AdvancedInvest ai SET ai.playedToday = false WHERE ai.playedToday = true")
     void resetPlayedToday();
+
+    @Query("SELECT a FROM AdvancedInvest a WHERE a.paused = true")
+    List<AdvancedInvest> findAllByPausedTrue();
 }
+

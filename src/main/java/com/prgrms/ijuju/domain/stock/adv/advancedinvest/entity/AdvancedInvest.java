@@ -26,6 +26,10 @@ public class AdvancedInvest {
     private long startTime;
 
     private boolean paused;
+
+    @Column(nullable = false)
+    private int currentSecond = 0;
+
     private boolean playedToday;
 
     @OneToMany(mappedBy = "advancedInvest", cascade = CascadeType.ALL, orphanRemoval = true)

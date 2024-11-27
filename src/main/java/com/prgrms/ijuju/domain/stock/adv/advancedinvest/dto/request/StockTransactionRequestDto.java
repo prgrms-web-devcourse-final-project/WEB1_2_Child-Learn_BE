@@ -15,20 +15,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockTransactionRequestDto {
-    private Long memberId;
-    private String stockSymbol;
-    private int quantity;
-    private BigDecimal points;
-    private TradeType tradeType;
+    private String stockSymbol; // 주식 종목
+    private int quantity;       // 구매 또는 판매 수량
+    private Long memberId;      // 사용자 ID
 
-    public StockRecord toEntity(Member member) {
-        return StockRecord.builder()
-                .member(member)
-                .symbol(stockSymbol)
-                .tradeType(tradeType)
-                .pricePerUnit(points)
-                .quantity(quantity)
-                .tradeDate(java.time.LocalDateTime.now())
-                .build();
-    }
 }
