@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -63,6 +64,9 @@ public class Member {
     @Column(nullable = false)
     private int BeginStockPlayCount = 0;
 
+    @OneToOne(mappedBy = "member", orphanRemoval = true)
+    private Ranking ranking;
+
     @Builder
     public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins, String profileImage, boolean isActive){
         this.id = id;
@@ -96,6 +100,10 @@ public class Member {
 
     public void increaseBeginStockPlayCount() {
         this.BeginStockPlayCount++;
+    }
+
+    public void changeRanking(Ranking ranking) {
+        this.ranking = ranking;
     }
 
 }
