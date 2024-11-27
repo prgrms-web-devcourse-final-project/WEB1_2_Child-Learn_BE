@@ -15,8 +15,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockTransactionRequestDto {
-    private String stockSymbol; // 주식 종목
-    private int quantity;       // 구매 또는 판매 수량
-    private Long memberId;      // 사용자 ID
+    private String stockSymbol;    // 주식 종목
+    private int quantity;          // 구매 또는 판매 수량
+    private Long memberId;         // 사용자 ID
+    private BigDecimal points;     // 거래 금액
+    private TradeType tradeType;   // 거래 유형 (BUY or SELL)     // 사용자 ID
 
 }

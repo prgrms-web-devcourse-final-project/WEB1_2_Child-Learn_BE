@@ -4,12 +4,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class WebSocketRequestDto {
-    private String action; // START_GAME, PAUSE_GAME, RESUME_GAME, END_GAME, LIVE_DATA 등
+    private String action;
     private Long advId;
-    private String symbol;
-    private int hour;
+    private String stockSymbol;
+    private int quantity;
+    private BigDecimal points;
+    private Long memberId;
 }

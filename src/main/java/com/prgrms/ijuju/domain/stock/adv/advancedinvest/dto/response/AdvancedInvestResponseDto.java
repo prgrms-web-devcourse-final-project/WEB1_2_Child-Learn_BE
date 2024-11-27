@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/* Http Request 용 dto 로 더이상 사용하지 않습니다
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -25,3 +27,5 @@ public class AdvancedInvestResponseDto {
                 .build();
     }
 }
+
+ */

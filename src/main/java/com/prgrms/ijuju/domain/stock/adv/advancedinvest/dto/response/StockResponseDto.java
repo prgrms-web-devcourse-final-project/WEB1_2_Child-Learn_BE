@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/* Http request 용 dto 로 더이상 사용하지 않습니다
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -22,15 +24,6 @@ public class StockResponseDto {
     private List<Double> closePrices;
     private List<Long> timestamps;
 
-    public static StockResponseDto fromEntity(AdvStock advStock) {
-        return StockResponseDto.builder()
-                .symbol(advStock.getSymbol())
-                .name(advStock.getName())
-                .openPrices(advStock.getOpenPrices())
-                .highPrices(advStock.getHighPrices())
-                .lowPrices(advStock.getLowPrices())
-                .closePrices(advStock.getClosePrices())
-                .timestamps(advStock.getTimestamps())
-                .build();
-    }
 }
+
+ */

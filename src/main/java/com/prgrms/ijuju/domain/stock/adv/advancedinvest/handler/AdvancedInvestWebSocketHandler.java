@@ -3,9 +3,11 @@ package com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prgrms.ijuju.common.util.WebSocketUtil;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.StockTransactionRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.WebSocketRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.service.AdvancedInvestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,11 +21,11 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // WebSocketRequestDto 파싱
+    protected void handleTextMessage(@NonNull WebSocketSession session, TextMessage message) throws Exception {
+
         WebSocketRequestDto requestDto = objectMapper.readValue(message.getPayload(), WebSocketRequestDto.class);
 
-        // 요청 처리
+
         switch (requestDto.getAction()) {
             case "START_GAME":
                 advancedInvestService.startGame(session, requestDto.getAdvId());
@@ -48,6 +50,29 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
             case "GET_REMAINING_TIME":
                 int remainingTime = advancedInvestService.getRemainingTime(requestDto.getAdvId());
                 WebSocketUtil.send(session, "남은 시간: " + remainingTime + "초");
+                break;
+
+
+            case "BUY_STOCK":
+                StockTransactionRequestDto buyRequest = StockTransactionRequestDto.builder()
+                        .stockSymbol(requestDto.getStockSymbol())
+                        .quantity(requestDto.getQuantity())
+                        .points(requestDto.getPoints())
+                        .memberId(requestDto.getMemberId())
+                        .build();
+                advancedInvestService.buyStock(requestDto.getAdvId(), buyRequest);
+                WebSocketUtil.send(session, "주식 구매가 완료되었습니다.");
+                break;
+
+            case "SELL_STOCK":
+                StockTransactionRequestDto sellRequest = StockTransactionRequestDto.builder()
+                        .stockSymbol(requestDto.getStockSymbol())
+                        .quantity(requestDto.getQuantity())
+                        .points(requestDto.getPoints())
+                        .memberId(requestDto.getMemberId())
+                        .build();
+                advancedInvestService.sellStock(requestDto.getAdvId(), sellRequest);
+                WebSocketUtil.send(session, "주식 판매가 완료되었습니다.");
                 break;
 
             default:
