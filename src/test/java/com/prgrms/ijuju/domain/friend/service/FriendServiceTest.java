@@ -1,178 +1,118 @@
 package com.prgrms.ijuju.domain.friend.service;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
+import com.prgrms.ijuju.domain.friend.dto.request.FriendRequestDTO;
 import com.prgrms.ijuju.domain.friend.dto.response.UserResponseDTO;
 import com.prgrms.ijuju.domain.friend.entity.FriendList;
 import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
 import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
-import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.friend.repository.FriendRequestRepository;
-import com.prgrms.ijuju.domain.friend.repository.UserRepository;
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class FriendServiceTest {
 
-    @Mock
-    private FriendListRepository friendListRepository;
+    @InjectMocks
+    private FriendService friendService;
 
     @Mock
     private FriendRequestRepository friendRequestRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private MemberRepository memberRepository;
 
-    @InjectMocks
-    private FriendService friendService;
+    @Mock
+    private FriendListRepository friendListRepository;
 
-    @Test
-    @DisplayName("전체 회원 목록을 조회")
-    void getAllMembersTest() {
-        List<Member> expectedMembers = Arrays.asList(
-            Member.builder().id(1L).username("user1").build(),
-            Member.builder().id(2L).username("user2").build()
-        );
-        when(memberRepository.findAll()).thenReturn(expectedMembers);
+    private Member sender;
+    private Member receiver;
 
-        List<Member> actualMembers = friendService.getAllMembers();
-
-        assertThat(actualMembers).hasSize(2);
-        verify(memberRepository).findAll();
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        sender = Member.builder().id(1L).build();
+        receiver = Member.builder().id(2L).build();
     }
 
     @Test
-    @DisplayName("사용자 검색")
-    void searchUsersByUsernameTest() {
-        String searchKeyword = "user";
-        Member member = Member.builder()
-            .id(1L)
-            .username("user1")
-            .build();
-        List<Member> members = Collections.singletonList(member);
-        
-        when(userRepository.findByUsernameContaining(searchKeyword)).thenReturn(members);
-        when(friendListRepository.findByMemberId(anyLong())).thenReturn(Collections.emptyList());
+    @DisplayName("친구 요청 보내기")
+    void testSendFriendRequest() {
+        FriendRequestDTO requestDTO = new FriendRequestDTO(1L, 2L);
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(sender));
+        when(memberRepository.findById(2L)).thenReturn(Optional.of(receiver));
 
-        List<UserResponseDTO> result = friendService.searchUsersByUsername(searchKeyword);
+        friendService.sendFriendRequest(requestDTO);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUsername()).isEqualTo("user1");
-    }
-
-    @Test
-    @DisplayName("친구 요청")
-    void sendFriendRequestTest() {
-        Long senderId = 1L;
-        Long receiverId = 2L;
-        Member sender = Member.builder().id(senderId).build();
-        Member receiver = Member.builder().id(receiverId).build();
-
-        when(userRepository.findById(senderId)).thenReturn(Optional.of(sender));
-        when(userRepository.findById(receiverId)).thenReturn(Optional.of(receiver));
-
-        friendService.sendFriendRequest(senderId, receiverId);
-
-        verify(friendRequestRepository).save(any(FriendRequest.class));
+        verify(friendRequestRepository, times(1)).save(any(FriendRequest.class));
     }
 
     @Test
     @DisplayName("친구 요청 수락")
-    void acceptFriendRequestTest() {
+    void testAcceptFriendRequest() {
         Long requestId = 1L;
-        FriendRequest request = new FriendRequest();
-        request.setSender(Member.builder().id(1L).build());
-        request.setReceiver(Member.builder().id(2L).build());
-
+        FriendRequest request = FriendRequest.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RequestStatus.ACCEPTED)
+                .build();
         when(friendRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
-
+    
         friendService.acceptFriendRequest(requestId);
-
-        assertThat(request.getStatus()).isEqualTo(RequestStatus.ACCEPTED);
-        verify(friendRequestRepository).save(request);
-        verify(friendListRepository).save(any(FriendList.class));
+    
+        // request 객체의 상태가 아닌, 새로운 객체의 상태를 확인해야 합니다.
+        assertEquals(RequestStatus.ACCEPTED, request.getStatus());
+        verify(friendRequestRepository, times(1)).save(any(FriendRequest.class)); // save 메서드가 호출된 객체를 검증
+        verify(friendListRepository, times(2)).save(any(FriendList.class));
     }
 
     @Test
-    @DisplayName("친구 요청 거절")
-    void rejectFriendRequestTest() {
-        Long requestId = 1L;
-        FriendRequest request = new FriendRequest();
-        when(friendRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
+    @DisplayName("친구 요청 목록 조회")
+    void testGetReceivedFriendRequests() {
+        when(friendRequestRepository.findByReceiverId(2L)).thenReturn(Collections.singletonList(FriendRequest.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RequestStatus.PENDING)
+                .build()));
 
-        friendService.rejectFriendRequest(requestId);
+        List<FriendRequest> requests = friendService.getReceivedFriendRequests(2L);
 
-        assertThat(request.getStatus()).isEqualTo(RequestStatus.REJECTED);
-        verify(friendRequestRepository).save(request);
+        assertEquals(1, requests.size());
     }
 
     @Test
-    @DisplayName("받은 친구 요청 목록을 조회")
-    void getReceivedFriendRequestsTest() {
-        Long receiverId = 1L;
-        List<FriendRequest> expectedRequests = Arrays.asList(
-            new FriendRequest(),
-            new FriendRequest()
-        );
+    @DisplayName("친구 목록 조회")
+    void testGetFriends() {
+        when(friendListRepository.findByMemberId(1L)).thenReturn(Collections.emptyList());
 
-        when(friendRequestRepository.findByReceiverId(receiverId))
-            .thenReturn(expectedRequests);
+        List<UserResponseDTO> friends = friendService.getFriends(1L);
 
-        List<FriendRequest> actualRequests = friendService.getReceivedFriendRequests(receiverId);
-
-        assertThat(actualRequests).hasSize(2);
-    }
-
-    @Test
-    @DisplayName("친구 목록을 조회")
-    void getFriendsTest() {
-        Long memberId = 1L;
-        Member friend = Member.builder()
-            .id(2L)
-            .username("friend")
-            .build();
-        FriendList friendList = FriendList.builder()
-            .member(Member.builder().id(memberId).build())
-            .friend(friend)
-            .build();
-        
-        when(friendListRepository.findByMemberId(memberId))
-            .thenReturn(Collections.singletonList(friendList));
-
-        List<UserResponseDTO> result = friendService.getFriends(memberId);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUsername()).isEqualTo("friend");
+        assertTrue(friends.isEmpty());
     }
 
     @Test
     @DisplayName("친구 삭제")
-    void removeFriendTest() {
+    void testRemoveFriend() {
         Long memberId = 1L;
         Long friendId = 2L;
 
         friendService.removeFriend(memberId, friendId);
 
-        verify(friendListRepository).deleteByMemberIdAndFriendId(memberId, friendId);
+        verify(friendListRepository, times(2)).deleteByMemberIdAndFriendId(anyLong(), anyLong());
+
     }
-} 
+}

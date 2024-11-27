@@ -16,15 +16,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotNull;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,19 +36,28 @@ public class FriendRequest {
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
-    @NotNull
-    private Member sender; // 친구 요청한 사람
+    private Member sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id", nullable = false)
-    @NotNull
-    private Member receiver; // 친구 요청 받은 사람
+    private Member receiver;
 
     @Enumerated(EnumType.STRING)
-    private RequestStatus status; // 친구 요청 상태
+    private RequestStatus status;
 
     @CreatedDate
-    private LocalDateTime createdAt; // 친구 요청 시간
+    private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public FriendRequest withStatus(RequestStatus status) {
+        return FriendRequest.builder()
+                .id(this.id)
+                .sender(this.sender)
+                .receiver(this.receiver)
+                .status(status)
+                .createdAt(this.createdAt)
+                .updatedAt(this.updatedAt)
+                .build();
+    }
 }

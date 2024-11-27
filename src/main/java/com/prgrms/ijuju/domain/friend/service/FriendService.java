@@ -1,26 +1,24 @@
 package com.prgrms.ijuju.domain.friend.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.prgrms.ijuju.domain.friend.dto.request.FriendRequestDTO;
 import com.prgrms.ijuju.domain.friend.dto.response.UserResponseDTO;
-import com.prgrms.ijuju.domain.friend.entity.FriendList;
 import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
 import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
+import com.prgrms.ijuju.domain.friend.entity.FriendList;
 import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.friend.repository.FriendRequestRepository;
 import com.prgrms.ijuju.domain.friend.repository.UserRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class FriendService {
-
-    @Autowired
-    private FriendListRepository friendListRepository;
 
     @Autowired
     private FriendRequestRepository friendRequestRepository;
@@ -31,41 +29,55 @@ public class FriendService {
     @Autowired
     private MemberRepository memberRepository;
 
-    // 전체 사용자 목록 조회 - member
+    @Autowired
+    private FriendListRepository friendListRepository;
+
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
-    }   
+    }
 
-    // 사용자 별명으로 검색
+    // 유저 검색
     public List<UserResponseDTO> searchUsersByUsername(String username) {
         List<Member> users = userRepository.findByUsernameContaining(username);
         return users.stream()
                 .map(user -> new UserResponseDTO(user, 
-                    friendListRepository.findByMemberId(user.getId()).stream()
-                        .anyMatch(friendList -> friendList.getFriend().getId().equals(user.getId()))))
+                    friendRequestRepository.findByReceiverId(user.getId()).stream()
+                        .anyMatch(friendRequest -> friendRequest.getSender().getId().equals(user.getId()))))
                 .collect(Collectors.toList());
     }
 
     // 친구 요청 보내기
-    public void sendFriendRequest(Long senderId, Long receiverId) {
-        FriendRequest request = new FriendRequest();
-        request.setSender(userRepository.findById(senderId).orElseThrow());
-        request.setReceiver(userRepository.findById(receiverId).orElseThrow());
-        request.setStatus(RequestStatus.PENDING);
+    public void sendFriendRequest(FriendRequestDTO friendRequestDto) {
+        Member sender = memberRepository.findById(friendRequestDto.getSenderId())
+                .orElseThrow(() -> new IllegalArgumentException("친구 요청한 사람을 찾을 수 없습니다."));
+        Member receiver = memberRepository.findById(friendRequestDto.getReceiverId())
+                .orElseThrow(() -> new IllegalArgumentException("친구 요청받은 사람을 찾을 수 없습니다."));
+
+        FriendRequest request = FriendRequest.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RequestStatus.PENDING)
+                .build();
+
         friendRequestRepository.save(request);
     }
 
     // 친구 요청 수락
     public void acceptFriendRequest(Long requestId) {
-        FriendRequest request = friendRequestRepository.findById(requestId).orElseThrow();
-        request.setStatus(RequestStatus.ACCEPTED);
+        FriendRequest request = friendRequestRepository.findById(requestId)
+        .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+        request = request.withStatus(RequestStatus.ACCEPTED);
         friendRequestRepository.save(request);
 
-        // 친구 목록에 추가
-        FriendList friendList = new FriendList();
-        friendList.setMember(request.getReceiver());
-        friendList.setFriend(request.getSender());
-        friendListRepository.save(friendList);
+        friendListRepository.save(FriendList.builder()
+                .member(request.getReceiver())
+                .friend(request.getSender())
+                .build());
+
+        friendListRepository.save(FriendList.builder()
+                .member(request.getSender())
+                .friend(request.getReceiver())
+                .build());
     }
 
     // 친구 요청 상태 조회
@@ -77,12 +89,13 @@ public class FriendService {
 
     // 친구 요청 거절
     public void rejectFriendRequest(Long requestId) {
-        FriendRequest request = friendRequestRepository.findById(requestId).orElseThrow();
-        request.setStatus(RequestStatus.REJECTED);
+        FriendRequest request = friendRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+        request = request.withStatus(RequestStatus.REJECTED);
         friendRequestRepository.save(request);
     }
 
-    // 받은 친구 요청 목록 조회
+    // 친구 요청 목록 조회
     public List<FriendRequest> getReceivedFriendRequests(Long receiverId) {
         return friendRequestRepository.findByReceiverId(receiverId);
     }
@@ -97,5 +110,6 @@ public class FriendService {
     // 친구 삭제
     public void removeFriend(Long memberId, Long friendId) {
         friendListRepository.deleteByMemberIdAndFriendId(memberId, friendId);
+        friendListRepository.deleteByMemberIdAndFriendId(friendId, memberId);
     }
 }
