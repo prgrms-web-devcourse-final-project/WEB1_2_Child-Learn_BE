@@ -1,8 +1,11 @@
 package com.prgrms.ijuju.domain.ranking.service;
 
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
+import com.prgrms.ijuju.domain.friend.service.FriendService;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.point.repository.PointDetailsRepository;
+import com.prgrms.ijuju.domain.ranking.dto.response.RankingResponse;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.domain.ranking.repository.RankingRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class RankingService {
     private final MemberRepository memberRepository;
     private final RankingRepository rankingRepository;
     private final PointDetailsRepository pointDetailsRepository;
+    private final FriendListRepository friendListRepository;
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime weekStart = now.withHour(9).withMinute(0).withSecond(0).withNano(0).with(DayOfWeek.MONDAY);
     LocalDateTime weekEnd = weekStart.plusDays(7);
@@ -48,15 +52,26 @@ public class RankingService {
                 rankingRepository.save(newRanking);
             }
         }
-
     }
 
     public void updateWeekStartAndEnd() {
         rankingRepository.updateWeekStartAndEnd(weekStart, weekEnd);
     }
 
-    public Page<Ranking> getRankingList(Pageable pageable) {
-        return rankingRepository.findAllByOrderByWeeklyPointsDesc(pageable);
+    public Page<RankingResponse> showAllRankingList(Pageable pageable) {
+        Page<Ranking> allByOrderByWeeklyPointsDesc = rankingRepository.findAllByOrderByWeeklyPointsDesc(pageable);
+
+        return allByOrderByWeeklyPointsDesc.map(ranking -> RankingResponse.of(rankingRepository.findRankByMemberId(ranking.getMember().getId()), ranking.getMember().getUsername(), ranking.getWeeklyPoints()));
+    }
+
+    // 친구의 랭킹 조회
+    public Page<RankingResponse> showFriendRankingList(Long memberId, Pageable pageable) {
+        List<Long> friendIds = friendListRepository.findByMemberId(memberId).stream()
+                .map(friendList -> friendList.getFriend().getId())
+                .toList();
+
+        return rankingRepository.findAllByMemberIdInOrderByWeeklyPointsDesc(friendIds, pageable)
+                .map(ranking -> RankingResponse.of(rankingRepository.findRankByMemberId(ranking.getMember().getId()), ranking.getMember().getUsername(), ranking.getWeeklyPoints()));
     }
 
 }

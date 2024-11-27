@@ -1,37 +1,54 @@
-package com.prgrms.ijuju.domain.ranking.repository;
+package com.prgrms.ijuju.domain.ranking.service;
 
+import com.prgrms.ijuju.domain.friend.entity.FriendList;
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.point.repository.PointDetailsRepository;
+import com.prgrms.ijuju.domain.ranking.dto.response.RankingResponse;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
+import com.prgrms.ijuju.domain.ranking.repository.RankingRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class RankingRepositoryTest {
+class RankingServiceTest {
+
+    @Autowired
+    private RankingService rankingService;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
     private RankingRepository rankingRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private FriendListRepository friendListRepository;
+
+    @MockBean
+    private PointDetailsRepository pointDetailsRepository;
 
     private Member member1;
     private Member member2;
@@ -41,7 +58,11 @@ class RankingRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        weekStart = LocalDateTime.now().withHour(9).withMinute(0).withSecond(0).withNano(0);
+        memberRepository.deleteAll();
+        rankingRepository.deleteAll();
+        friendListRepository.deleteAll();
+
+        weekStart = LocalDateTime.now().withHour(9).withMinute(0).withSecond(0).withNano(0).with(DayOfWeek.MONDAY);
         weekEnd = weekStart.plusDays(7);
 
         // 테스트용 회원 생성
@@ -96,52 +117,70 @@ class RankingRepositoryTest {
     }
 
     @Test
-    @DisplayName("회원 ID로 랭킹엔티티 포인트 조회")
-    void findByMemberId() {
-        Optional<Ranking> ranking = rankingRepository.findByMemberId(member1.getId());
-
-        assertThat(ranking).isPresent();
-        assertThat(ranking.get().getWeeklyPoints()).isEqualTo(1000L);
-    }
-
-    @Test
-    @DisplayName("주간 포인트 기준 내림차순 정렬 페이징 조회")
-    void findAllByOrderByWeeklyPointsDesc() {
+    @DisplayName("전체 랭킹 리스트 조회")
+    void showAllRankingList() {
+        // given
         PageRequest pageRequest = PageRequest.of(0, 2);
-        Page<Ranking> rankings = rankingRepository.findAllByOrderByWeeklyPointsDesc(pageRequest);
 
-        assertThat(rankings.getContent()).hasSize(2);
-        assertThat(rankings.getContent().get(0).getWeeklyPoints()).isEqualTo(3000L);
-        assertThat(rankings.getContent().get(1).getWeeklyPoints()).isEqualTo(2000L);
+        // when
+        Page<RankingResponse> result = rankingService.showAllRankingList(pageRequest);
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getWeeklyPoints()).isEqualTo(3000L);
+        assertThat(result.getContent().get(1).getWeeklyPoints()).isEqualTo(2000L);
     }
 
     @Test
-    @DisplayName("특정 회원의 순위 조회")
-    void findRankByMemberId() {
-        Long rank = rankingRepository.findRankByMemberId(member1.getId());
+    @DisplayName("친구 랭킹 리스트 조회")
+    void showFriendRankingList() {
+        // given
+        FriendList friendList1 = FriendList.builder()
+                .member(member1)
+                .friend(member2)
+                .build();
+        FriendList friendList2 = FriendList.builder()
+                .member(member1)
+                .friend(member3)
+                .build();
+        friendListRepository.saveAll(List.of(friendList1, friendList2));
 
-        assertThat(rank).isEqualTo(3L); // 1000포인트로 3등
+        PageRequest pageRequest = PageRequest.of(0, 2);
+
+        // when
+        Page<RankingResponse> result = rankingService.showFriendRankingList(member1.getId(), pageRequest);
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getWeeklyPoints()).isEqualTo(3000L);
+        assertThat(result.getContent().get(1).getWeeklyPoints()).isEqualTo(2000L);
     }
 
     @Test
-    @DisplayName("주간 시작/종료 시간 업데이트")
-    void updateWeekStartAndEnd() {
-        LocalDateTime newWeekStart = weekStart.plusDays(7);
-        LocalDateTime newWeekEnd = weekEnd.plusDays(7);
+    @DisplayName("랭킹 업데이트")
+    void updateRanking() {
+        // given
+        Long newPoints = 5000L;
 
-        rankingRepository.updateWeekStartAndEnd(newWeekStart, newWeekEnd);
+        // Mock 설정
+        given(pointDetailsRepository.calculateEarnedPointsForMember(
+                anyLong(),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class)
+        )).willReturn(newPoints);
 
+        // when
+        rankingService.updateRanking();
+
+        // then
         List<Ranking> rankings = rankingRepository.findAll();
-        assertThat(rankings)
-                .allMatch(ranking ->
-                        ranking.getWeekStart().equals(newWeekStart) &&
-                                ranking.getWeekEnd().equals(newWeekEnd)
-                );
+        assertThat(rankings).allMatch(ranking -> ranking.getWeeklyPoints() == newPoints);
     }
 
     @AfterEach
     void cleanup() {
         rankingRepository.deleteAll();
+        friendListRepository.deleteAll();
         memberRepository.deleteAll();
     }
 }

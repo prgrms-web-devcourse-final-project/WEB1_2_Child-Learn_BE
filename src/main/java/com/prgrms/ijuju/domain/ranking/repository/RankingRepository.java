@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface RankingRepository extends JpaRepository<Ranking, Long> {
@@ -26,4 +27,7 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     @Query("SELECT COUNT(r) + 1 FROM Ranking r " +
             "WHERE r.weeklyPoints > (SELECT r2.weeklyPoints FROM Ranking r2 WHERE r2.member.id = :memberId)")
     Long findRankByMemberId(@Param("memberId") Long memberId);
+
+    // 친구의 랭킹 조회를 위한 메서드
+    Page<Ranking> findAllByMemberIdInOrderByWeeklyPointsDesc(List<Long> friendIds, Pageable pageable);
 }
