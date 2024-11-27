@@ -1,7 +1,6 @@
 package com.prgrms.ijuju.domain.minigame.wordquiz.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prgrms.ijuju.domain.minigame.wordquiz.dto.request.WordQuizDbDto;
 import com.prgrms.ijuju.domain.minigame.wordquiz.entity.WordQuiz;
