@@ -6,6 +6,8 @@ import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.FlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.PlayFlipCardAvailable;
 import com.prgrms.ijuju.domain.minigame.flipcard.entity.FlipCard;
 import com.prgrms.ijuju.domain.minigame.flipcard.entity.LimitCardGame;
+import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardDfficultyNotFoundException;
+import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardMemberNotFoundException;
 import com.prgrms.ijuju.domain.minigame.flipcard.repository.FlipCardRepository;
 import com.prgrms.ijuju.domain.minigame.flipcard.repository.LimitCardGameRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,8 +178,8 @@ class FlipCardServiceTest {
     @DisplayName("잘못된 난이도로 카드 찾기 시도시 예외 발생")
     void findRandomCardsWithInvalidDifficulty() {
         assertThatThrownBy(() -> flipCardService.findRandomCards("invalid"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid difficulty");
+                .isInstanceOf(FlipCardDfficultyNotFoundException.class)
+                .hasMessageContaining("[플립카드] 해당 난이도가 존재하지 않습니다.");
     }
 
     @Test
@@ -217,8 +219,8 @@ class FlipCardServiceTest {
 
         // when & then
         assertThatThrownBy(() -> flipCardService.saveOrUpdatePlay(999L, "begin"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Member not found");
+                .isInstanceOf(FlipCardMemberNotFoundException.class)
+                .hasMessageContaining("[플립카드] 해당 회원이 존재하지 않습니다.");
     }
 
     @Test
