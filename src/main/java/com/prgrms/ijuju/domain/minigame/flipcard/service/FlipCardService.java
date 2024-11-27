@@ -6,6 +6,8 @@ import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.FlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.PlayFlipCardAvailable;
 import com.prgrms.ijuju.domain.minigame.flipcard.entity.FlipCard;
 import com.prgrms.ijuju.domain.minigame.flipcard.entity.LimitCardGame;
+import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardDfficultyNotFoundException;
+import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardMemberNotFoundException;
 import com.prgrms.ijuju.domain.minigame.flipcard.repository.FlipCardRepository;
 import com.prgrms.ijuju.domain.minigame.flipcard.repository.LimitCardGameRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,7 @@ public class FlipCardService {
     public void saveOrUpdatePlay(Long memberId, String difficulty) {
         // Member 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + memberId));
+                .orElseThrow(FlipCardMemberNotFoundException::new);
 
         // LimitCardGame 조회 또는 생성
         LimitCardGame limitCardGame = limitCardGameRepository.findById(memberId)
@@ -59,7 +61,7 @@ public class FlipCardService {
     public PlayFlipCardAvailable checkPlayAvailable(Long memberId) {
         // Member 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + memberId));
+                .orElseThrow(FlipCardMemberNotFoundException::new);
 
         return limitCardGameRepository.findById(memberId)
                 .map(limitCardGame -> {
@@ -83,7 +85,7 @@ public class FlipCardService {
                 limitCardGame.updateAdvLastPlayed();
                 break;
             default:
-                throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
+                throw new FlipCardDfficultyNotFoundException();
         }
     }
 
@@ -92,7 +94,7 @@ public class FlipCardService {
             case "begin" -> 4;
             case "mid" -> 6;
             case "adv" -> 8;
-            default -> throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
+            default -> throw new FlipCardDfficultyNotFoundException();
         };
     }
 }
