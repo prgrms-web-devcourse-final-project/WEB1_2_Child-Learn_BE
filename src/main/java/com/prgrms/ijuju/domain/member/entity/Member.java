@@ -1,13 +1,14 @@
 package com.prgrms.ijuju.domain.member.entity;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
-import com.prgrms.ijuju.domain.avatar.entity.Purchase;
+import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -73,11 +74,13 @@ public class Member extends BaseTimeEntity {
         this.isActive=isActive;
     }
 
+    // 회원의 아바타(착용한 아이템들을 포함)
     @OneToOne(mappedBy = "member")
     private Avatar avatar;
 
-    @OneToMany(mappedBy = "member")
-    private List<Purchase> purchases;
+    // 회원이 소유한 아이템들
+    @OneToMany(mappedBy = "owner")
+    private List<Item> items;
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 

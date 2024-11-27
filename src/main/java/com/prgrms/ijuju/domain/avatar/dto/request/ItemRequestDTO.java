@@ -2,8 +2,8 @@ package com.prgrms.ijuju.domain.avatar.dto.request;
 
 import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
-import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.member.entity.Member;
+import lombok.Builder;
 import lombok.Data;
 
 public class ItemRequestDTO {
@@ -14,8 +14,17 @@ public class ItemRequestDTO {
         private String name;
         private Long price;
         private String description;
-        private Boolean isEquipped;
         private ItemCategory category;
+
+        @Builder
+        public Item toEntity(){
+            return Item.builder()
+                    .name(name)
+                    .description(description)
+                    .price(price)
+                    .category(category)
+                    .build();
+        }
     }
 
     // 상품 구매

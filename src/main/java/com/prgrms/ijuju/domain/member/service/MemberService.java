@@ -120,11 +120,6 @@ public class MemberService {
         return generateAccessToken(member.getId(), member.getLoginId());
     }
 
-    // setRefreshToken
-//    public void setRefreshToken(Long id, String refreshToken) { // 에러 수정
-//        Member member = memberRepository.findById(id).get();
-//        member.updateRefreshToken(refreshToken);
-//    }
     @Transactional
     public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
         Member member = memberRepository.findById(id).get();
