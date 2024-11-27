@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
@@ -46,6 +47,8 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     private final Map<Long, ScheduledFuture<?>> activeGames = new ConcurrentHashMap<>();
 
     private final Map<Long, Integer> countDown = new ConcurrentHashMap<>();
+
+    private final Map<Long, WebSocketSession> gameSessions = new ConcurrentHashMap<>();
 
 
     //게임 타이머. 게임은 총 7분 진행되며, 1분은 장전 거래 시간, 5분은 거래 시간, 마지막 1분은 장후 거래 시간
@@ -97,6 +100,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         ScheduledFuture<?> activeTimer = executorService.scheduleAtFixedRate(gameTask, 0, 1, TimeUnit.SECONDS);
         activeGames.put(gameId, activeTimer);
         countDown.put(gameId, startSecond);
+        gameSessions.put(gameId, session);
     }
 
     // Reference Data
@@ -201,6 +205,15 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
         advancedInvest.setPlayedToday(true);
         advancedInvestRepository.save(advancedInvest);
+
+        WebSocketSession session = gameSessions.remove(gameId);
+        if (session != null && session.isOpen()) {
+            try {
+                session.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     // 남은 시간 조회 메소드

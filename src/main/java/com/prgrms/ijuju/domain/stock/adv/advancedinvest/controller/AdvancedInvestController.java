@@ -1,9 +1,12 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.controller;
 
-import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.AdvancedInvestRequestDto;
+/**
+ * WebSocket 사용을 하기 때문에 해당 컨트롤러는 더이상 사용되지 않습니다.
+ */
+
+
+/*
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.StockTransactionRequestDto;
-import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.response.AdvancedInvestResponseDto;
-import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.response.StockResponseDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.service.AdvancedInvestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-/**
- * WebSocket 사용을 하기 때문에 해당 컨트롤러는 더이상 사용되지 않습니다.
- */
 
-/*
+
+
 @RestController
 @RequestMapping("/api/v1/advanced-invest")
 @RequiredArgsConstructor
