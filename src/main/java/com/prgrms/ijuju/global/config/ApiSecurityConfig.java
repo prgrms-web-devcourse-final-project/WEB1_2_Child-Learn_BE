@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.global.config;
 
+import com.prgrms.ijuju.domain.member.service.OAuth2Service;
 import com.prgrms.ijuju.global.auth.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ApiSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2Service oAuth2Service;
 
     @Bean
     SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
@@ -48,10 +50,15 @@ public class ApiSecurityConfig {
                             "/api/v1/member/refresh",
                             "/api/v1/member/reset-pw",
                             "/api/v1/member/find-id",
-                            "/api/v1/member/check-id").permitAll() // 로그인과 토큰 갱신 허용
+                            "/api/v1/member/check-id")
+                        .permitAll() // 로그인과 토큰 갱신 허용
 
                         .anyRequest().authenticated()   // 나머지는 인증 필요
                 )
+//                .oauth2Login()
+//                .defaultSuccessUrl("/main", true)
+//                .userInfoEndpoint()
+//                .userService(oAuth2Service)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         log.info("JWT 필터 통과");
 
