@@ -18,7 +18,10 @@ public enum PointException {
     INVALID_EXCHANGE_REQUEST("EXCHANGE_003", "유효하지 않은 환전 요청입니다.", HttpStatus.BAD_REQUEST),
     GAME_POINT_NOT_FOUND("GAME_002", "게임 포인트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     STOCK_POINT_NOT_FOUND("STOCK_003", "주식 포인트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    EXCHANGE_DETAILS_NOT_FOUND("EXCHANGE_004", "환전 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    EXCHANGE_DETAILS_NOT_FOUND("EXCHANGE_004", "환전 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    REALTIME_SYNC_FAILED("SYNC_001", "실시간 업데이트에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    POINT_HISTORY_NOT_FOUND("HISTORY_001", "포인트 거래 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COIN_HISTORY_NOT_FOUND("COIN_HISTORY_001", "코인 거래 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;

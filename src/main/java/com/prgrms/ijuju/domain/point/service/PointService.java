@@ -13,6 +13,7 @@ import com.prgrms.ijuju.domain.point.entity.PointType;
 import com.prgrms.ijuju.domain.point.entity.StockStatus;
 import com.prgrms.ijuju.domain.point.entity.PointStatus;
 import com.prgrms.ijuju.domain.point.entity.StockType;
+import com.prgrms.ijuju.domain.point.exception.PointException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +41,7 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointResponseDTO CurrentPointsAndCoins(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+            .orElseThrow(() -> new RuntimeException(PointException.MEMBER_NOT_FOUND.getMessage()));
         return new PointResponseDTO(member.getPoints(), member.getCoins());
     }
 
@@ -49,8 +50,8 @@ public class PointService {
         
         // 회원 조회
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new RuntimeException(PointException.MEMBER_NOT_FOUND.getMessage()));
+
         // 현재 포인트 조회
         Long currentPoints = member.getPoints();
        
@@ -83,12 +84,12 @@ public class PointService {
 
         // 유효하지 않은 금액 처리
         if (amount <= 0) {
-            throw new RuntimeException("유효하지 않은 금액입니다.");
+            throw new RuntimeException(PointException.INVALID_AMOUNT.getMessage());
         }
 
         // 회원 조회
         Member member = memberRepository.findById(request.getMemberId())
-            .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+            .orElseThrow(() -> new RuntimeException(PointException.MEMBER_NOT_FOUND.getMessage()));
 
         // 현재 포인트 조회
         Long currentPoints = member.getPoints();
@@ -97,7 +98,7 @@ public class PointService {
         PointStatus pointStatus;
         if (stockStatus == StockStatus.BUY) {
             if (currentPoints < amount) {
-                throw new RuntimeException("포인트가 부족합니다.");
+                throw new RuntimeException(PointException.INSUFFICIENT_POINTS.getMessage());
             }
             currentPoints -= amount;
             pointStatus = PointStatus.USED; // BUY일 때 USED로 설정
@@ -105,7 +106,7 @@ public class PointService {
             currentPoints += amount;
             pointStatus = PointStatus.EARNED; // SELL일 때 EARNED로 설정
         } else {
-            throw new RuntimeException("유효하지 않은 주식 상태입니다.");
+            throw new RuntimeException(PointException.INVALID_STOCK_STATUS.getMessage());
         }
 
         // 포인트 업데이트
@@ -132,20 +133,20 @@ public class PointService {
 
         // 최소 100포인트부터 환전 가능
         if (pointsToExchange < 100) {
-            throw new RuntimeException("최소 100포인트부터 환전 가능합니다.");
+            throw new RuntimeException(PointException.EXCHANGE_MINIMUM.getMessage());
         }
         if (pointsToExchange % 100 != 0) {
-            throw new RuntimeException("100포인트 단위로만 환전 가능합니다.");
+            throw new RuntimeException(PointException.EXCHANGE_UNIT.getMessage());
         }
 
         // 회원 조회
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+            .orElseThrow(() -> new RuntimeException(PointException.MEMBER_NOT_FOUND.getMessage()));
 
         // 현재 포인트에서 차감
         Long currentPoints = member.getPoints();
         if (currentPoints < pointsToExchange) {
-            throw new RuntimeException("포인트가 부족합니다.");
+            throw new RuntimeException(PointException.INSUFFICIENT_POINTS.getMessage());
         }
         currentPoints -= pointsToExchange;
         member.setPoints(currentPoints);
