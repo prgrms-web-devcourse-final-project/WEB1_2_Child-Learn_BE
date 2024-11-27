@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,9 @@ public class MemberController {
         log.info("Access Token 생성: {}", accessToken);
         log.info("Refresh Token 생성: {}", refreshToken);
 
-        memberService.setRefreshToken(id, refreshToken);
+        // memberService.setRefreshToken(id, refreshToken) 에러 수정
+        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
+        memberService.setRefreshToken(id, refreshToken, expiryDate);
 
         responseDTO.setAccessToken(accessToken);
         responseDTO.setRefreshToken(refreshToken);
@@ -94,7 +97,8 @@ public class MemberController {
     // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user) {
-        memberService.setRefreshToken(user.getId(), "null");
+        // memberService.setRefreshToken(user.getId(), "null"); 에러 수정
+        memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
 
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
     }
