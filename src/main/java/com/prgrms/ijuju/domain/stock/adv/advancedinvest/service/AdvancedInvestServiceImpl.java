@@ -206,6 +206,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         advancedInvest.setPlayedToday(true);
         advancedInvestRepository.save(advancedInvest);
 
+        //웹소켓 종료
         WebSocketSession session = gameSessions.remove(gameId);
         if (session != null && session.isOpen()) {
             try {

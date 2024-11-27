@@ -1,7 +1,6 @@
 package com.prgrms.ijuju.domain.stock.adv.stockrecord.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.constant.TradeType;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.dto.request.StockRecordRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.entity.StockRecord;
@@ -33,19 +32,19 @@ public class StockRecordServiceImpl implements StockRecordService {
     // 특정 AdvancedInvest의 모든 거래 내역 조회
     @Transactional(readOnly = true)
     public List<StockRecord> getRecordsByAdvId(Long advId) {
-        return stockRecordRepository.findByAdvId(advId);
+        return stockRecordRepository.findByAdvancedInvest_Id(advId);
     }
 
     // 특정 주식의 거래 내역 조회
     @Transactional(readOnly = true)
-    public List<StockRecord> getRecordsByStock(Long advId, String stockSymbol) {
-        return stockRecordRepository.findByAdvIdAndStockSymbol(advId, stockSymbol);
+    public List<StockRecord> getRecordsByStock(Long advId, String symbol) {
+        return stockRecordRepository.findByAdvancedInvest_IdAndSymbol(advId, symbol);
     }
 
     // 보유 주식 계산
     @Transactional(readOnly = true)
-    public int calculateOwnedStock(Long advId, String stockSymbol) {
-        List<StockRecord> records = stockRecordRepository.findByAdvIdAndStockSymbol(advId, stockSymbol);
+    public int calculateOwnedStock(Long advId, String symbol) {
+        List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_IdAndSymbol(advId, symbol);
 
         int totalBought = records.stream()
                 .filter(record -> record.getTradeType() == TradeType.BUY)
@@ -63,7 +62,7 @@ public class StockRecordServiceImpl implements StockRecordService {
     // 모든 주식의 보유량 계산
     @Transactional(readOnly = true)
     public Map<String, Integer> calculateAllOwnedStocks(Long advId) {
-        List<StockRecord> records = stockRecordRepository.findByAdvId(advId);
+        List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_Id(advId);
 
         // 주식별 보유량 계산
         Map<String, Integer> ownedStocks = new HashMap<>();

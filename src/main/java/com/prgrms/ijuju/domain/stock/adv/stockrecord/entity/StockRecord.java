@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.stock.adv.stockrecord.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.entity.AdvancedInvest;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.constant.TradeType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,6 +23,10 @@ public class StockRecord {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    @ManyToOne
+    @JoinColumn(name = "adv_id")
+    private AdvancedInvest advancedInvest;
 
     private String symbol;
     private int quantity;

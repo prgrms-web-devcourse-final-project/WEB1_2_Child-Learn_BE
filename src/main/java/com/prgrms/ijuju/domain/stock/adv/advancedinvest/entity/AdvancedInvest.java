@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.stock.adv.stockrecord.entity.StockRecord;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 

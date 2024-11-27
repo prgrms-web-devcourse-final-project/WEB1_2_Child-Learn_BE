@@ -17,8 +17,4 @@ public interface AdvStockRepository extends JpaRepository<AdvStock, Long> {
 
     Optional<AdvStock> findBySymbol(String symbol);
 
-    List<AdvStock> findAllByDataType(String dataType);
-
-    List<AdvStock> findBySymbolAndAdvIdOrderByTimestampAsc(String symbol, Long advId);
-
 }
