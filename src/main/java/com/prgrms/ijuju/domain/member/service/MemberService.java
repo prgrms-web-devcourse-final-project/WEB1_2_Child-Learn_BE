@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -119,11 +120,10 @@ public class MemberService {
         return generateAccessToken(member.getId(), member.getLoginId());
     }
 
-    // setRefreshToken
     @Transactional
-    public void setRefreshToken(Long id, String refreshToken) {
+    public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
         Member member = memberRepository.findById(id).get();
-        member.updateRefreshToken(refreshToken);
+        member.updateRefreshToken(refreshToken, expiryDate);
     }
 
     // 나의 회원 정보 조회

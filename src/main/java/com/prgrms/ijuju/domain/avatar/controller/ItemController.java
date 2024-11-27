@@ -23,12 +23,11 @@ public class ItemController {
 
     // 상품 구매
     @PostMapping("/purchase")
-    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(@RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto){
+    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(@RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto) {
 
         ItemResponseDTO.ItemPurchaseResponseDTO responseDTO = itemService.purchaseItem(dto);
 
         return ResponseEntity.ok(responseDTO);
     }
-
 
 }

@@ -2,14 +2,12 @@ package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "purchase")
 public class Purchase {
@@ -20,31 +18,18 @@ public class Purchase {
 
     @ManyToOne
     @JoinColumn(name = "member_id")
-    private Member member;
+    private Member member;  // 구매한 회원
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item item;
-
-    private boolean isEquipped = false;
-    private boolean isOwned = false;
+    private Item item;  // 구매한 아이템
 
     private LocalDateTime purchaseDate;
 
     @Builder
-    public Purchase(Member member, Item item, boolean isOwned, LocalDateTime purchaseDate) {
+    public Purchase(Member member, Item item, LocalDateTime purchaseDate) {
         this.member = member;
         this.item = item;
-        this.isOwned  = isOwned;
         this.purchaseDate = purchaseDate;
-    }
-
-    public void changeEquippedStatus(boolean equipped) {
-
-        if (this.isEquipped == equipped) {
-            return;
-        }
-
-        this.isEquipped = equipped;
     }
 }

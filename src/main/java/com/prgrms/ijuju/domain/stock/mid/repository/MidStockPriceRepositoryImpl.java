@@ -5,8 +5,6 @@ import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import com.prgrms.ijuju.domain.stock.mid.entity.QMidStockPrice;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -74,18 +72,5 @@ public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCusto
                 .where(midStockPrice.midStock.id.eq(stockId))
                 .fetch();
     }
-
-//    @Override
-//    public List<MidStockPrice> findPriceHistory(MidStock stock, Pageable pageable) {
-//        QMidStockPrice midStockPrice = QMidStockPrice.midStockPrice;
-//
-//        return queryFactory
-//                .selectFrom(midStockPrice)
-//                .where(midStockPrice.midStock.eq(stock))
-//                .orderBy(midStockPrice.priceDate.desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//    }
 
 }

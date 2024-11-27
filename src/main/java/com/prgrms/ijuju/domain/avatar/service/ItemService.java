@@ -9,13 +9,11 @@ import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
-import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -39,7 +37,6 @@ public class ItemService {
         Purchase newPurchase = Purchase.builder()
                 .member(dto.getMember())
                 .item(item)
-                .isOwned(true)
                 .purchaseDate(LocalDateTime.now())
                 .build();
 
