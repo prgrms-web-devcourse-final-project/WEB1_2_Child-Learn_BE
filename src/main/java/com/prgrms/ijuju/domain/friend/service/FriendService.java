@@ -11,6 +11,7 @@ import com.prgrms.ijuju.domain.friend.dto.response.UserResponseDTO;
 import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
 import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
 import com.prgrms.ijuju.domain.friend.entity.FriendList;
+import com.prgrms.ijuju.domain.friend.exception.FriendException;
 import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.friend.repository.FriendRequestRepository;
 import com.prgrms.ijuju.domain.friend.repository.UserRepository;
@@ -49,9 +50,13 @@ public class FriendService {
     // 친구 요청 보내기
     public void sendFriendRequest(FriendRequestDTO friendRequestDto) {
         Member sender = memberRepository.findById(friendRequestDto.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청한 사람을 찾을 수 없습니다."));
+                .orElseThrow(() -> FriendException.FRIEND_NOT_FOUND.getFriendTaskException());
         Member receiver = memberRepository.findById(friendRequestDto.getReceiverId())
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청받은 사람을 찾을 수 없습니다."));
+                .orElseThrow(() -> FriendException.FRIEND_NOT_FOUND.getFriendTaskException());
+
+        if (friendRequestRepository.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).isPresent()) {
+            throw FriendException.FRIEND_REQUEST_ALREADY_SENT.getFriendTaskException();
+        }
 
         FriendRequest request = FriendRequest.builder()
                 .sender(sender)
@@ -65,7 +70,7 @@ public class FriendService {
     // 친구 요청 수락
     public void acceptFriendRequest(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-        .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> FriendException.FRIEND_REQUEST_NOT_FOUND.getFriendTaskException());
         request = request.withStatus(RequestStatus.ACCEPTED);
         friendRequestRepository.save(request);
 
@@ -80,17 +85,17 @@ public class FriendService {
                 .build());
     }
 
-    // 친구 요청 상태 조회
-    public RequestStatus getFriendRequestStatus(Long senderId, Long receiverId) {
-        return friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId)
-                .map(FriendRequest::getStatus)
-                .orElse(null);
-    }
+    // // 친구 요청 상태 조회
+    // public RequestStatus getFriendRequestStatus(Long senderId, Long receiverId) {
+    //     return friendRequestRepository.findBySenderIdAndReceiverId(senderId, receiverId)
+    //             .map(FriendRequest::getStatus)
+    //             .orElse(null);
+    // }
 
     // 친구 요청 거절
     public void rejectFriendRequest(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> FriendException.FRIEND_REQUEST_NOT_FOUND.getFriendTaskException());
         request = request.withStatus(RequestStatus.REJECTED);
         friendRequestRepository.save(request);
     }
