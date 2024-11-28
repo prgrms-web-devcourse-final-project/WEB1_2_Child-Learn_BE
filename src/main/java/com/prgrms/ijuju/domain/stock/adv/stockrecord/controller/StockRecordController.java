@@ -34,18 +34,18 @@ public class StockRecordController {
     }
 
     // 특정 AdvancedInvest의 거래 내역 조회
-    @GetMapping("/{advId}")
-    public ResponseEntity<List<StockRecordResponseDto>> getRecordsByAdvId(@PathVariable Long advId) {
-        List<StockRecordResponseDto> response = stockRecordService.getRecordsByAdvId(advId).stream()
+    @GetMapping("/{memberId}")
+    public ResponseEntity<List<StockRecordResponseDto>> getRecordsByAdvId(@PathVariable Long memberId) {
+        List<StockRecordResponseDto> response = stockRecordService.getRecordsByAdvId(memberId).stream()
                 .map(StockRecordResponseDto::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     // 특정 주식의 보유량 조회
-    @GetMapping("/{advId}/{stockSymbol}/quantity")
-    public ResponseEntity<Double> getOwnedStock(@PathVariable Long advId, @PathVariable String stockSymbol) {
-        double quantity = stockRecordService.calculateOwnedStock(advId, stockSymbol);
+    @GetMapping("/{memberId}/{stockSymbol}/quantity")
+    public ResponseEntity<Double> getOwnedStock(@PathVariable Long memberId, @PathVariable String stockSymbol) {
+        double quantity = stockRecordService.calculateOwnedStock(memberId, stockSymbol);
         return ResponseEntity.ok(quantity);
     }
 

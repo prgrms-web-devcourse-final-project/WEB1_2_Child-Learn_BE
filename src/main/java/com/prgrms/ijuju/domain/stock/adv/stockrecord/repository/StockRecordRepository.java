@@ -10,7 +10,5 @@ import java.util.Optional;
 public interface StockRecordRepository extends JpaRepository<StockRecord, Long> {
     List<StockRecord> findByAdvancedInvest_Id(Long advancedInvestId); // 특정 AdvancedInvest ID로 거래 내역 조회
 
-    List<StockRecord> findByAdvancedInvest_IdAndSymbol(Long advancedInvestId, String Symbol); // 특정 주식 심볼의 거래 내역 조회
-
-
+    List<StockRecord> findByMemberIdAndSymbol(Long memberId, String symbol); // 특정 주식 심볼의 거래 내역 조회
 }

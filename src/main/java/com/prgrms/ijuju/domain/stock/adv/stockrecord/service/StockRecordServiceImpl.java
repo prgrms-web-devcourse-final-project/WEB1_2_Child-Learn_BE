@@ -37,14 +37,14 @@ public class StockRecordServiceImpl implements StockRecordService {
 
     // 특정 주식의 거래 내역 조회
     @Transactional(readOnly = true)
-    public List<StockRecord> getRecordsByStock(Long advId, String symbol) {
-        return stockRecordRepository.findByAdvancedInvest_IdAndSymbol(advId, symbol);
+    public List<StockRecord> getRecordsByStock(Long memberId, String symbol) {
+        return stockRecordRepository.findByMemberIdAndSymbol(memberId, symbol);
     }
 
     // 보유 주식 계산
     @Transactional(readOnly = true)
-    public double calculateOwnedStock(Long advId, String symbol) {
-        List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_IdAndSymbol(advId, symbol);
+    public double calculateOwnedStock(Long memberId, String symbol) {
+        List<StockRecord> records = stockRecordRepository.findByMemberIdAndSymbol(memberId, symbol);
 
         double totalBought = records.stream()
                 .filter(record -> record.getTradeType() == TradeType.BUY)
