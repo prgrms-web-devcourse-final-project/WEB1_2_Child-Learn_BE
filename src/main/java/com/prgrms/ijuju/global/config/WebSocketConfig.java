@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(advancedInvestWebSocketHandler, "/ws/advanced-invest")
+        registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
                 .setAllowedOrigins("*") // 모든 출처 허용
                 .withSockJS(); // SockJS 지원
     }
