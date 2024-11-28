@@ -31,8 +31,8 @@ public class StockRecordServiceImpl implements StockRecordService {
 
     // 특정 AdvancedInvest의 모든 거래 내역 조회
     @Transactional(readOnly = true)
-    public List<StockRecord> getRecordsByAdvId(Long advId) {
-        return stockRecordRepository.findByAdvancedInvest_Id(advId);
+    public List<StockRecord> getRecordsByAdvId(Long memberId) {
+        return stockRecordRepository.findByMemberId(memberId);
     }
 
     // 특정 주식의 거래 내역 조회
