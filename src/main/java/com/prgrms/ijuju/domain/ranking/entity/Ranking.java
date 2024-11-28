@@ -19,19 +19,19 @@ public class Ranking extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rank_id")
-    Long id;
+    private Long id;
 
     @NotNull
-    LocalDateTime weekStart;
+    private LocalDateTime weekStart;
 
     @NotNull
-    LocalDateTime weekEnd;
+    private LocalDateTime weekEnd;
 
-    long weeklyPoints;
+    private long weeklyPoints;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    Member member;
+    private Member member;
 
     @Builder
     public Ranking(LocalDateTime weekStart, LocalDateTime weekEnd, long weeklyPoints, Member member) {
@@ -51,5 +51,4 @@ public class Ranking extends BaseTimeEntity {
             member.changeRanking(this);
         }
     }
-
 }

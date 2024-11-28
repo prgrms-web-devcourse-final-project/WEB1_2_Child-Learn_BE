@@ -1,7 +1,6 @@
 package com.prgrms.ijuju.domain.ranking.service;
 
 import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
-import com.prgrms.ijuju.domain.friend.service.FriendService;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.point.repository.PointDetailsRepository;
@@ -18,6 +17,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,24 +54,48 @@ public class RankingService {
         }
     }
 
-    public void updateWeekStartAndEnd() {
+    public void updateBulkWeekStart() {
         rankingRepository.updateWeekStartAndEnd(weekStart, weekEnd);
+        rankingRepository.resetWeeklyPoints();
     }
 
+    @Transactional(readOnly = true)
     public Page<RankingResponse> showAllRankingList(Pageable pageable) {
         Page<Ranking> allByOrderByWeeklyPointsDesc = rankingRepository.findAllByOrderByWeeklyPointsDesc(pageable);
 
-        return allByOrderByWeeklyPointsDesc.map(ranking -> RankingResponse.of(rankingRepository.findRankByMemberId(ranking.getMember().getId()), ranking.getMember().getUsername(), ranking.getWeeklyPoints()));
+        return allByOrderByWeeklyPointsDesc.map(ranking -> RankingResponse.of(findRankByMemberId(ranking.getMember().getId()), ranking.getMember().getUsername(), ranking.getWeeklyPoints()));
     }
 
     // 친구의 랭킹 조회
+    @Transactional(readOnly = true)
     public Page<RankingResponse> showFriendRankingList(Long memberId, Pageable pageable) {
         List<Long> friendIds = friendListRepository.findByMemberId(memberId).stream()
                 .map(friendList -> friendList.getFriend().getId())
-                .toList();
+                .collect(Collectors.toList());
+
+        // 자신의 ID도 친구 목록에 추가
+        if (!friendIds.contains(memberId)) {
+            friendIds.add(memberId);
+        }
 
         return rankingRepository.findAllByMemberIdInOrderByWeeklyPointsDesc(friendIds, pageable)
-                .map(ranking -> RankingResponse.of(rankingRepository.findRankByMemberId(ranking.getMember().getId()), ranking.getMember().getUsername(), ranking.getWeeklyPoints()));
+                .map(ranking -> RankingResponse.of(
+                        findRankByMemberId(ranking.getMember().getId()),
+                        ranking.getMember().getUsername(),
+                        ranking.getWeeklyPoints()
+                ));
+    }
+
+    @Transactional(readOnly = true)
+    public Long findRankByMemberId(Long memberId) {
+        return rankingRepository.findRankByMemberId(memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long findWeeklyPointsByMemberId(Long memberId) {
+        return rankingRepository.findByMemberId(memberId)
+                .map(Ranking::getWeeklyPoints)
+                .orElse(0L);
     }
 
 }

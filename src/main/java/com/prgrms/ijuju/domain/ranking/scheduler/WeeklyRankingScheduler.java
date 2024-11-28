@@ -13,6 +13,11 @@ public class WeeklyRankingScheduler {
 
     @Scheduled(cron = "0 0 9 * * MON")
     public void updateWeeklyRanking() {
-        rankingService.updateWeekStartAndEnd();
+        rankingService.updateBulkWeekStart();
+    }
+
+    @Scheduled(cron = "0 */1 * * * *") // 매시간 실행
+    public void scheduleRankingUpdate() {
+        rankingService.updateRanking();
     }
 }

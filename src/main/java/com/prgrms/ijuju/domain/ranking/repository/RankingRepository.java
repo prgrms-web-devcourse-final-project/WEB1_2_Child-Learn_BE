@@ -19,6 +19,10 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
             "WHERE r.weekStart != :weekStart OR r.weekEnd != :weekEnd")
     void updateWeekStartAndEnd(@Param("weekStart") LocalDateTime weekStart, @Param("weekEnd") LocalDateTime weekEnd);
 
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Ranking r SET r.weeklyPoints = 0")
+    void resetWeeklyPoints();
+
     Optional<Ranking> findByMemberId(Long memberId);
 
     Page<Ranking> findAllByOrderByWeeklyPointsDesc(Pageable pageable);
