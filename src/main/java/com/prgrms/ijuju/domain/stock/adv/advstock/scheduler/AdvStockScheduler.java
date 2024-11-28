@@ -36,6 +36,8 @@ public class AdvStockScheduler {
         //괴거 데이터 삭제용. 7시 리셋시 모든 데이터를 날린다
         advStockRepository.deleteByDataType(DataType.REFERENCE);
         advStockRepository.deleteByDataType(DataType.LIVE);
+        advStockRepository.deleteByDataType(DataType.FORECAST);
+
 
 
         //테스트 용으로 일단 5개만 넣어뒀습니다.
@@ -44,14 +46,21 @@ public class AdvStockScheduler {
         String referenceStartDate = DateUtil.getReferenceStartDate();
         String referenceEndDate = DateUtil.getReferenceEndDate();
         String liveDate = DateUtil.getLiveDate();
+        String articleStartDate = DateUtil.getForecastStartDate();
+        String articleEndDate = DateUtil.getForecastEndDate();
 
         for (String symbol : symbols) {
+            // Reference 데이터 저장
             PolygonCandleResponse referenceData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", referenceStartDate, referenceEndDate);
             advStockService.saveStockData(symbol, symbol + " Name", referenceData, DataType.REFERENCE);
 
             // Live 데이터 저장
             PolygonCandleResponse liveData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", liveDate, liveDate);
             advStockService.saveStockData(symbol, symbol + " Name", liveData, DataType.LIVE);
+
+            // Forecast 데이터 저장
+            PolygonCandleResponse articleData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", articleStartDate, articleEndDate);
+            advStockService.saveStockData(symbol, symbol + " Name", articleData, DataType.FORECAST);
         }
 
     }

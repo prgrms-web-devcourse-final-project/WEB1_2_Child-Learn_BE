@@ -20,4 +20,14 @@ public class DateUtil {
     public static String getLiveDate() {
         return LocalDate.now().minusDays(7).format(FORMATTER); // 7일 전 하루
     }
+
+    // Forecast 데이터 시작일
+    public static String getForecastStartDate() {
+        return LocalDate.now().minusWeeks(1).plusDays(1).format(FORMATTER);
+    }
+
+    // Forecast 데이터 종료일
+    public static String getForecastEndDate() {
+        return LocalDate.now().minusDays(1).format(FORMATTER);
+    }
 }
