@@ -18,7 +18,7 @@ public class StockRecordRequestDto {
     private String stockSymbol;
     private TradeType tradeType;
     private BigDecimal price;
-    private int quantity;
+    private double quantity;
     private Long advId;
     private Long memberId;
 

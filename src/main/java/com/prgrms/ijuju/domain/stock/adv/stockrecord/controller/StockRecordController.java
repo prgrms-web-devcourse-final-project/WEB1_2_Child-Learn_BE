@@ -44,15 +44,15 @@ public class StockRecordController {
 
     // 특정 주식의 보유량 조회
     @GetMapping("/{advId}/{stockSymbol}/quantity")
-    public ResponseEntity<Integer> getOwnedStock(@PathVariable Long advId, @PathVariable String stockSymbol) {
-        int quantity = stockRecordService.calculateOwnedStock(advId, stockSymbol);
+    public ResponseEntity<Double> getOwnedStock(@PathVariable Long advId, @PathVariable String stockSymbol) {
+        double quantity = stockRecordService.calculateOwnedStock(advId, stockSymbol);
         return ResponseEntity.ok(quantity);
     }
 
     // 모든 주식의 보유량 조회
     @GetMapping("/{advId}/all-quantities")
-    public ResponseEntity<Map<String, Integer>> getAllOwnedStocks(@PathVariable Long advId) {
-        Map<String, Integer> ownedStocks = stockRecordService.calculateAllOwnedStocks(advId);
+    public ResponseEntity<Map<String, Double>> getAllOwnedStocks(@PathVariable Long advId) {
+        Map<String, Double> ownedStocks = stockRecordService.calculateAllOwnedStocks(advId);
         return ResponseEntity.ok(ownedStocks);
     }
 }

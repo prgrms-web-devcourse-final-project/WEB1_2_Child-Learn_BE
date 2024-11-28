@@ -13,6 +13,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Component
 @RequiredArgsConstructor
@@ -49,7 +52,9 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
 
             case "GET_REMAINING_TIME":
                 int remainingTime = advancedInvestService.getRemainingTime(requestDto.getAdvId());
-                WebSocketUtil.send(session, "남은 시간: " + remainingTime + "초");
+                Map<String, Object> response = new HashMap<>();
+                response.put("remainingTime", remainingTime);
+                WebSocketUtil.send(session, response); // JSON 형식으로 전송
                 break;
 
 

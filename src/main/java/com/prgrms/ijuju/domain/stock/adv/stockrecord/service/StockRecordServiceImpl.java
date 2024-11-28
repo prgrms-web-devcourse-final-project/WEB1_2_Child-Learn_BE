@@ -43,32 +43,32 @@ public class StockRecordServiceImpl implements StockRecordService {
 
     // 보유 주식 계산
     @Transactional(readOnly = true)
-    public int calculateOwnedStock(Long advId, String symbol) {
+    public double calculateOwnedStock(Long advId, String symbol) {
         List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_IdAndSymbol(advId, symbol);
 
-        int totalBought = records.stream()
+        double totalBought = records.stream()
                 .filter(record -> record.getTradeType() == TradeType.BUY)
-                .mapToInt(StockRecord::getQuantity)
+                .mapToDouble(StockRecord::getQuantity)
                 .sum();
 
-        int totalSold = records.stream()
+        double totalSold = records.stream()
                 .filter(record -> record.getTradeType() == TradeType.SELL)
-                .mapToInt(StockRecord::getQuantity)
+                .mapToDouble(StockRecord::getQuantity)
                 .sum();
 
-        return totalBought - totalSold; // 최종 보유 주식량 반환
+        return totalBought - totalSold;
     }
 
     // 모든 주식의 보유량 계산
     @Transactional(readOnly = true)
-    public Map<String, Integer> calculateAllOwnedStocks(Long advId) {
+    public Map<String, Double> calculateAllOwnedStocks(Long advId) {
         List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_Id(advId);
 
         // 주식별 보유량 계산
-        Map<String, Integer> ownedStocks = new HashMap<>();
+        Map<String, Double> ownedStocks = new HashMap<>();
         for (StockRecord record : records) {
-            ownedStocks.putIfAbsent(record.getSymbol(), 0); // 초기값 설정
-            int updatedQuantity = record.getTradeType() == TradeType.BUY
+            ownedStocks.putIfAbsent(record.getSymbol(), 0.0); // 초기값 설정
+            double updatedQuantity = record.getTradeType() == TradeType.BUY
                     ? ownedStocks.get(record.getSymbol()) + record.getQuantity()
                     : ownedStocks.get(record.getSymbol()) - record.getQuantity();
             ownedStocks.put(record.getSymbol(), updatedQuantity);

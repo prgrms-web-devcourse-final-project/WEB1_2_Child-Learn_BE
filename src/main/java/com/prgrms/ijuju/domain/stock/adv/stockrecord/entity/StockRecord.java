@@ -29,7 +29,7 @@ public class StockRecord {
     private AdvancedInvest advancedInvest;
 
     private String symbol;
-    private int quantity;
+    private double quantity;
     private BigDecimal pricePerUnit;
 
     @Enumerated(EnumType.STRING)
@@ -37,7 +37,5 @@ public class StockRecord {
 
     private LocalDateTime tradeDate;
 
-    public void decreaseQuantity(int soldQuantity) {
-        this.quantity -= soldQuantity;
-    }
+
 }

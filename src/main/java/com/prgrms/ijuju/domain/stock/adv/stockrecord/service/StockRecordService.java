@@ -19,8 +19,8 @@ public interface StockRecordService {
     List<StockRecord> getRecordsByStock(Long advId, String stockSymbol);
 
     // 특정 주식의 보유량 계산
-    int calculateOwnedStock(Long advId, String stockSymbol);
+    double calculateOwnedStock(Long advId, String stockSymbol);
 
     // 모든 주식의 보유량 계산
-    Map<String, Integer> calculateAllOwnedStocks(Long advId);
+    Map<String, Double> calculateAllOwnedStocks(Long advId);
 }

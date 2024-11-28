@@ -321,7 +321,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         }
 
         // 보유 주식 수량 확인
-        int ownedQuantity = stockRecordService.calculateOwnedStock(gameId, request.getStockSymbol());
+        double ownedQuantity = stockRecordService.calculateOwnedStock(gameId, request.getStockSymbol());
         if (ownedQuantity < request.getQuantity()) {
             throw new IllegalArgumentException("보유 수량보다 많은 주식을 판매할 수 없습니다.");
         }
