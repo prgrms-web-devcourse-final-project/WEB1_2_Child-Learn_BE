@@ -4,12 +4,14 @@ import com.prgrms.ijuju.domain.stock.mid.dto.request.MidStockTradePointRequest;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.*;
 import com.prgrms.ijuju.domain.stock.mid.service.MidStockService;
 import com.prgrms.ijuju.domain.stock.mid.service.MidStockTradeService;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,20 +37,20 @@ public class MidStockController {
     }
 
     // 해당하는 멤버의 특정 주식 내역 가져오기
-    // 나중에 jwt로 인증 + memberId 뽑기
     @GetMapping("/{midStockId}")
-    public ResponseEntity<List<MidStockTradeInfo>> findStockTrades(@PathVariable Long midStockId) {
-        Long memberId = 1L; // 임시로 memberId 1로 설정
+    public ResponseEntity<List<MidStockTradeInfo>> findStockTrades(@PathVariable Long midStockId, @AuthenticationPrincipal SecurityUser securityUser) {
+        log.info("중급 특정 주식 내역 조회");
+        Long memberId = securityUser.getId();
         List<MidStockTradeInfo> trades = midStockService.findStockTrades(memberId, midStockId);
 
         return ResponseEntity.ok(trades);
     }
 
     // 모든 보유 주식 조회
-    // 나중에 jwt로 인증 + memberId 뽑기
     @GetMapping
-    public ResponseEntity<List<MidStockWithTradesResponse>> findAllStockTrades() {
-        Long memberId = 1L; // 임시로 memberId 1로 설정
+    public ResponseEntity<List<MidStockWithTradesResponse>> findAllStockTrades(@AuthenticationPrincipal SecurityUser securityUser) {
+        log.info("중급 모든 보유 주식 조회");
+        Long memberId = securityUser.getId();
         List<MidStockWithTradesResponse> stocksAndTrades = midStockService.getMemberStocksAndTrades(memberId);
 
         return ResponseEntity.ok(stocksAndTrades);
@@ -64,18 +66,18 @@ public class MidStockController {
 
     // 오늘 거래가능한지 확인
     @GetMapping("/{midStockId}/available")
-    public ResponseEntity<TradeAvailableResponse> isTradeAvailable(@PathVariable Long midStockId) {
-        Long memberId = 1L; // 임시로 memberId 1로 설정
+    public ResponseEntity<TradeAvailableResponse> isTradeAvailable(@PathVariable Long midStockId, @AuthenticationPrincipal SecurityUser securityUser) {
+        log.info("중급 주식 거래 가능 여부 확인");
+        Long memberId = securityUser.getId();
         TradeAvailableResponse response = midStockTradeService.isTradeAvailable(memberId, midStockId);
         return ResponseEntity.ok(response);
     }
 
     //매수
     @PostMapping("/{midStockId}/buy")
-    public ResponseEntity<Map<String, Boolean>> buyMidStock(
-            @PathVariable @Positive Long midStockId,
-            @RequestBody @Valid MidStockTradePointRequest tradePointRequest) {
-        Long memberId = 1L; // 임시로 memberId 1로 설정
+    public ResponseEntity<Map<String, Boolean>> buyMidStock(@PathVariable @Positive Long midStockId, @RequestBody @Valid MidStockTradePointRequest tradePointRequest, @AuthenticationPrincipal SecurityUser securityUser) {
+        log.info("중급 주식 매수 요청");
+        Long memberId = securityUser.getId();
         long tradePoint = tradePointRequest.getTradePoint();
         boolean warning = midStockTradeService.buyStock(memberId, midStockId, tradePoint);
         Map<String, Boolean> response = Map.of("warning", warning);
@@ -85,9 +87,9 @@ public class MidStockController {
 
     // 매도
     @PostMapping("/{midStockId}/sell")
-    public ResponseEntity<Map<String, Long>> sellMidStock(
-            @PathVariable @Positive Long midStockId) {
-        Long memberId = 1L; // 임시로 memberId 1로 설정
+    public ResponseEntity<Map<String, Long>> sellMidStock(@PathVariable @Positive Long midStockId, @AuthenticationPrincipal SecurityUser securityUser) {
+        log.info("중급 주식 매도 요청");
+        Long memberId = securityUser.getId();
         long profit = midStockTradeService.sellStock(memberId, midStockId);
         Map<String, Long> response = Map.of("earnedPoints", profit);
 
