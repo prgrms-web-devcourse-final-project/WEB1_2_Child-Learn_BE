@@ -61,8 +61,8 @@ public class StockRecordServiceImpl implements StockRecordService {
 
     // 모든 주식의 보유량 계산
     @Transactional(readOnly = true)
-    public Map<String, Double> calculateAllOwnedStocks(Long advId) {
-        List<StockRecord> records = stockRecordRepository.findByAdvancedInvest_Id(advId);
+    public Map<String, Double> calculateAllOwnedStocks(Long memberId) {
+        List<StockRecord> records = stockRecordRepository.findByMemberId(memberId);
 
         // 주식별 보유량 계산
         Map<String, Double> ownedStocks = new HashMap<>();

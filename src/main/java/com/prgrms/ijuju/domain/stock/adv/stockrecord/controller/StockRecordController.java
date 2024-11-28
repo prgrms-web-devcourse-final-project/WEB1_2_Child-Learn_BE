@@ -50,9 +50,9 @@ public class StockRecordController {
     }
 
     // 모든 주식의 보유량 조회
-    @GetMapping("/{advId}/all-quantities")
-    public ResponseEntity<Map<String, Double>> getAllOwnedStocks(@PathVariable Long advId) {
-        Map<String, Double> ownedStocks = stockRecordService.calculateAllOwnedStocks(advId);
+    @GetMapping("/{memberId}/all-quantities")
+    public ResponseEntity<Map<String, Double>> getAllOwnedStocks(@PathVariable Long memberId) {
+        Map<String, Double> ownedStocks = stockRecordService.calculateAllOwnedStocks(memberId);
         return ResponseEntity.ok(ownedStocks);
     }
 }
