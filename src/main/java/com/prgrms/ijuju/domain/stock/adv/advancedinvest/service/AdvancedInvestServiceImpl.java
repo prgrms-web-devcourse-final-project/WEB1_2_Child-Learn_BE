@@ -8,6 +8,7 @@ import com.prgrms.ijuju.domain.point.entity.StockStatus;
 import com.prgrms.ijuju.domain.point.entity.StockType;
 import com.prgrms.ijuju.domain.point.service.PointService;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.StockTransactionRequestDto;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.response.AdvStockResponseDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.entity.AdvancedInvest;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.repository.AdvancedInvestRepository;
 import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
@@ -106,15 +107,20 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     // Reference Data
     private void sendReferenceData(WebSocketSession session) {
         List<AdvStock> referenceData = advStockRepository.findByDataType(DataType.REFERENCE);
-        WebSocketUtil.send(session, referenceData);
+        List<AdvStockResponseDto> responseDto = referenceData.stream()
+                .map(stock -> AdvStockResponseDto.fromEntity(stock, 0))  // 항상 첫 번째 데이터 전송
+                .toList();
+        WebSocketUtil.send(session, responseDto);
     }
 
     // Live Data
     private void sendLiveData(WebSocketSession session, int hour) {
         List<AdvStock> liveData = advStockRepository.findByDataType(DataType.LIVE);
         if (hour < liveData.size()) {
-            AdvStock dataForHour = liveData.get(hour);
-            WebSocketUtil.send(session, dataForHour);
+            List<AdvStockResponseDto> responseDto = liveData.stream()
+                    .map(stock -> AdvStockResponseDto.fromEntity(stock, hour))  // 특정 시간 데이터를 전송
+                    .toList();
+            WebSocketUtil.send(session, responseDto);
         }
     }
 
