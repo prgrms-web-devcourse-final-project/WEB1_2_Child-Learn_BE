@@ -50,7 +50,7 @@ public class StockRecordController {
     }
 
     // 모든 주식의 보유량 조회
-    @GetMapping("/{memberId}/all-quantities")
+    @GetMapping("/{memberId}/quantities")
     public ResponseEntity<Map<String, Double>> getAllOwnedStocks(@PathVariable Long memberId) {
         Map<String, Double> ownedStocks = stockRecordService.calculateAllOwnedStocks(memberId);
         return ResponseEntity.ok(ownedStocks);
