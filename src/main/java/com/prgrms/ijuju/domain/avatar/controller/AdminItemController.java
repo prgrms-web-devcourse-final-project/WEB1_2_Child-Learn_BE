@@ -3,6 +3,7 @@ package com.prgrms.ijuju.domain.avatar.controller;
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
 import com.prgrms.ijuju.domain.avatar.service.AdminItemService;
+import com.prgrms.ijuju.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class AdminItemController {
 
     @Autowired
     private AdminItemService adminItemService;
+
+    @Autowired
+    private MemberService memberService;
 
     // 상품 등록
     @PostMapping("/register")

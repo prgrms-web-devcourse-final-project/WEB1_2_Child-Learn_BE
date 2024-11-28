@@ -26,9 +26,12 @@ public class ItemController {
 
     // 상품 구매
     @PostMapping("/purchase")
-    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(@AuthenticationPrincipal SecurityUser user, @Validated @RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto) {
+    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(
+            @AuthenticationPrincipal SecurityUser user,
+            @Validated @RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto) {
 
-        ItemResponseDTO.ItemPurchaseResponseDTO responseDTO = itemService.purchaseItem(dto, user);
+        long memberId = user.getId();
+        ItemResponseDTO.ItemPurchaseResponseDTO responseDTO = itemService.purchaseItem(dto, memberId);
 
         return ResponseEntity.ok(responseDTO);
     }

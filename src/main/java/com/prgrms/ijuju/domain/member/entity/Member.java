@@ -9,7 +9,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -78,9 +79,9 @@ public class Member extends BaseTimeEntity {
     @OneToOne(mappedBy = "member")
     private Avatar avatar;
 
-    // 회원이 소유한 아이템들
-    @OneToMany(mappedBy = "owner")
-    private List<Item> items;
+    // 아이템을 여러 사용자가 소유
+    @ManyToMany(mappedBy = "owners")
+    private Set<Item> items = new HashSet<>();
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 
@@ -90,8 +91,6 @@ public class Member extends BaseTimeEntity {
 
     public void changePw(String pw){
         this.pw=pw;
-        //, PasswordEncoder passwordEncoder :
-        //this.pw=passwordEncoder.encode(pw);
     }
 
     public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){

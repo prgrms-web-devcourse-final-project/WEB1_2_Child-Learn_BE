@@ -12,7 +12,6 @@ import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
-import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,21 +30,21 @@ public class ItemService {
 
     // 상품 구매
     @Transactional
-    public ItemResponseDTO.ItemPurchaseResponseDTO purchaseItem(ItemRequestDTO.ItemPurchaseRequestDTO dto, Long id) {
-        Member member = memberService.getMemberById(id);
+    public ItemResponseDTO.ItemPurchaseResponseDTO purchaseItem(ItemRequestDTO.ItemPurchaseRequestDTO dto, long memberId) {
+        Member member = memberService.getMemberById(memberId);
 
-        Item item = itemRepository.findById(dto.getId()).orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
-        Member member = memberRepository.findById(user.getId());
+        // 사려는 아이템 확인
+        Item item = itemRepository.findById(dto.getItemId()).orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
 
         // 회원의 코인 확인
-        if (user < item.getPrice()) {
+        if (member.getCoins() < item.getPrice()) {
             throw ItemException.NOT_ENOUGH_COINS.getItemTaskException();
         }
 
-        dto.getMember().getRemainingCoins(dto.getMember().getCoins(), item.getPrice());
+        member.getRemainingCoins(member.getCoins(), item.getPrice());
 
         Purchase newPurchase = Purchase.builder()
-                .member(dto.getMember())
+                .member(member)
                 .item(item)
                 .purchaseDate(LocalDateTime.now())
                 .build();

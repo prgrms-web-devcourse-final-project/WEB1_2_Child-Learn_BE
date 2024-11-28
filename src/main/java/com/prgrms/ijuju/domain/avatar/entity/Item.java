@@ -2,7 +2,13 @@ package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,16 +27,27 @@ public class Item {
     @Enumerated(EnumType.STRING)    // 'enum'을 문자열로 저장
     private ItemCategory category;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private Member owner;
+    @ManyToMany
+    @JoinTable(
+            name = "member_items",  // 조인 테이블 이름
+            joinColumns = @JoinColumn(name = "item_id"),  // 아이템이 속한 테이블에서 참조
+            inverseJoinColumns = @JoinColumn(name = "member_id")  // 사용자 테이블에서 참조
+    )
+    private Set<Member> owners = new HashSet<>();
 
-    @Builder
-    public Item(String name, String description, Long price, ItemCategory category, Member owner) {
+    public Item(String name, String description, Long price, ItemCategory category) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
-        this.owner = owner;
+    }
+
+    @Builder
+    public Item(String name, String description, Long price, ItemCategory category, Set<Member> owners) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.category = category;
+        this.owners = owners != null ? owners : new HashSet<>();
     }
 }

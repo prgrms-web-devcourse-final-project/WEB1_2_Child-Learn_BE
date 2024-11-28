@@ -2,9 +2,10 @@ package com.prgrms.ijuju.domain.avatar.dto.request;
 
 import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
-import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.HashSet;
 
 public class ItemRequestDTO {
 
@@ -21,12 +22,13 @@ public class ItemRequestDTO {
         }
 
         @Builder
-        public Item toEntity(){
+        public Item toEntity() {  // 회원(owner)을 매개변수로 받아서 사용
             return Item.builder()
                     .name(name)
                     .description(description)
                     .price(price)
                     .category(getCategoryEnum())
+                    .owners(new HashSet<>())  // 소유자 추가
                     .build();
         }
     }
@@ -34,8 +36,7 @@ public class ItemRequestDTO {
     // 상품 구매
     @Data
     public static class ItemPurchaseRequestDTO {
-        private Member member;
-        private Long id;
+        private Long itemId;
 
     }
 }

@@ -26,13 +26,10 @@ public class AdminItemService {
                 throw ItemException.ITEM_IS_ALREADY_REGISTED.getItemTaskException();
             }
 
-            // DTO 를 엔티티로 변환
             Item newItem = dto.toEntity();
 
-            // 아이템 저장
             Item savedItem = itemRepository.save(newItem);
 
-            // 저장한 아이템을 DTO로 변화하여 반환
             return new ItemResponseDTO.ItemRegisterResponseDTO(savedItem);
 
         } catch (Exception e) {
