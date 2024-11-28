@@ -3,10 +3,13 @@ package com.prgrms.ijuju.domain.avatar.controller;
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
 import com.prgrms.ijuju.domain.avatar.service.ItemService;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +26,9 @@ public class ItemController {
 
     // 상품 구매
     @PostMapping("/purchase")
-    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(@RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto) {
+    public ResponseEntity<ItemResponseDTO.ItemPurchaseResponseDTO> purchase(@AuthenticationPrincipal SecurityUser user, @Validated @RequestBody ItemRequestDTO.ItemPurchaseRequestDTO dto) {
 
-        ItemResponseDTO.ItemPurchaseResponseDTO responseDTO = itemService.purchaseItem(dto);
+        ItemResponseDTO.ItemPurchaseResponseDTO responseDTO = itemService.purchaseItem(dto, user);
 
         return ResponseEntity.ok(responseDTO);
     }

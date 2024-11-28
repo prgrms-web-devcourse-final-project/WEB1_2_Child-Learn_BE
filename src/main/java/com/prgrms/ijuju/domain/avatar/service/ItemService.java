@@ -9,6 +9,10 @@ import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
+import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.member.service.MemberService;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,15 +24,21 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class ItemService {
-
+    private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final PurchaseRepository purchaseRepository;
+    private final MemberService memberService;
 
     // 상품 구매
     @Transactional
-    public ItemResponseDTO.ItemPurchaseResponseDTO purchaseItem(ItemRequestDTO.ItemPurchaseRequestDTO dto) {
+    public ItemResponseDTO.ItemPurchaseResponseDTO purchaseItem(ItemRequestDTO.ItemPurchaseRequestDTO dto, Long id) {
+        Member member = memberService.getMemberById(id);
+
         Item item = itemRepository.findById(dto.getId()).orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
-        if (dto.getMember().getCoins() < item.getPrice()) {
+        Member member = memberRepository.findById(user.getId());
+
+        // 회원의 코인 확인
+        if (user < item.getPrice()) {
             throw ItemException.NOT_ENOUGH_COINS.getItemTaskException();
         }
 

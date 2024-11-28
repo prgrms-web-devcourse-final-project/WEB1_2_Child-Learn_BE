@@ -14,7 +14,11 @@ public class ItemRequestDTO {
         private String name;
         private Long price;
         private String description;
-        private ItemCategory category;
+        private String category;
+
+        public ItemCategory getCategoryEnum() {
+            return ItemCategory.valueOf(this.category.toUpperCase());
+        }
 
         @Builder
         public Item toEntity(){
@@ -22,7 +26,7 @@ public class ItemRequestDTO {
                     .name(name)
                     .description(description)
                     .price(price)
-                    .category(category)
+                    .category(getCategoryEnum())
                     .build();
         }
     }
