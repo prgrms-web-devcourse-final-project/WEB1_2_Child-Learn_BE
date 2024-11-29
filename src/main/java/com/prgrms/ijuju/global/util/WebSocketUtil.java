@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.common.util;
+package com.prgrms.ijuju.global.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.TextMessage;

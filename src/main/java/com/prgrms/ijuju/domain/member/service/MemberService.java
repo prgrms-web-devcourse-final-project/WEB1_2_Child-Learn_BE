@@ -1,5 +1,7 @@
 package com.prgrms.ijuju.domain.member.service;
 
+import com.prgrms.ijuju.domain.avatar.entity.Avatar;
+import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
 import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
@@ -9,6 +11,8 @@ import com.prgrms.ijuju.global.util.JwtUtil;
 import com.prgrms.ijuju.global.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,12 +28,13 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AvatarRepository avatarRepository;
 
     // 회원가입
     @Transactional
@@ -38,8 +43,7 @@ public class MemberService {
         try {
             // 입력한 loginId로 가입한 회원이 있는지 확인
             log.info("아이디 중복 확인 : {}", dto.getLoginId());
-            Optional<Member> member = memberRepository.findByLoginId(dto.getLoginId());
-            if (member.isPresent()) {
+            if (checkLoginId(dto.getLoginId())) {
                 log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
                 throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
             }
@@ -50,6 +54,16 @@ public class MemberService {
 
             // 회원 저장
             Member savedMember = memberRepository.save(dto.toEntity());
+
+            // 아바타 생성
+            Avatar newAvatar = Avatar.builder()
+                    .member(savedMember)
+                    .background(null)
+                    .pet(null)
+                    .hat(null)
+                    .build();
+
+            avatarRepository.save(newAvatar);
 
             return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
         } catch (Exception e) {
@@ -64,19 +78,24 @@ public class MemberService {
     }
 
     // 로그인
-    public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw) {
-        Optional<Member> findMember = memberRepository.findByLoginId(loginId);
+    public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
+       Member member = memberRepository.findByLoginId(loginId)
+               .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
 
-        if (findMember.isEmpty()) {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
-        }
-
-        if (!passwordEncoder.matches(pw, findMember.get().getPw())) {
+        if (!passwordEncoder.matches(pw, member.getPw())) {
             throw MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException();
         }
 
-        Member member = findMember.get();
+        String accessToken = generateAccessToken(member.getId(), loginId);
+        String refreshToken = generateRefreshToken(member.getId(), loginId);
+
+        addRefreshTokenToCookie(refreshToken, response);
+
+        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
+        setRefreshToken(member.getId(), refreshToken, expiryDate);
+
         MemberResponseDTO.LoginResponseDTO responseDTO = new MemberResponseDTO.LoginResponseDTO(member);
+        responseDTO.setAccessToken(accessToken);
 
         return responseDTO;
     }
@@ -121,18 +140,21 @@ public class MemberService {
         return generateAccessToken(member.getId(), member.getLoginId());
     }
 
-    // setRefreshToken
-//    public void setRefreshToken(Long id, String refreshToken) { // 에러 수정
-//        Member member = memberRepository.findById(id).get();
-//        member.updateRefreshToken(refreshToken);
-//    }
+    // 리프레시 토큰 쿠키에 담기
+    public void addRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true); // javaScript에서 접근 불가
+        refreshTokenCookie.setPath("/");    // 모든 경로에서 유효
+        refreshTokenCookie.setMaxAge(3 * 24 * 60 * 60); // 3일간 유효
+
+        response.addCookie(refreshTokenCookie);
+    }
+
     @Transactional
     public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
         Member member = memberRepository.findById(id).get();
         member.updateRefreshToken(refreshToken, expiryDate);
     }
-
-    // -------------------------------------------------------------
 
     // 나의 회원 정보 조회
     public MemberResponseDTO.ReadMyInfoResponseDTO readMyInfo(Long id) {
@@ -248,6 +270,16 @@ public class MemberService {
     public void increaseBeginStockPlayCount(Member member) {
         member.increaseBeginStockPlayCount();
         memberRepository.save(member);
+    }
+
+    public Member getMemberById(Long id) {
+        Optional<Member> opMember = memberRepository.findById(id);
+
+        if (opMember.isEmpty()) {
+            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+        }
+
+        return opMember.get();
     }
 
 }

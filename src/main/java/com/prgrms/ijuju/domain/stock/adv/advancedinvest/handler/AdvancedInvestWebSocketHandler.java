@@ -2,7 +2,7 @@ package com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prgrms.ijuju.common.util.WebSocketUtil;
+import com.prgrms.ijuju.global.util.WebSocketUtil;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.StockTransactionRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.WebSocketRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.service.AdvancedInvestService;
