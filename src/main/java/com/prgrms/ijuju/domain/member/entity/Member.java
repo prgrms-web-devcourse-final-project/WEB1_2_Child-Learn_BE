@@ -1,10 +1,7 @@
 package com.prgrms.ijuju.domain.member.entity;
 
-import com.prgrms.ijuju.domain.avatar.entity.Inventory;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
-import com.prgrms.ijuju.domain.avatar.entity.Avatar;
-import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,9 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter

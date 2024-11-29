@@ -2,7 +2,10 @@ package com.prgrms.ijuju.domain.avatar.service;
 
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
-import com.prgrms.ijuju.domain.avatar.entity.*;
+import com.prgrms.ijuju.domain.avatar.entity.Avatar;
+import com.prgrms.ijuju.domain.avatar.entity.Item;
+import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
+import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;

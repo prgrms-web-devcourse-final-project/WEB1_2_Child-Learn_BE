@@ -1,13 +1,11 @@
 package com.prgrms.ijuju.domain.avatar.dto.request;
 
-import com.prgrms.ijuju.domain.avatar.entity.Inventory;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class ItemRequestDTO {
 
