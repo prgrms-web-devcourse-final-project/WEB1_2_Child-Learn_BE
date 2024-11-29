@@ -71,4 +71,17 @@ public class Avatar extends BaseTimeEntity {
         this.hat = hat;
         return this;
     }
+
+    public void removeHat() {
+        this.hat = null;
+    }
+
+    public void removePet() {
+        this.pet = null;
+    }
+
+    public void removeBackground() {
+        this.background = null;
+    }
+
 }

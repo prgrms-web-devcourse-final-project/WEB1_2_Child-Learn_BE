@@ -5,7 +5,7 @@ import lombok.Data;
 
 public class ItemResponseDTO {
 
-    // 상품 등록
+    // 아이템 등록
     @Data
     public static class ItemRegisterResponseDTO {
         private Long id;
@@ -21,7 +21,7 @@ public class ItemResponseDTO {
         }
     }
 
-    // 상품 구매
+    // 아이템 구매
     @Data
     public static class ItemPurchaseResponseDTO {
         private String message;
@@ -31,6 +31,7 @@ public class ItemResponseDTO {
         }
     }
 
+    // 아이템 장착
     @Data
     public static class ItemEquipResponseDTO {
         private String message;
@@ -39,4 +40,15 @@ public class ItemResponseDTO {
             this.message = message;
         }
     }
+
+    // 아이템 해제
+    @Data
+    public static class ItemRemoveResponseDTO {
+        private String message;
+
+        public ItemRemoveResponseDTO(String message) {
+            this.message = message;
+        }
+    }
+
 }
