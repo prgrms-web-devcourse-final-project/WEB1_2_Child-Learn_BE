@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.article.scheduler;
 
+import com.prgrms.ijuju.domain.article.component.TrendAnalyzer;
 import com.prgrms.ijuju.domain.article.service.ArticleService;
 import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;

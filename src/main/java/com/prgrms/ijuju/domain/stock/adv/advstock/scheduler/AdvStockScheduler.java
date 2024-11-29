@@ -41,7 +41,7 @@ public class AdvStockScheduler {
 
 
         //테스트 용으로 일단 5개만 넣어뒀습니다.
-        String[] symbols = {"AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"};
+        String[] symbols = {"AAPL", "MSFT", "AMZN", "TSLA"};
 
         String referenceStartDate = DateUtil.getReferenceStartDate();
         String referenceEndDate = DateUtil.getReferenceEndDate();
