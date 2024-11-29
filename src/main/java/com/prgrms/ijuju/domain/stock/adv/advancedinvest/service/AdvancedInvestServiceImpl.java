@@ -1,6 +1,6 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.service;
 
-import com.prgrms.ijuju.common.util.WebSocketUtil;
+import com.prgrms.ijuju.global.util.WebSocketUtil;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.point.dto.request.PointRequestDTO;

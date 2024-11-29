@@ -1,21 +1,23 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
+import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "member")
-public class Member {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +33,6 @@ public class Member {
 
     @Column(unique = true)
     private String email;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private LocalDate birth;
@@ -55,7 +52,7 @@ public class Member {
     private boolean isActive = true; // 회원 활동 상태
 
     // pw 초기화 관련
-    private String resetPwToken;
+    //private String resetPwToken;
     private LocalDateTime resetPwTokenExpiryDate;
 
     @Column(columnDefinition = "TEXT")
@@ -81,6 +78,13 @@ public class Member {
         this.isActive=isActive;
     }
 
+//    // 회원의 아바타(착용한 아이템들을 포함)
+//    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Avatar avatar;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Purchase> purchases = new ArrayList<>();
+
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 
     public void changeUsername(String username){
@@ -89,8 +93,6 @@ public class Member {
 
     public void changePw(String pw){
         this.pw=pw;
-        //, PasswordEncoder passwordEncoder :
-        //this.pw=passwordEncoder.encode(pw);
     }
 
     public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
@@ -104,6 +106,11 @@ public class Member {
 
     public void changeRanking(Ranking ranking) {
         this.ranking = ranking;
+    }
+
+    public void getRemainingCoins(Long coins, Long price) {
+        Long remainCoins = coins - price;
+        this.coins = remainCoins;
     }
 
 }
