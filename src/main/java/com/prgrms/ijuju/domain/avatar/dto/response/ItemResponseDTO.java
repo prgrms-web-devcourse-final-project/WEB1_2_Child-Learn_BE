@@ -30,4 +30,13 @@ public class ItemResponseDTO {
             this.message = message;
         }
     }
+
+    @Data
+    public static class ItemEquipResponseDTO {
+        private String message;
+
+        public ItemEquipResponseDTO(String message) {
+            this.message = message;
+        }
+    }
 }

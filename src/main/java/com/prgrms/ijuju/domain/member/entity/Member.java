@@ -1,5 +1,7 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.avatar.entity.Inventory;
+import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
@@ -10,7 +12,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -53,7 +57,7 @@ public class Member extends BaseTimeEntity {
     private boolean isActive = true; // 회원 활동 상태
 
     // pw 초기화 관련
-    private String resetPwToken;
+    //private String resetPwToken;
     private LocalDateTime resetPwTokenExpiryDate;
 
     @Column(columnDefinition = "TEXT")
@@ -79,13 +83,12 @@ public class Member extends BaseTimeEntity {
         this.isActive=isActive;
     }
 
-    // 회원의 아바타(착용한 아이템들을 포함)
-    @OneToOne(mappedBy = "member")
-    private Avatar avatar;
+//    // 회원의 아바타(착용한 아이템들을 포함)
+//    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Avatar avatar;
 
-    // 아이템을 여러 사용자가 소유
-    @ManyToMany(mappedBy = "owners")
-    private Set<Item> items = new HashSet<>();
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Purchase> purchases = new ArrayList<>();
 
     // 변경 가능한 회원 정보 : 별명(username), 비밀번호(pw)
 

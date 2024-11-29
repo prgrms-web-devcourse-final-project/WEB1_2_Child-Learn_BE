@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,13 +29,8 @@ public class Item {
     @Enumerated(EnumType.STRING)    // 'enum'을 문자열로 저장
     private ItemCategory category;
 
-    @ManyToMany
-    @JoinTable(
-            name = "member_items",  // 조인 테이블 이름
-            joinColumns = @JoinColumn(name = "item_id"),  // 아이템이 속한 테이블에서 참조
-            inverseJoinColumns = @JoinColumn(name = "member_id")  // 사용자 테이블에서 참조
-    )
-    private Set<Member> owners = new HashSet<>();
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Purchase> purchases = new ArrayList<>();
 
     public Item(String name, String description, Long price, ItemCategory category) {
         this.name = name;
@@ -43,11 +40,11 @@ public class Item {
     }
 
     @Builder
-    public Item(String name, String description, Long price, ItemCategory category, Set<Member> owners) {
+    public Item(String name, String description, Long price, ItemCategory category, List<Purchase> purchases) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
-        this.owners = owners != null ? owners : new HashSet<>();
+        this.purchases = purchases;
     }
 }

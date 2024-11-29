@@ -31,7 +31,7 @@ public class MemberResponseDTO {
         private String username;
         private LocalDate birth;
         private String accessToken;
-        private String refreshToken;
+        //private String refreshToken;
 
         public LoginResponseDTO(Member member) {
             this.id= member.getId();

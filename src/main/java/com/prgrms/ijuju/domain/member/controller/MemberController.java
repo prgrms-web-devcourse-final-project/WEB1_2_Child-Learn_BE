@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -59,27 +60,15 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<MemberResponseDTO.LoginResponseDTO> login(@Validated @RequestBody MemberRequestDTO.LoginRequestDTO dto) {
+    public ResponseEntity<MemberResponseDTO.LoginResponseDTO> login(
+            @Validated @RequestBody MemberRequestDTO.LoginRequestDTO dto,
+            HttpServletResponse response) {
+
         // 인증 성공
-        MemberResponseDTO.LoginResponseDTO responseDTO = memberService.loginIdAndPw(dto.getLoginId(), dto.getPw());
+        MemberResponseDTO.LoginResponseDTO responseDTO = memberService.loginIdAndPw(dto.getLoginId(), dto.getPw(), response);
 
-        Long id = responseDTO.getId();
-        String loginId = responseDTO.getLoginId();
-
-        log.info("인증 성공, 사용자 ID: {}, 로그인 ID: {}", id, loginId);
-
-        String accessToken = memberService.generateAccessToken(id, loginId);
-        String refreshToken = memberService.generateRefreshToken(id, loginId);
-
-        log.info("Access Token 생성: {}", accessToken);
-        log.info("Refresh Token 생성: {}", refreshToken);
-
-        // memberService.setRefreshToken(id, refreshToken) 에러 수정
-        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
-        memberService.setRefreshToken(id, refreshToken, expiryDate);
-
-        responseDTO.setAccessToken(accessToken);
-        responseDTO.setRefreshToken(refreshToken);
+        log.info("인증 성공, 사용자 ID: {}, 로그인 ID: {}", responseDTO.getId(), responseDTO.getLoginId());
+        log.info("Access Token: {}", responseDTO.getAccessToken());
 
         return ResponseEntity.ok(responseDTO);
     }

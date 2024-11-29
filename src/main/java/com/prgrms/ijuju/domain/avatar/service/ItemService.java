@@ -2,10 +2,7 @@ package com.prgrms.ijuju.domain.avatar.service;
 
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
-import com.prgrms.ijuju.domain.avatar.entity.Avatar;
-import com.prgrms.ijuju.domain.avatar.entity.Item;
-import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
-import com.prgrms.ijuju.domain.avatar.entity.Purchase;
+import com.prgrms.ijuju.domain.avatar.entity.*;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +34,11 @@ public class ItemService {
         // 사려는 아이템 확인
         Item item = itemRepository.findById(dto.getItemId()).orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
 
+        Optional<Purchase> findPurchase = purchaseRepository.findByItemIdAndMemberId(dto.getItemId(), memberId);
+        if (findPurchase.isPresent()) {
+            throw ItemException.ITEM_IS_ALREADY_PURCHASED.getItemTaskException();
+        }
+
         // 회원의 코인 확인
         if (member.getCoins() < item.getPrice()) {
             throw ItemException.NOT_ENOUGH_COINS.getItemTaskException();
@@ -47,15 +50,27 @@ public class ItemService {
                 .member(member)
                 .item(item)
                 .purchaseDate(LocalDateTime.now())
+                .isEquipped(false)
                 .build();
+        log.info("아이템 구매 완료");
 
         purchaseRepository.save(newPurchase);
+
+//        // 구매한 아이템 이벤토리에 추가
+//        Inventory newInventory = Inventory.builder()
+//                .member(member)
+//                .item(item)
+//                .isEquipped(false)
+//                .purchasedAt(LocalDateTime.now())
+//                .build();
+//
+//        inventoryRepository.save(newInventory);
 
         return new ItemResponseDTO.ItemPurchaseResponseDTO("아이템을 구매했습니다");
 
     }
 
-    // 상품 장착
+    // 상품 장착(수정중)
     public void equipItemToAvatar(Avatar avatar, Item item) {
         if (item.getCategory() == ItemCategory.BACKGROUND) {
             avatar.changeBackground(item);
