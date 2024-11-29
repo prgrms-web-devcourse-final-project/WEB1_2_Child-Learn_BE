@@ -48,9 +48,7 @@ public class RankingController {
     public ResponseEntity<Page<RankingResponse>> showFriendRankings(@AuthenticationPrincipal SecurityUser securityUser,
                                                                     Pageable pageable) {
         log.info("친구 랭킹 조회");
-        if (securityUser == null) {
-            throw new MemberTaskException("인증 정보가 존재하지 않습니다.", 401);
-        }
+
         return ResponseEntity.ok(rankingService.showFriendRankingList(securityUser.getId(), pageable));
     }
 }
