@@ -31,6 +31,7 @@ public class MidStockController {
     // 중급거래목록 3가지 가져오기
     @GetMapping("/list")
     public ResponseEntity<List<MidStockResponse>> findAllStocks() {
+        log.info("중급 주식 목록 조회");
         List<MidStockResponse> stocks = midStockService.findAllStocks();
 
         return ResponseEntity.ok(stocks);
