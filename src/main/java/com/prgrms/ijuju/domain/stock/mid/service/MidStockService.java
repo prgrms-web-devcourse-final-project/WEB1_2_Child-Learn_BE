@@ -75,4 +75,13 @@ public class MidStockService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<MidStockPriceResponse> findStockFutureChartInfo(Long midStockId) {
+        log.info("중급 종목 차트 현재부터 미래 정보 2주치");
+        List<MidStockPrice> priceResponses = midStockPriceRepository.findFuture2WeeksPriceInfo(midStockId);
+        return priceResponses.stream()
+                .map(MidStockPriceResponse::of)
+                .collect(Collectors.toList());
+    }
+
 }
