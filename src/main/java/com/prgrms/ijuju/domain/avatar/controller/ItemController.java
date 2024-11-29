@@ -2,7 +2,6 @@ package com.prgrms.ijuju.domain.avatar.controller;
 
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
-import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.service.AvatarService;
 import com.prgrms.ijuju.domain.avatar.service.ItemService;
 import com.prgrms.ijuju.global.auth.SecurityUser;

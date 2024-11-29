@@ -144,6 +144,7 @@ public class MemberService {
     public void addRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true); // javaScript에서 접근 불가
+        refreshTokenCookie.setSecure(false);
         refreshTokenCookie.setPath("/");    // 모든 경로에서 유효
         refreshTokenCookie.setMaxAge(3 * 24 * 60 * 60); // 3일간 유효
 
