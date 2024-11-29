@@ -28,7 +28,7 @@ public class TrendAnalyzer {
 
 
     // 한시간 단위로 구성되어 있는 FORECAST 데이터를 일단위로 묶어 groupedData 에 저장
-    // LocalDate.of(2024, 11, 29): [153.o, 154.5, 155.0] 형식으로 구성 될 것. 아마도. 제발.
+    // LocalDate.of(2024, 11, 29): [153.0, 154.5, 155.0] 형식으로 구성 될 것. 아마도. 제발.
     private Map<LocalDate, List<Double>> groupByDate(List<Long> timestamps, List<Double> closePrices) {
         Map<LocalDate, List<Double>> groupedData = new HashMap<>();
 
@@ -55,6 +55,7 @@ public class TrendAnalyzer {
             dailyTrends.add(new DailyTrend(entry.getKey(), trendType, percentageChange));
         }
 
+        //LocalDate.of(2024,11,29), "UP", 2.5  형식으로 나올것
         return dailyTrends;
     }
 
