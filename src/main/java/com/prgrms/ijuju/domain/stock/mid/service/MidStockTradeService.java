@@ -52,7 +52,9 @@ public class MidStockTradeService {
         if (!isTradeAvailable(member, tradePoint)) {
             throw new MidPointsNotEnoughException();
         }
-        // 포인트로 save하는 거 추가 해야함 (SPENT로) ,
+
+        boolean isWarning = isAllInWarning(member, tradePoint);
+
         // 포인트 차감
         PointRequestDTO pointRequestDTO = PointRequestDTO.builder()
                 .memberId(memberId)
@@ -71,7 +73,7 @@ public class MidStockTradeService {
                 .build();
         midStockTradeRepository.save(trade);
 
-        return isAllInWarning(member, tradePoint);
+        return isWarning;
     }
 
     // 매도 주문
@@ -153,7 +155,9 @@ public class MidStockTradeService {
 
     // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
     private boolean isAllInWarning(Member member, long tradePoint) {
-        Long points = member.getPoints();
+        log.info("member.getPoints(): {}", member.getPoints());
+        log.info("tradePoint: {}", tradePoint);
+        long points = member.getPoints();
         return points == tradePoint;
     }
 }
