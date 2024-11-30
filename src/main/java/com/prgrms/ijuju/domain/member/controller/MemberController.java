@@ -75,8 +75,8 @@ public class MemberController {
 
     // refresh Access Token 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@RequestBody MemberRequestDTO.RefreshAccessTokenRequestDTO dto) {
-        String accessToken = memberService.refreshAccessToken(dto.getRefreshToken());
+    public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@CookieValue("refreshToken") String refreshToken) {
+        String accessToken = memberService.refreshAccessToken(refreshToken);
         MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO =
                 new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급");
 
