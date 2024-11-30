@@ -200,8 +200,27 @@ public class MemberService {
 
     // username으로 회원 검색
     public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto) {
+        // 검색어 유효성 검사
+        if (username == null || username.trim().isEmpty()) {
+            throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
+        }
+        
+        // 검색어 공백 제거 및 정리
+        String trimmedUsername = username.trim();
+        
+        // 최소 검색어 길이 체크
+        if (trimmedUsername.length() < 2) {
+            throw MemberException.SEARCH_KEYWORD_TOO_SHORT.getMemberTaskException();
+        }
+        
         Pageable pageable = dto.getPageable();
-        Page<Member> memberPage = memberRepository.findByUsernameContaining(username, pageable);
+        Page<Member> memberPage = memberRepository.findByUsernameContainingIgnoreCase(trimmedUsername, pageable);
+        
+        if (memberPage.isEmpty()) {
+            log.info("검색 결과가 없습니다. 검색어: {}", trimmedUsername);
+            throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
+        }
+        
         return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
     }
 
