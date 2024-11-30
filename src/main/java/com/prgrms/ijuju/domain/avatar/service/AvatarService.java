@@ -32,8 +32,6 @@ public class AvatarService {
         Item item = itemRepository.findById(dto.getItemId())
                 .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
 
-        log.info("해제할 아이템을 찾습니다");
-
         switch (item.getCategory()) {
             case HAT -> avatar.changeHat(item);
             case PET -> avatar.changePet(item);
@@ -53,6 +51,8 @@ public class AvatarService {
 
         Item item = itemRepository.findById(dto.getItemId())
                 .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
+
+        log.info("해제할 아이템을 찾습니다");
 
         switch (item.getCategory()) {
             case HAT -> avatar.removeHat();
