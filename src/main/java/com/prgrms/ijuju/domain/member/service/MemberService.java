@@ -151,6 +151,7 @@ public class MemberService {
         response.addCookie(refreshTokenCookie);
     }
 
+    // 리프레시 토큰 저장
     @Transactional
     public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
         Member member = memberRepository.findById(id).get();
@@ -183,6 +184,24 @@ public class MemberService {
     public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto) {
         Pageable pageable = dto.getPageable();
         Page<Member> memberPage = memberRepository.findAll(pageable);
+        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+    }
+
+    // 회원 조회
+    public Member getMemberById(Long id) {
+        Optional<Member> opMember = memberRepository.findById(id);
+
+        if (opMember.isEmpty()) {
+            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+        }
+
+        return opMember.get();
+    }
+
+    // username으로 회원 검색
+    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto) {
+        Pageable pageable = dto.getPageable();
+        Page<Member> memberPage = memberRepository.findByUsernameContaining(username, pageable);
         return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
     }
 
@@ -267,20 +286,10 @@ public class MemberService {
         }
     }
 
+    // 주식 게임 플레이 횟수 증가
     @Transactional
     public void increaseBeginStockPlayCount(Member member) {
         member.increaseBeginStockPlayCount();
         memberRepository.save(member);
     }
-
-    public Member getMemberById(Long id) {
-        Optional<Member> opMember = memberRepository.findById(id);
-
-        if (opMember.isEmpty()) {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
-        }
-
-        return opMember.get();
-    }
-
 }

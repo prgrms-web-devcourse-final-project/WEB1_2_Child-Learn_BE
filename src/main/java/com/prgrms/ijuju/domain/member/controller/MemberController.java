@@ -112,6 +112,15 @@ public class MemberController {
         return ResponseEntity.ok(readAllDTO);
     }
 
+    // username으로 회원 검색
+    @GetMapping("/search")
+    public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
+            @RequestParam String username,
+            MemberRequestDTO.PageRequestDTO dto) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = memberService.searchByUsername(username, dto);
+        return ResponseEntity.ok(searchResults);
+    }
+
     // 회원 탈퇴
     @PostMapping("/delete")
     public ResponseEntity<Map<String, String>> delete(@AuthenticationPrincipal SecurityUser user, @RequestBody MemberRequestDTO.DeleteRequestDTO dto) {
@@ -184,5 +193,4 @@ public class MemberController {
         return ResponseEntity.ok("임시 비밀번호를 이메일로 전송했습니다");
 
     }
-
 }
