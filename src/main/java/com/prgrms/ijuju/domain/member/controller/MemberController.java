@@ -89,6 +89,8 @@ public class MemberController {
         // memberService.setRefreshToken(user.getId(), "null"); 에러 수정
         memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
 
+        memberService.logout(user.getId());
+
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
     }
 
@@ -110,6 +112,15 @@ public class MemberController {
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> readAll(MemberRequestDTO.PageRequestDTO dto) {
         Page<MemberResponseDTO.ReadAllResponseDTO> readAllDTO = memberService.readAll(dto);
         return ResponseEntity.ok(readAllDTO);
+    }
+
+    // username으로 회원 검색
+    @GetMapping("/search")
+    public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
+            @RequestParam String username,
+            MemberRequestDTO.PageRequestDTO dto) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = memberService.searchByUsername(username, dto);
+        return ResponseEntity.ok(searchResults);
     }
 
     // 회원 탈퇴
@@ -185,4 +196,20 @@ public class MemberController {
 
     }
 
+    // 회원 활동 상태 확인
+    @GetMapping("/active/{id}")
+    public ResponseEntity<Map<String, Boolean>> checkMemberActiveStatus(@PathVariable Long id) {
+        boolean isActive = memberService.checkMemberIsActive(id);
+        return ResponseEntity.ok(Map.of("isActive", isActive));
+    }
+
+    // 회원 자신의 활성 상태 변경
+    @PatchMapping("/my-active")
+    public ResponseEntity<Map<String, String>> updateMyActiveStatus(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestParam boolean isActive) {
+        memberService.updateMemberActiveStatus(user.getId(), isActive);
+        String message = isActive ? "활성 상태로 변경되었습니다." : "비활성 상태로 변경되었습니다.";
+        return ResponseEntity.ok(Map.of("message", message));
+    }
 }

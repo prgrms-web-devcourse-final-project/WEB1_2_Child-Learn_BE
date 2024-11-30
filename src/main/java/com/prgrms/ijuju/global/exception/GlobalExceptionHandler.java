@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.global.error;
+package com.prgrms.ijuju.global.exception;
 
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.ErrorFlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardErrorCode;
