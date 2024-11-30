@@ -48,8 +48,8 @@ public class Member extends BaseTimeEntity {
     @Column
     private String profileImage; // 프로필 이미지
 
-    @Column
-    private boolean isActive = true; // 회원 활동 상태
+    @Column(nullable = false)
+    private boolean isActive = false;
 
     // pw 초기화 관련
     //private String resetPwToken;
@@ -111,6 +111,10 @@ public class Member extends BaseTimeEntity {
     public void getRemainingCoins(Long coins, Long price) {
         Long remainCoins = coins - price;
         this.coins = remainCoins;
+    }
+
+    public void updateActiveStatus(boolean isActive) {
+        this.isActive = isActive;
     }
 
 }

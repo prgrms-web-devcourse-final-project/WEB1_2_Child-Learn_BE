@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,12 +80,19 @@ public class MemberService {
 
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
-       Member member = memberRepository.findByLoginId(loginId)
-               .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+        // 동시 로그인 검증
+        validateActiveStatus(loginId);
+        
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
 
         if (!passwordEncoder.matches(pw, member.getPw())) {
             throw MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException();
         }
+
+        // 로그인 시 활성 상태로 변경
+        member.updateActiveStatus(true);
+        memberRepository.save(member);
 
         String accessToken = generateAccessToken(member.getId(), loginId);
         String refreshToken = generateRefreshToken(member.getId(), loginId);
@@ -310,5 +318,61 @@ public class MemberService {
     public void increaseBeginStockPlayCount(Member member) {
         member.increaseBeginStockPlayCount();
         memberRepository.save(member);
+    }
+
+    // 회원 활동 상태 확인
+    public boolean checkMemberIsActive(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+        return member.isActive();
+    }
+
+    // 회원 활동 상태 변경
+    @Transactional
+    public void updateMemberActiveStatus(Long id, boolean isActive) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        // 이미 같은 상태인 경우 처리
+        if (member.isActive() == isActive) {
+            String status = isActive ? "이미 활성화" : "이미 비활성화";
+            log.info("회원 ID: {}는 {} 상태입니다.", id, status);
+            return;
+        }
+        
+        member.updateActiveStatus(isActive);
+        memberRepository.save(member);
+        log.info("회원 ID: {}의 활성 상태가 {}로 변경되었습니다.", id, isActive);
+    }
+
+    // 로그아웃 처리 시 활성 상태 변경
+    @Transactional
+    public void logout(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        if (!member.isActive()) {
+            log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
+            return;
+        }
+        
+        // 로그아웃 시 비활성 상태로 변경
+        member.updateActiveStatus(false);
+        
+        // refresh token 제거
+        member.updateRefreshToken(null, null); // null로 변경
+        memberRepository.save(member);
+        log.info("회원 ID: {}가 로그아웃 되었습니다.", id);
+    }
+
+    // 동시 로그인 방지를 위한 메서드 추가
+    public void validateActiveStatus(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        if (member.isActive()) {
+            log.warn("회원 ID: {}는 이미 다른 곳에서 로그인 중입니다.", loginId);
+            throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
+        }
     }
 }
