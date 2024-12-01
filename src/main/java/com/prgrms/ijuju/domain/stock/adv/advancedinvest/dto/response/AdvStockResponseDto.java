@@ -23,6 +23,7 @@ public class AdvStockResponseDto {
     private Double lowPrice;
     private Double closePrice;
     private Long timestamp;
+    private String dataType;
 
     public static AdvStockResponseDto fromEntity(AdvStock advStock, int index) {
         return AdvStockResponseDto.builder()
@@ -33,6 +34,7 @@ public class AdvStockResponseDto {
                 .lowPrice(advStock.getLowPrices().get(index))
                 .closePrice(advStock.getClosePrices().get(index))
                 .timestamp(advStock.getTimestamps().get(index))
+                .dataType(advStock.getDataType().name())
                 .build();
     }
 }

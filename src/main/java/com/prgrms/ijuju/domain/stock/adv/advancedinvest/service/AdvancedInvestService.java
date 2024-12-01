@@ -35,5 +35,6 @@ public interface AdvancedInvestService {
     // 주식 판매
     void sellStock(Long gameId, StockTransactionRequestDto request);
 
-
+    //거래량 조회
+    void getRecentVolumes(WebSocketSession session, String stockSymbol, Long gameId);
 }
