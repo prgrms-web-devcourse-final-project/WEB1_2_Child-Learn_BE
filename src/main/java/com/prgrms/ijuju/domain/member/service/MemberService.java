@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,12 +80,19 @@ public class MemberService {
 
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
-       Member member = memberRepository.findByLoginId(loginId)
-               .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+        // 동시 로그인 검증
+        validateActiveStatus(loginId);
+        
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
 
         if (!passwordEncoder.matches(pw, member.getPw())) {
             throw MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException();
         }
+
+        // 로그인 시 활성 상태로 변경
+        member.updateActiveStatus(true);
+        memberRepository.save(member);
 
         String accessToken = generateAccessToken(member.getId(), loginId);
         String refreshToken = generateRefreshToken(member.getId(), loginId);
@@ -151,6 +159,7 @@ public class MemberService {
         response.addCookie(refreshTokenCookie);
     }
 
+    // 리프레시 토큰 저장
     @Transactional
     public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
         Member member = memberRepository.findById(id).get();
@@ -183,6 +192,43 @@ public class MemberService {
     public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto) {
         Pageable pageable = dto.getPageable();
         Page<Member> memberPage = memberRepository.findAll(pageable);
+        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+    }
+
+    // 회원 조회
+    public Member getMemberById(Long id) {
+        Optional<Member> opMember = memberRepository.findById(id);
+
+        if (opMember.isEmpty()) {
+            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+        }
+
+        return opMember.get();
+    }
+
+    // username으로 회원 검색
+    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto) {
+        // 검색어 유효성 검사
+        if (username == null || username.trim().isEmpty()) {
+            throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
+        }
+        
+        // 검색어 공백 제거 및 정리
+        String trimmedUsername = username.trim();
+        
+        // 최소 검색어 길이 체크
+        if (trimmedUsername.length() < 2) {
+            throw MemberException.SEARCH_KEYWORD_TOO_SHORT.getMemberTaskException();
+        }
+        
+        Pageable pageable = dto.getPageable();
+        Page<Member> memberPage = memberRepository.findByUsernameContainingIgnoreCase(trimmedUsername, pageable);
+        
+        if (memberPage.isEmpty()) {
+            log.info("검색 결과가 없습니다. 검색어: {}", trimmedUsername);
+            throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
+        }
+        
         return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
     }
 
@@ -267,20 +313,66 @@ public class MemberService {
         }
     }
 
+    // 주식 게임 플레이 횟수 증가
     @Transactional
     public void increaseBeginStockPlayCount(Member member) {
         member.increaseBeginStockPlayCount();
         memberRepository.save(member);
     }
 
-    public Member getMemberById(Long id) {
-        Optional<Member> opMember = memberRepository.findById(id);
-
-        if (opMember.isEmpty()) {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
-        }
-
-        return opMember.get();
+    // 회원 활동 상태 확인
+    public boolean checkMemberIsActive(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+        return member.isActive();
     }
 
+    // 회원 활동 상태 변경
+    @Transactional
+    public void updateMemberActiveStatus(Long id, boolean isActive) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        // 이미 같은 상태인 경우 처리
+        if (member.isActive() == isActive) {
+            String status = isActive ? "이미 활성화" : "이미 비활성화";
+            log.info("회원 ID: {}는 {} 상태입니다.", id, status);
+            return;
+        }
+        
+        member.updateActiveStatus(isActive);
+        memberRepository.save(member);
+        log.info("회원 ID: {}의 활성 상태가 {}로 변경되었습니다.", id, isActive);
+    }
+
+    // 로그아웃 처리 시 활성 상태 변경
+    @Transactional
+    public void logout(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        if (!member.isActive()) {
+            log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
+            return;
+        }
+        
+        // 로그아웃 시 비활성 상태로 변경
+        member.updateActiveStatus(false);
+        
+        // refresh token 제거
+        member.updateRefreshToken(null, null); // null로 변경
+        memberRepository.save(member);
+        log.info("회원 ID: {}가 로그아웃 되었습니다.", id);
+    }
+
+    // 동시 로그인 방지를 위한 메서드 추가
+    public void validateActiveStatus(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                
+        if (member.isActive()) {
+            log.warn("회원 ID: {}는 이미 다른 곳에서 로그인 중입니다.", loginId);
+            throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
+        }
+    }
 }

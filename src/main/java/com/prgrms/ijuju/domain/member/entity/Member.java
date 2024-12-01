@@ -48,8 +48,8 @@ public class Member extends BaseTimeEntity {
     @Column
     private String profileImage; // 프로필 이미지
 
-    @Column
-    private boolean isActive = true; // 회원 활동 상태
+    @Column(nullable = false)
+    private boolean isActive = false;
 
     // pw 초기화 관련
     //private String resetPwToken;
@@ -65,17 +65,13 @@ public class Member extends BaseTimeEntity {
     private Ranking ranking;
 
     @Builder
-    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins, String profileImage, boolean isActive){
+    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth){
         this.id = id;
         this.loginId=loginId;
         this.pw=pw;
         this.username=username;
         this.email=email;
         this.birth=birth;
-        this.points=points != null ? points : 1000L;
-        this.coins=coins != null ? coins : 1000L;
-        this.profileImage=profileImage;
-        this.isActive=isActive;
     }
 
 //    // 회원의 아바타(착용한 아이템들을 포함)
@@ -111,6 +107,10 @@ public class Member extends BaseTimeEntity {
     public void getRemainingCoins(Long coins, Long price) {
         Long remainCoins = coins - price;
         this.coins = remainCoins;
+    }
+
+    public void updateActiveStatus(boolean isActive) {
+        this.isActive = isActive;
     }
 
 }
