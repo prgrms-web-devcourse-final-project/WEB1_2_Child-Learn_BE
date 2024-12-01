@@ -26,6 +26,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,11 +52,15 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
     private final Map<Long, WebSocketSession> gameSessions = new ConcurrentHashMap<>();
 
+    private final Map<Long, Integer> liveSentCounter = new ConcurrentHashMap<>();
+
 
     //게임 타이머. 게임은 총 7분 진행되며, 1분은 장전 거래 시간, 5분은 거래 시간, 마지막 1분은 장후 거래 시간
     //SechduledExecutorService 를 사용하였습니다.   >>>  https://lslagi.tistory.com/entry/JAVA-ScheduledExecutorService-Timer-%EC%A0%81%EC%9A%A9%EC%9E%90%EB%8F%99-%EB%A6%AC%ED%94%8C%EB%A0%88%EC%89%AC
     @Override
     public void startGameTimer(WebSocketSession session, Long gameId, int startSecond) {
+
+
         Runnable gameTask = new Runnable() {
             int second = startSecond;
 
@@ -69,15 +74,18 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                         WebSocketUtil.send(session, "장이 닫혔습니다. 장후 거래 시간으로 거래 마무리를 해주세요");
                     }
 
-                    if (second < 60) { // 장전 거래 시간 1분 > ReferenceData
+                    if (second == 0) { // 장전 거래 시간 1분 > ReferenceData
                         sendReferenceData(session);
-                    } else if (second <= 360) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
+                        liveSentCounter.put(gameId, 0);
+
+                    } else if (second >= 60 && second <= 360 && second % 60 == 0) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
                         int livePhase = (second - 60) / 60;
                         sendLiveData(session, livePhase);
-                    } else if (second < 420) { // 장후 거래 시간 1분 > Data 없음
-                        sendEndSignal(session);
-                    } else {
+                        liveSentCounter.put(gameId, liveSentCounter.getOrDefault(gameId, 0) + 1);
+
+                    } else if (second == 420) {
                         endGame(gameId); // 게임 종료
+                        sendEndSignal(session);
 
                         // activeGame.remove(gameId) 시 남는것은 activeTimer (activeGame 은 {id, activeTimer} 이기 때문)
                         // 즉 현재 진행중인 activeTimer 를 저장하는 과정.
@@ -86,6 +94,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                             activeTimer.cancel(false); //타이머 정지
                         }
                         countDown.remove(gameId);
+                        liveSentCounter.remove(gameId);
                     }
 
                     second++; // 다음 초로 진행
@@ -114,19 +123,61 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     }
 
     // Live Data
-    private void sendLiveData(WebSocketSession session, int hour) {
+    private void sendLiveData(WebSocketSession session, int livePhase) {
         List<AdvStock> liveData = advStockRepository.findByDataType(DataType.LIVE);
-        if (hour < liveData.size()) {
+        if (livePhase < liveData.size()) {
             List<AdvStockResponseDto> responseDto = liveData.stream()
-                    .map(stock -> AdvStockResponseDto.fromEntity(stock, hour))  // 특정 시간 데이터를 전송
+                    .map(stock -> AdvStockResponseDto.fromEntity(stock, livePhase))  // 특정 시간 데이터를 전송
                     .toList();
             WebSocketUtil.send(session, responseDto);
         }
     }
 
-    // 종료 메시지. 프론트 측은 이걸 기준으로 게임 종료 문구를 올려주면 된다
     private void sendEndSignal(WebSocketSession session) {
         WebSocketUtil.send(session, "게임 종료");
+    }
+
+    // Volumes 조회
+    @Override
+    public void getRecentVolumes(WebSocketSession session, String stockSymbol, Long gameId) {
+        if (!countDown.containsKey(gameId)) {
+            throw new IllegalStateException("카운터 객체가 생성되지 않았습니다");
+        }
+
+        int liveSentCounterValue = liveSentCounter.getOrDefault(gameId, 0); // LiveData 전송 횟수
+
+        // 2. ReferenceData 가져오기
+        List<Long> referenceVolumes = advStockRepository.findBySymbolAndDataType(stockSymbol, DataType.REFERENCE)
+                .map(AdvStock::getVolumes)
+                .orElseThrow(() -> new IllegalArgumentException("Reference Data를 찾을 수 없습니다."));
+
+        // 3. LiveData 가져오기
+        List<Long> liveVolumes = advStockRepository.findBySymbolAndDataType(stockSymbol, DataType.LIVE)
+                .map(AdvStock::getVolumes)
+                .orElseThrow(() -> new IllegalArgumentException("Live Data를 찾을 수 없습니다."));
+
+        // 4. ReferenceData와 LiveData 조합
+        int referenceCount = Math.max(0, 8 - liveSentCounterValue); // ReferenceData에서 가져올 개수
+        int liveCount = Math.min(liveSentCounterValue, 8);         // LiveData에서 가져올 개수
+
+        List<Long> combinedVolumes = new ArrayList<>();
+
+        // ReferenceData에서 최신 데이터 추가
+        if (referenceCount > 0) {
+            List<Long> latestReferenceVolumes = referenceVolumes.subList(
+                    Math.max(referenceVolumes.size() - referenceCount, 0), referenceVolumes.size()
+            );
+            combinedVolumes.addAll(latestReferenceVolumes);
+        }
+
+        // LiveData에서 가장 오래된 데이터 추가
+        if (liveCount > 0) {
+            List<Long> earliestLiveVolumes = liveVolumes.subList(0, Math.min(liveCount, liveVolumes.size()));
+            combinedVolumes.addAll(earliestLiveVolumes);
+        }
+
+        // 5. WebSocket으로 전송
+        WebSocketUtil.send(session, Map.of("volumes", combinedVolumes));
     }
 
 
@@ -204,10 +255,11 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Override
     @Transactional
     public void endGame(Long gameId) {
-        activeGames.remove(gameId);
-
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvest Id 조회 불가)"));
+
+
+        activeGames.remove(gameId);
 
         advancedInvest.setPlayedToday(true);
         advancedInvestRepository.save(advancedInvest);

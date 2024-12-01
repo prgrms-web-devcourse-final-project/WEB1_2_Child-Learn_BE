@@ -14,6 +14,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -55,6 +56,11 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
                 Map<String, Object> response = new HashMap<>();
                 response.put("remainingTime", remainingTime);
                 WebSocketUtil.send(session, response); // JSON 형식으로 전송
+                break;
+
+            case "GET_VOLUMES":
+                advancedInvestService.getRecentVolumes(session, requestDto.getStockSymbol(), requestDto.getAdvId());
+                WebSocketUtil.send(session, "거래량 데이터 조회");
                 break;
 
 
