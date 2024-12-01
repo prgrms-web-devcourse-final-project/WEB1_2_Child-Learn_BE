@@ -1,6 +1,8 @@
 package com.prgrms.ijuju.domain.member.dto.response;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -75,9 +77,10 @@ public class MemberResponseDTO {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private LocalDate birth;
-        private long points;
+        private Long currentPoints;
+        private Long currentCoins;
 
-        public ReadMyInfoResponseDTO(Member member) {
+        public ReadMyInfoResponseDTO(Member member, Wallet wallet) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.email = member.getEmail();
@@ -86,7 +89,8 @@ public class MemberResponseDTO {
             this.createdAt = member.getCreatedAt();
             this.updatedAt = member.getUpdatedAt();
             this.birth = member.getBirth();
-            this.points = member.getPoints();
+            this.currentPoints = wallet.getCurrentPoints();
+            this.currentCoins = wallet.getCurrentCoins();
         }
     }
 
@@ -97,14 +101,14 @@ public class MemberResponseDTO {
         private String loginId;
         private String username;
         private LocalDateTime createdAt;
-        private long points;
+        private Long currentPoints;
 
-        public ReadOthersInfoResponseDTO(Member member) {
+        public ReadOthersInfoResponseDTO(Member member, Wallet wallet) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
             this.createdAt = member.getCreatedAt();
-            this.points = member.getPoints();
+            this.currentPoints = wallet.getCurrentPoints();
         }
     }
 
