@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.global.common.BaseTimeEntity;
@@ -78,9 +79,10 @@ public class Member extends BaseTimeEntity {
         this.isActive=isActive;
     }
 
-//    // 회원의 아바타(착용한 아이템들을 포함)
-//    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Avatar avatar;
+    // 회원의 아바타(착용한 아이템들을 포함)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "avatar_id")
+    private Avatar avatar;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Purchase> purchases = new ArrayList<>();
