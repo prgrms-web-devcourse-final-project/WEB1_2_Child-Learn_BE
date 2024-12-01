@@ -13,41 +13,31 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/articles")
+@RequestMapping("api/v1/articles")
 @RequiredArgsConstructor
 public class ArticleController {
 
     private final ArticleService articleService;
     private final ArticleScheduler articleScheduler;
 
-    //아티클 자동 생성. 즉 테스트 또는 관리자용
-    @PostMapping
-    public ResponseEntity<Article> createArticle(@RequestBody ArticleRequestDto request) {
-        Article article = Article.builder()
-                .stockSymbol(request.getStockSymbol())
-                .trendPrediction(request.getTrendPrediction())
-                .content(request.getContent())
-                .duration(request.getDuration())
-                .createdAt(LocalDateTime.now())
-                .build();
-        Article savedArticle = articleService.saveArticle(article);
-        return ResponseEntity.ok(savedArticle);
-    }
-
-    //마찬가지로 테스트용입니다. 스케쥴러에 딸려있는 아티클 생성 기능.
-    @PostMapping("/start")
-    public ResponseEntity<String> manuallyTriggerScheduler() {
-        articleScheduler.generateArticles();
-        return ResponseEntity.ok("Scheduler triggered successfully.");
-    }
-
+    // 모든 기사 조회
     @GetMapping
     public ResponseEntity<List<ArticleResponseDto>> getAllArticles() {
-        return ResponseEntity.ok(articleService.getAllArticles());
+        List<ArticleResponseDto> articles = articleService.getAllArticles();
+        return ResponseEntity.ok(articles);
     }
 
+    // 특정 주식 심볼로 기사 조회
     @GetMapping("/{stockSymbol}")
     public ResponseEntity<List<ArticleResponseDto>> getArticlesBySymbol(@PathVariable String stockSymbol) {
-        return ResponseEntity.ok(articleService.getArticlesBySymbol(stockSymbol));
+        List<ArticleResponseDto> articles = articleService.getArticlesBySymbol(stockSymbol);
+        return ResponseEntity.ok(articles);
+    }
+
+    // 스케줄러 강제 실행
+    @PostMapping("/scheduler/run")
+    public ResponseEntity<String> runScheduler() {
+        articleScheduler.generateArticles();
+        return ResponseEntity.ok("Article Scheduler 강제 실행 완료.");
     }
 }

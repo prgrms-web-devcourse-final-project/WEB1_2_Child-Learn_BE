@@ -8,11 +8,8 @@ import java.util.List;
 
 public interface ArticleService {
 
-    Article saveArticle(Article article);
-
     List<ArticleResponseDto> getAllArticles();
 
     List<ArticleResponseDto> getArticlesBySymbol(String stockSymbol);
 
-    void deleteExpiredArticles();
 }

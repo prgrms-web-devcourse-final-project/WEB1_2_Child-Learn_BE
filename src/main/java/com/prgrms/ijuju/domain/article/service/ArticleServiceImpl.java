@@ -17,11 +17,6 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleRepository articleRepository;
 
     @Override
-    public Article saveArticle(Article article) {
-        return articleRepository.save(article);
-    }
-
-    @Override
     public List<ArticleResponseDto> getAllArticles() {
         return articleRepository.findAll()
                 .stream()
@@ -36,11 +31,5 @@ public class ArticleServiceImpl implements ArticleService {
                 .map(ArticleResponseDto::toResponse)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void deleteExpiredArticles() {
-        articleRepository.deleteByExpiration(LocalDateTime.now());
-    }
-
 
 }
