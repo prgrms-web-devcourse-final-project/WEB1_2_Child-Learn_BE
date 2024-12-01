@@ -41,5 +41,5 @@ public class AdvStock {
     private List<Long> timestamps;   //시간 't'
 
     @Enumerated(EnumType.STRING)
-    private DataType dataType;  //REFERENCE or LIVE > stock.constant 내부 확인
+    private DataType dataType;  //REFERENCE or LIVE or FORECAST > stock.constant 내부 확인
 }
