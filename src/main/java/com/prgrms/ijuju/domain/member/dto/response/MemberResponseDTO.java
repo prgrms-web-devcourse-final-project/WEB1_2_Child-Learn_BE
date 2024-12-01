@@ -1,8 +1,7 @@
 package com.prgrms.ijuju.domain.member.dto.response;
-
-import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 
+import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +32,7 @@ public class MemberResponseDTO {
         private String username;
         private LocalDate birth;
         private String accessToken;
-        private String refreshToken;
+//        private String refreshToken;
 
         public LoginResponseDTO(Member member) {
             this.id= member.getId();

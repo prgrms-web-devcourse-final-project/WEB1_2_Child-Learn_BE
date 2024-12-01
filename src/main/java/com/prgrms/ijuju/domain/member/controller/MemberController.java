@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -59,36 +60,25 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<MemberResponseDTO.LoginResponseDTO> login(@Validated @RequestBody MemberRequestDTO.LoginRequestDTO dto) {
+    public ResponseEntity<MemberResponseDTO.LoginResponseDTO> login(
+            @Validated @RequestBody MemberRequestDTO.LoginRequestDTO dto,
+            HttpServletResponse response) {
+
         // 인증 성공
-        MemberResponseDTO.LoginResponseDTO responseDTO = memberService.loginIdAndPw(dto.getLoginId(), dto.getPw());
+        MemberResponseDTO.LoginResponseDTO responseDTO = memberService.loginIdAndPw(dto.getLoginId(), dto.getPw(), response);
 
-        Long id = responseDTO.getId();
-        String loginId = responseDTO.getLoginId();
-
-        log.info("인증 성공, 사용자 ID: {}, 로그인 ID: {}", id, loginId);
-
-        String accessToken = memberService.generateAccessToken(id, loginId);
-        String refreshToken = memberService.generateRefreshToken(id, loginId);
-
-        log.info("Access Token 생성: {}", accessToken);
-        log.info("Refresh Token 생성: {}", refreshToken);
-
-        // memberService.setRefreshToken(id, refreshToken) 에러 수정
-        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
-        memberService.setRefreshToken(id, refreshToken, expiryDate);
-
-        responseDTO.setAccessToken(accessToken);
-        responseDTO.setRefreshToken(refreshToken);
+        log.info("인증 성공, 사용자 ID: {}, 로그인 ID: {}", responseDTO.getId(), responseDTO.getLoginId());
+        log.info("Access Token: {}", responseDTO.getAccessToken());
 
         return ResponseEntity.ok(responseDTO);
     }
 
     // refresh Access Token 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@RequestBody MemberRequestDTO.RefreshAccessTokenRequestDTO dto) {
-        String accessToken = memberService.refreshAccessToken(dto.getRefreshToken());
-        MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO = new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급");
+    public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@CookieValue("refreshToken") String refreshToken) {
+        String accessToken = memberService.refreshAccessToken(refreshToken);
+        MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO =
+                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급");
 
         return ResponseEntity.ok(responseDTO);
     }
@@ -98,6 +88,8 @@ public class MemberController {
     public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user) {
         // memberService.setRefreshToken(user.getId(), "null"); 에러 수정
         memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
+
+        memberService.logout(user.getId());
 
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
     }
@@ -120,6 +112,15 @@ public class MemberController {
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> readAll(MemberRequestDTO.PageRequestDTO dto) {
         Page<MemberResponseDTO.ReadAllResponseDTO> readAllDTO = memberService.readAll(dto);
         return ResponseEntity.ok(readAllDTO);
+    }
+
+    // username으로 회원 검색
+    @GetMapping("/search")
+    public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
+            @RequestParam String username,
+            MemberRequestDTO.PageRequestDTO dto) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = memberService.searchByUsername(username, dto);
+        return ResponseEntity.ok(searchResults);
     }
 
     // 회원 탈퇴
@@ -195,4 +196,20 @@ public class MemberController {
 
     }
 
+    // 회원 활동 상태 확인
+    @GetMapping("/active/{id}")
+    public ResponseEntity<Map<String, Boolean>> checkMemberActiveStatus(@PathVariable Long id) {
+        boolean isActive = memberService.checkMemberIsActive(id);
+        return ResponseEntity.ok(Map.of("isActive", isActive));
+    }
+
+    // 회원 자신의 활성 상태 변경
+    @PatchMapping("/my-active")
+    public ResponseEntity<Map<String, String>> updateMyActiveStatus(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestParam boolean isActive) {
+        memberService.updateMemberActiveStatus(user.getId(), isActive);
+        String message = isActive ? "활성 상태로 변경되었습니다." : "비활성 상태로 변경되었습니다.";
+        return ResponseEntity.ok(Map.of("message", message));
+    }
 }

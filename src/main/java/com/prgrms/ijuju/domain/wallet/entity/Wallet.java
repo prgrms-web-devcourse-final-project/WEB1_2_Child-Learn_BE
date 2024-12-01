@@ -49,25 +49,25 @@ public class Wallet extends BaseTimeEntity {
             case USED -> subtractPoints(points);
             case EXCHANGED -> exchangePointsToCoin(points);
             case MAINTAINED -> {}
-            default -> throw new CustomException(WalletException.INVALID_TRANSACTION_TYPE);
+            default -> throw new CustomException(WalletException.INVALID_TRANSACTION_TYPE.getMessage());
         }
     }
     
     private void validateTransaction(Long points, TransactionType type) {
         if (points < 0) {
-            throw new CustomException(WalletException.INVALID_AMOUNT);
+            throw new CustomException(WalletException.INVALID_AMOUNT.getMessage());
         }
         
         if (type == TransactionType.USED && this.currentPoints < points) {
-            throw new CustomException(WalletException.INSUFFICIENT_POINTS);
+            throw new CustomException(WalletException.INSUFFICIENT_POINTS.getMessage());
         }
         
         if (type == TransactionType.EXCHANGED) {
             if (points < 100 || points % 100 != 0) {
-                throw new CustomException(WalletException.EXCHANGE_UNIT);
+                throw new CustomException(WalletException.EXCHANGE_UNIT.getMessage());
             }
             if (this.currentPoints < points) {
-                throw new CustomException(WalletException.INSUFFICIENT_POINTS);
+                throw new CustomException(WalletException.INSUFFICIENT_POINTS.getMessage());
             }
         }
     }
@@ -75,22 +75,29 @@ public class Wallet extends BaseTimeEntity {
     private void addPoints(Long points) {
         this.currentPoints += points;
         if (this.currentPoints < 0) {
-            throw new CustomException(WalletException.INVALID_AMOUNT);
+            throw new CustomException(WalletException.INVALID_AMOUNT.getMessage());
         }
     }
 
     private void subtractPoints(Long points) {
         if (this.currentPoints < points) {
-            throw new CustomException(WalletException.INSUFFICIENT_POINTS);
+            throw new CustomException(WalletException.INSUFFICIENT_POINTS.getMessage());
         }
         this.currentPoints -= points;
     }
 
     private void exchangePointsToCoin(Long points) {
         if (points < 100 || points % 100 != 0) {
-            throw new CustomException(WalletException.EXCHANGE_UNIT);
+            throw new CustomException(WalletException.EXCHANGE_UNIT.getMessage());
         }
         subtractPoints(points);
         this.currentCoins += points / 100;
+    }
+
+    public void subtractCoins(Long coins) {
+        if (this.currentCoins < coins) {
+            throw new CustomException(WalletException.INSUFFICIENT_POINTS.getMessage());
+        }
+        this.currentCoins -= coins;
     }
 }

@@ -11,4 +11,5 @@ public interface MidStockPriceRepositoryCustom {
     List<MidStockPrice> find2WeeksPriceInfo(Long midStockId);
     Optional<MidStockPrice> findTodayPrice(Long stockId);
     List<MidStockPrice> findByMidStockId(Long stockId);
+    List<MidStockPrice> findFuture2WeeksPriceInfo(Long stockId);
 }

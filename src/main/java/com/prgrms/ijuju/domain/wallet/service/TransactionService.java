@@ -56,7 +56,7 @@ public class TransactionService {
         pointTransactionRepository.save(transaction);
         
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-            .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+            .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
             
         notifyPointUpdate(member.getId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
     }
@@ -151,7 +151,7 @@ public class TransactionService {
         } catch (Exception e) {
             log.error("실시간 포인트 업데이트 실패: memberId={}, error={}", 
                      memberId, e.getMessage());
-            throw new CustomException(WalletException.REALTIME_SYNC_FAILED);
+            throw new CustomException(WalletException.REALTIME_SYNC_FAILED.getMessage());
         }
     }
 }

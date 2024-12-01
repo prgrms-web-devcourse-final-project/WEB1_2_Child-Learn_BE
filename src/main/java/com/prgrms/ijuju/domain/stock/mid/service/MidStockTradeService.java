@@ -11,6 +11,10 @@ import com.prgrms.ijuju.domain.stock.mid.exception.*;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockTradeRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.prgrms.ijuju.domain.wallet.dto.request.PointRequestDTO;
 import com.prgrms.ijuju.domain.wallet.dto.request.StockPointRequestDTO;
 import com.prgrms.ijuju.domain.wallet.entity.PointType;
@@ -21,11 +25,6 @@ import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +57,9 @@ public class MidStockTradeService {
         if (!isTradeAvailable(member, tradePoint)) {
             throw new MidPointsNotEnoughException();
         }
-        // 포인트로 save하는 거 추가 해야함 (SPENT로) ,
+
+        boolean isWarning = isAllInWarning(member, tradePoint);
+
         // 포인트 차감
         StockPointRequestDTO stockPointRequestDTO = StockPointRequestDTO.builder()
                 .memberId(memberId)
@@ -66,7 +67,7 @@ public class MidStockTradeService {
                 .pointType(PointType.STOCK)
                 .transactionType(TransactionType.USED)
                 .stockType(StockType.MID)
-                .build();   
+                .build();
         WalletService.simulateStockInvestment(stockPointRequestDTO);
         // 거래 내역 저장
         MidStockTrade trade = MidStockTrade.builder()
@@ -78,7 +79,7 @@ public class MidStockTradeService {
                 .build();
         midStockTradeRepository.save(trade);
 
-        return isAllInWarning(member, tradePoint);
+        return isWarning;
     }
 
     // 매도 주문
@@ -149,7 +150,7 @@ public class MidStockTradeService {
     // 거래 가능 여부 확인
     private boolean isTradeAvailable(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
         return wallet.getCurrentPoints() >= tradePoint;
     }
 
@@ -160,10 +161,10 @@ public class MidStockTradeService {
                 .orElseThrow(MidPriceNotFoundException::new);
     }
 
-    // 올인하였을때 경고 판단  이게 애매하네? -> 남은돈을 다 투자했을때 경고로
+    // 올인하였을때 경고 판단 - 남은돈을 다 투자했을때 경고로
     private boolean isAllInWarning(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
         return wallet.getCurrentPoints() == tradePoint;
     }
 }

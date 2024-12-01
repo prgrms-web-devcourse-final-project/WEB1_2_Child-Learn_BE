@@ -1,16 +1,14 @@
 package com.prgrms.ijuju.global.exception;
 
-import com.prgrms.ijuju.domain.wallet.exception.WalletException;
-
 public class CustomException extends RuntimeException {
-    private final WalletException pointException;
+    private final String message;
 
-    public CustomException(WalletException pointException) {
-        super(pointException.getMessage());
-        this.pointException = pointException;
+    public CustomException(String message) {
+        super(message);
+        this.message = message;
     }
 
-    public WalletException getPointException() {
-        return pointException;
+    public String getMessage() {
+        return message;
     }
-} 
+}
