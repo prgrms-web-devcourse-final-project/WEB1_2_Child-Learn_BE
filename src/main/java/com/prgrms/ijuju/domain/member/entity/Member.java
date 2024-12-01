@@ -52,8 +52,6 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isActive = false;
 
-    // pw 초기화 관련
-    //private String resetPwToken;
     private LocalDateTime resetPwTokenExpiryDate;
 
     @Column(columnDefinition = "TEXT")
@@ -66,13 +64,14 @@ public class Member extends BaseTimeEntity {
     private Ranking ranking;
 
     @Builder
-    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth){
+    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, Avatar avatar){
         this.id = id;
         this.loginId=loginId;
         this.pw=pw;
         this.username=username;
         this.email=email;
         this.birth=birth;
+        this.avatar=avatar;
     }
 
     // 회원의 아바타(착용한 아이템들을 포함)

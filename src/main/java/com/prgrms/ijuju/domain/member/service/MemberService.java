@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,9 +139,8 @@ public class MemberService {
 
         // 리프레시 토큰이 만료되었다면 로그아웃
         try {
-            Claims claims = JwtUtil.decode(refreshToken);   // 여기서 에러 처리가 남
+            Claims claims = JwtUtil.decode(refreshToken);
         } catch (ExpiredJwtException e) {
-            // 클라이언트한테 만료되었다고 알려주기
             throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
         }
         return generateAccessToken(member.getId(), member.getLoginId());
@@ -345,9 +343,9 @@ public class MemberService {
         log.info("회원 ID: {}의 활성 상태가 {}로 변경되었습니다.", id, isActive);
     }
 
-    // 로그아웃 처리 시 활성 상태 변경
+    // 로그아웃
     @Transactional
-    public void logout(Long id) {
+    public void logout(Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
                 
@@ -355,6 +353,9 @@ public class MemberService {
             log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
             return;
         }
+
+        // 쿠키에 있는 refreshToken 제거
+        removeRefreshTokenToCookie(member.getRefreshToken(), response);
         
         // 로그아웃 시 비활성 상태로 변경
         member.updateActiveStatus(false);
@@ -363,6 +364,15 @@ public class MemberService {
         member.updateRefreshToken(null, null); // null로 변경
         memberRepository.save(member);
         log.info("회원 ID: {}가 로그아웃 되었습니다.", id);
+    }
+
+    public void removeRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     // 동시 로그인 방지를 위한 메서드 추가
@@ -375,4 +385,5 @@ public class MemberService {
             throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
         }
     }
+
 }

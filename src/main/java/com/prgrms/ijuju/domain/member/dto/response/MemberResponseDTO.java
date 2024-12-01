@@ -46,10 +46,12 @@ public class MemberResponseDTO {
     public static class RefreshAccessTokenResponseDTO {
         private String accessToken;
         private String message;
+        private LocalDateTime expiryDate;
 
-        public RefreshAccessTokenResponseDTO(String accessToken, String message) {
+        public RefreshAccessTokenResponseDTO(String accessToken, String message, LocalDateTime expiryDate) {
             this.accessToken = accessToken;
             this.message = message;
+            this.expiryDate = expiryDate;
         }
     }
 
@@ -76,6 +78,8 @@ public class MemberResponseDTO {
         private LocalDateTime updatedAt;
         private LocalDate birth;
         private long points;
+        private long coins;
+        private boolean isActive;
 
         public ReadMyInfoResponseDTO(Member member) {
             this.id = member.getId();
@@ -87,6 +91,8 @@ public class MemberResponseDTO {
             this.updatedAt = member.getModifiedDate();
             this.birth = member.getBirth();
             this.points = member.getPoints();
+            this.coins = member.getCoins();
+            this.isActive = member.isActive();
         }
     }
 
