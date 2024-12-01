@@ -41,11 +41,12 @@ public class ItemService {
         }
 
         // 회원의 코인 확인
-        if (member.getCoins() < item.getPrice()) {
+        if (member.getWallet().getCurrentCoins() < item.getPrice()) {
             throw ItemException.NOT_ENOUGH_COINS.getItemTaskException();
         }
 
-        member.getRemainingCoins(member.getCoins(), item.getPrice());
+        // 코인 차감
+        member.getWallet().subtractCoins(item.getPrice());
 
         Purchase newPurchase = Purchase.builder()
                 .member(member)

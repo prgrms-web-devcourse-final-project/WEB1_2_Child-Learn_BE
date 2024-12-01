@@ -7,6 +7,8 @@ import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.global.util.JwtUtil;
 import com.prgrms.ijuju.global.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
@@ -17,10 +19,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
+import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,6 +38,7 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WalletRepository walletRepository;
     private final AvatarRepository avatarRepository;
 
     // 회원가입
@@ -56,6 +60,14 @@ public class MemberService {
             // 회원 저장
             Member savedMember = memberRepository.save(dto.toEntity());
 
+            // Wallet 생성 및 초기화
+            Wallet wallet = Wallet.builder()
+                .member(savedMember)
+                .currentCoins(0L)
+                .currentPoints(0L)
+                .build();
+            walletRepository.save(wallet);
+            
             // 아바타 생성
             Avatar newAvatar = Avatar.builder()
                     .member(savedMember)
@@ -171,7 +183,9 @@ public class MemberService {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
-            return new MemberResponseDTO.ReadMyInfoResponseDTO(member);
+            Wallet wallet = walletRepository.findByMemberId(member.getId())
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+            return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
@@ -182,7 +196,9 @@ public class MemberService {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
             Member member = opMember.get();
-            return new MemberResponseDTO.ReadOthersInfoResponseDTO(member);
+            Wallet wallet = walletRepository.findByMemberId(member.getId())
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+            return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }

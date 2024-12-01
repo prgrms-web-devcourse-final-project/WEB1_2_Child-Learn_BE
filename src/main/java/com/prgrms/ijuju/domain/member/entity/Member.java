@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.member.entity;
 
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
@@ -38,13 +39,9 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate birth;
 
-    @Setter
-    @Column(nullable = false)
-    private Long points = 1000L; // 초기 포인트 설정
-
-    @Setter
-    @Column(nullable = false)
-    private Long coins = 1000L; // 초기 코인 설정
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
 
     @Column
     private String profileImage; // 프로필 이미지
@@ -108,7 +105,7 @@ public class Member extends BaseTimeEntity {
 
     public void getRemainingCoins(Long coins, Long price) {
         Long remainCoins = coins - price;
-        this.coins = remainCoins;
+        this.wallet.subtractCoins(remainCoins);
     }
 
     public void updateActiveStatus(boolean isActive) {

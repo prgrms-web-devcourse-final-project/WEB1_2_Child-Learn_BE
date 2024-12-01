@@ -3,10 +3,6 @@ package com.prgrms.ijuju.domain.stock.adv.advancedinvest.service;
 import com.prgrms.ijuju.global.util.WebSocketUtil;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-import com.prgrms.ijuju.domain.point.dto.request.PointRequestDTO;
-import com.prgrms.ijuju.domain.point.entity.StockStatus;
-import com.prgrms.ijuju.domain.point.entity.StockType;
-import com.prgrms.ijuju.domain.point.service.PointService;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.request.StockTransactionRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.dto.response.AdvStockResponseDto;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.entity.AdvancedInvest;
@@ -17,6 +13,11 @@ import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.constant.TradeType;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.dto.request.StockRecordRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.service.StockRecordService;
+import com.prgrms.ijuju.domain.wallet.dto.request.WalletRequestDTO;
+import com.prgrms.ijuju.domain.wallet.service.WalletService;
+import com.prgrms.ijuju.domain.wallet.dto.request.StockPointRequestDTO;
+import com.prgrms.ijuju.domain.wallet.entity.StockType;
+import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     private final AdvStockRepository advStockRepository;
     private final MemberRepository memberRepository;
     private final StockRecordService stockRecordService;
-    private final PointService pointService;
+    private final WalletService walletService;
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     // activeGame 은 이제 AdvancedInvest Id(gameId) 와 activeTimer 를 매핑하는 HashMap 입니다.
@@ -332,12 +333,15 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         BigDecimal pointsRequired = BigDecimal.valueOf(latestClosePrice)
                 .multiply(BigDecimal.valueOf(request.getQuantity()));
         // 포인트 차감 및 거래 기록
-        PointRequestDTO pointRequest = PointRequestDTO.builder()
+        StockPointRequestDTO stockPointRequest = StockPointRequestDTO.builder()
                 .memberId(request.getMemberId())
-                .pointAmount(pointsRequired.longValue())
+                .points(pointsRequired.longValue())
+                .stockType(StockType.ADVANCED)
+                .transactionType(TransactionType.USED)
+                .stockName(request.getStockSymbol())
                 .build();
-
-        pointService.simulateStockInvestment(pointRequest, StockType.valueOf(request.getStockSymbol()), StockStatus.BUY);
+        walletService.simulateStockInvestment(stockPointRequest);
+        
 
         StockRecordRequestDto recordRequest = StockRecordRequestDto.builder()
                 .memberId(request.getMemberId())
@@ -383,12 +387,15 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                 .multiply(BigDecimal.valueOf(request.getQuantity()));
 
         // 포인트 환급 및 거래 기록
-        PointRequestDTO pointRequest = PointRequestDTO.builder()
-                .memberId(request.getMemberId())
-                .pointAmount(pointsEarned.longValue())
+        StockPointRequestDTO stockPointRequest = StockPointRequestDTO.builder()
+                .memberId(request.getMemberId())        
+                .points(pointsEarned.longValue())
+                .stockType(StockType.ADVANCED)
+                .transactionType(TransactionType.EARNED)
+                .stockName(request.getStockSymbol())
                 .build();
 
-        pointService.simulateStockInvestment(pointRequest, StockType.valueOf(request.getStockSymbol()), StockStatus.SELL);
+        walletService.simulateStockInvestment(stockPointRequest);
 
         StockRecordRequestDto recordRequest = StockRecordRequestDto.builder()
                 .memberId(request.getMemberId())
