@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendListRepository friendListRepository;
     private final MemberRepository memberRepository;    
+    private final SimpMessagingTemplate messagingTemplate;
 
     // 친구 요청 보내기
     @Transactional
@@ -50,6 +52,10 @@ public class FriendService {
 
         friendRequestRepository.save(request);
         log.info("친구 요청 생성 완료 - 발신자: {}, 수신자: {}", sender.getId(), receiver.getId());
+
+        messagingTemplate.convertAndSend("/topic/friend-requests/" + receiverId, 
+            "친구 요청이 도착했습니다: " + sender.getUsername());
+        
         return "친구 요청이 성공적으로 보내졌습니다.";
     }
     

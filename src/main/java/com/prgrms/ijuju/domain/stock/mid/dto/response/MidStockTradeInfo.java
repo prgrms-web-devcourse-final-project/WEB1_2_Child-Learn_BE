@@ -17,7 +17,7 @@ public record MidStockTradeInfo(
         return new MidStockTradeInfo(
                 midStockTrade.getTradePoint(),
                 midStockTrade.getPricePerStock(),
-                midStockTrade.getCreateDate(),
+                midStockTrade.getCreatedAt(),
                 midStockTrade.getTradeType()
         );
     }

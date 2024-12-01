@@ -27,7 +27,7 @@ public interface MidStockTradeRepository extends JpaRepository<MidStockTrade, Lo
     @Query("SELECT t FROM MidStockTrade t " +
             "WHERE t.member.id = :memberId " +
             "AND t.midStock.id = :midStockId " +
-            "AND FUNCTION('DATE', t.createDate) = CURRENT_DATE")
+            "AND FUNCTION('DATE', t.createdAt) = CURRENT_DATE")
     Optional<MidStockTrade> findTodayBuyMidStock(@Param("memberId") Long memberId, @Param("midStockId") Long midStockId);
 
     // 오늘 매도했는지 확인
@@ -35,6 +35,6 @@ public interface MidStockTradeRepository extends JpaRepository<MidStockTrade, Lo
             "WHERE t.member.id = :memberId " +
             "AND t.midStock.id = :midStockId " +
             "AND t.tradeType = 'SELL' " +
-            "AND FUNCTION('DATE', t.modifiedDate) = CURRENT_DATE")
+            "AND FUNCTION('DATE', t.updatedAt) = CURRENT_DATE")
     Optional<MidStockTrade> findTodaySellMidStock(@Param("memberId") Long memberId, @Param("midStockId") Long midStockId);
 }
