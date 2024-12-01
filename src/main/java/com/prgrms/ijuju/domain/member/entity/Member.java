@@ -65,17 +65,13 @@ public class Member extends BaseTimeEntity {
     private Ranking ranking;
 
     @Builder
-    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, Long points, Long coins, String profileImage, boolean isActive){
+    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth){
         this.id = id;
         this.loginId=loginId;
         this.pw=pw;
         this.username=username;
         this.email=email;
         this.birth=birth;
-        this.points=points != null ? points : 1000L;
-        this.coins=coins != null ? coins : 1000L;
-        this.profileImage=profileImage;
-        this.isActive=isActive;
     }
 
 //    // 회원의 아바타(착용한 아이템들을 포함)

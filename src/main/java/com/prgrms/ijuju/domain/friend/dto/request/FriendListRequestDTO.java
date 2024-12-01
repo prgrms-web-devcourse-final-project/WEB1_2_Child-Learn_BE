@@ -7,7 +7,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FriendRequestDTO {
-    
-    private Long receiverId;
+public class FriendListRequestDTO {
+
+    private Long memberId;
+    private Integer page = 0;
+    private Integer size = 10;
+    private String searchKeyword;
+    private Boolean isActive;
 } 

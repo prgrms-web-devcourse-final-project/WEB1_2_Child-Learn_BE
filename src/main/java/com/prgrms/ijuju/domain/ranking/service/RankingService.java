@@ -69,7 +69,7 @@ public class RankingService {
     // 친구의 랭킹 조회
     @Transactional(readOnly = true)
     public Page<RankingResponse> showFriendRankingList(Long memberId, Pageable pageable) {
-        List<Long> friendIds = friendListRepository.findByMemberId(memberId).stream()
+        List<Long> friendIds = friendListRepository.findAllByMemberId(memberId).stream()
                 .map(friendList -> friendList.getFriend().getId())
                 .collect(Collectors.toList());
 

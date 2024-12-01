@@ -1,18 +1,26 @@
 package com.prgrms.ijuju.domain.friend.dto.response;
 
+import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
+import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FriendResponseDTO { // 친구 조회 응답 DTO
+public class FriendResponseDTO {
+
     private Long id;
-    private String username;
-    private String profileImage;
-    private boolean isFriend;
-    private boolean isActive;
+    private RequestStatus status;
+    private boolean isRead;
+    private String senderUsername;
+
+    public FriendResponseDTO(FriendRequest friendRequest) {
+        this.id = friendRequest.getId();
+        this.status = friendRequest.getRequestStatus();
+        this.isRead = friendRequest.isRead();
+        this.senderUsername = friendRequest.getSender().getUsername();
+    }
 } 
