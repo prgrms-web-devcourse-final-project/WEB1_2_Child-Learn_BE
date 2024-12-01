@@ -1,12 +1,10 @@
 package com.prgrms.ijuju.domain.article.service;
 
-import com.prgrms.ijuju.domain.article.dto.response.ArticleResponseDto;
-import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.dto.ArticleResponseDto;
 import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,15 +1,12 @@
 package com.prgrms.ijuju.domain.article.controller;
 
-import com.prgrms.ijuju.domain.article.dto.request.ArticleRequestDto;
-import com.prgrms.ijuju.domain.article.dto.response.ArticleResponseDto;
-import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.dto.ArticleResponseDto;
 import com.prgrms.ijuju.domain.article.scheduler.ArticleScheduler;
 import com.prgrms.ijuju.domain.article.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController

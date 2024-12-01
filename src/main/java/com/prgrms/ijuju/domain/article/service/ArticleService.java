@@ -1,8 +1,7 @@
 package com.prgrms.ijuju.domain.article.service;
 
 
-import com.prgrms.ijuju.domain.article.dto.response.ArticleResponseDto;
-import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.dto.ArticleResponseDto;
 
 import java.util.List;
 

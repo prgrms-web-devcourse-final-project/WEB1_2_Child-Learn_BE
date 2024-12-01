@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.domain.article.dto.response;
+package com.prgrms.ijuju.domain.article.dto;
 
 import com.prgrms.ijuju.domain.article.entity.Article;
 import lombok.*;
