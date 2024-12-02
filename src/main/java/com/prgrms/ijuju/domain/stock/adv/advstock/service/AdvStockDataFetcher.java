@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.stock.adv.advstock.service;
 
 import com.prgrms.ijuju.domain.stock.adv.advstock.dto.PolygonCandleResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -20,7 +21,10 @@ import org.springframework.web.client.RestClient;
 public class AdvStockDataFetcher {
 
     private final RestClient restClient = RestClient.builder().build();
-    private static final String POLYGON_API_KEY = " ";  //보안상 이슈로 삭제. 나중에 properties 로 옮기고 환경변수 설정 예정
+
+    @Value("${polygon.api.key}")
+    private String POLYGON_API_KEY;
+
     private static final String BASE_URL = "https://api.polygon.io/v2/aggs/ticker/%s/range/%d/%s/%s/%s";
 
     public PolygonCandleResponse fetchStockData(String symbol, int multiplier, String time, String startDate, String endDate) {

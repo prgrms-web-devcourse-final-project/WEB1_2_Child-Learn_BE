@@ -5,10 +5,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.*;
+import org.springframework.lang.NonNull;
 
 @Configuration
+@EnableWebSocketMessageBroker
 @EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSocketConfigurer {
 
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
 
@@ -16,10 +20,25 @@ public class WebSocketConfig implements WebSocketConfigurer {
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
     }
 
+
+    //핸들러 방식
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
-                .setAllowedOrigins("*") // 모든 출처 허용
-                .withSockJS(); // SockJS 지원
+
+    public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
+        registry.addHandler(advancedInvestWebSocketHandler, "api/v1/advanced-invest")
+                .setAllowedOrigins("*"); // 핸들러 URL 등록
     }
+  
+    public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("*")
+                .withSockJS();
+    }
+    
 }

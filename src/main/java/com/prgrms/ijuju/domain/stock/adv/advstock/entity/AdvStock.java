@@ -22,24 +22,24 @@ public class AdvStock {
     private String symbol;  //주식 심볼 > 에: "AAPL"
     private String name;    //주식 이름 > 에: "Apple Inc."
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Double> openPrices;   //시가 'o'
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Double> highPrices;   //고가 'h'
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Double> lowPrices;    //저가 'l'
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Double> closePrices;  //종가 'c'
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Long> volumes;      //거래량 'v'
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Long> timestamps;   //시간 't'
 
     @Enumerated(EnumType.STRING)
-    private DataType dataType;  //REFERENCE or LIVE > stock.constant 내부 확인
+    private DataType dataType;  //REFERENCE or LIVE or FORECAST > stock.constant 내부 확인
 }

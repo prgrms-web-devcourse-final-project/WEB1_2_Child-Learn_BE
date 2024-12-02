@@ -2,11 +2,12 @@ package com.prgrms.ijuju.domain.ranking.service;
 
 import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-import com.prgrms.ijuju.domain.point.repository.PointDetailsRepository;
 import com.prgrms.ijuju.domain.ranking.dto.response.RankingResponse;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.domain.ranking.repository.RankingRepository;
+import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class RankingService {
 
     private final MemberRepository memberRepository;
     private final RankingRepository rankingRepository;
-    private final PointDetailsRepository pointDetailsRepository;
+    private final WalletRepository walletRepository;
     private final FriendListRepository friendListRepository;
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime weekStart = now.withHour(9).withMinute(0).withSecond(0).withNano(0).with(DayOfWeek.MONDAY);
@@ -36,7 +37,9 @@ public class RankingService {
 
         List<Member> members = memberRepository.findAll();
         for (Member member : members) {
-            Long weeklyPoints = pointDetailsRepository.calculateEarnedPointsForMember(member.getId(), weekStart, weekEnd);
+            Long weeklyPoints = walletRepository.findByMemberIdAndCreatedAtBetween(member.getId(), weekStart, weekEnd)
+                    .map(Wallet::getCurrentPoints)
+                    .orElse(0L);
             Optional<Ranking> existingRanking = rankingRepository.findByMemberId(member.getId());
 
             if (existingRanking.isPresent()) {

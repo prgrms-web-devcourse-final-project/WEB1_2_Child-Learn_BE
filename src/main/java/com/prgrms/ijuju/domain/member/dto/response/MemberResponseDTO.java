@@ -1,4 +1,5 @@
 package com.prgrms.ijuju.domain.member.dto.response;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.AllArgsConstructor;
@@ -77,21 +78,23 @@ public class MemberResponseDTO {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private LocalDate birth;
+        private Long currentPoints;
+        private Long currentCoins;
         private long points;
         private long coins;
         private boolean isActive;
 
-        public ReadMyInfoResponseDTO(Member member) {
+        public ReadMyInfoResponseDTO(Member member, Wallet wallet) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.email = member.getEmail();
             this.pw = member.getPw();
             this.username = member.getUsername();
-            this.createdAt = member.getCreateDate();
-            this.updatedAt = member.getModifiedDate();
+            this.createdAt = member.getCreatedAt();
+            this.updatedAt = member.getUpdatedAt();
             this.birth = member.getBirth();
-            this.points = member.getPoints();
-            this.coins = member.getCoins();
+            this.currentPoints = wallet.getCurrentPoints();
+            this.currentCoins = wallet.getCurrentCoins();
             this.isActive = member.isActive();
         }
     }
@@ -103,14 +106,14 @@ public class MemberResponseDTO {
         private String loginId;
         private String username;
         private LocalDateTime createdAt;
-        private long points;
+        private Long currentPoints;
 
-        public ReadOthersInfoResponseDTO(Member member) {
+        public ReadOthersInfoResponseDTO(Member member, Wallet wallet) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
-            this.createdAt = member.getCreateDate();
-            this.points = member.getPoints();
+            this.createdAt = member.getCreatedAt();
+            this.currentPoints = wallet.getCurrentPoints();
         }
     }
 
