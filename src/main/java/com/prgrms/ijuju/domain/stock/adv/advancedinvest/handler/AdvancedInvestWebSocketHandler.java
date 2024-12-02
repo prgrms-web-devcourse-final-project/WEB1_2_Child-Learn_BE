@@ -32,12 +32,12 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
 
         switch (requestDto.getAction()) {
             case "START_GAME":
-                advancedInvestService.startGame(session, requestDto.getAdvId());
+                advancedInvestService.startGame(session, requestDto.getMemberId());
                 WebSocketUtil.send(session, "게임이 시작되었습니다.");
                 break;
 
             case "PAUSE_GAME":
-                advancedInvestService.pauseGame(requestDto.getAdvId(), advancedInvestService.getRemainingTime(requestDto.getAdvId()));
+                advancedInvestService.pauseGame(requestDto.getAdvId());
                 WebSocketUtil.send(session, "게임이 일시정지되었습니다.");
                 break;
 

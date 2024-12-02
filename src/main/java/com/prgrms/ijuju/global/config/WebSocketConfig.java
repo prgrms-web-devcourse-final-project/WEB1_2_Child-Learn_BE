@@ -2,15 +2,17 @@ package com.prgrms.ijuju.global.config;
 
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
 
 @Configuration
 @EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSocketConfigurer {
 
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
 
@@ -18,7 +20,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
     }
 
+
+    //핸들러 방식
     @Override
+
+    public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
+        registry.addHandler(advancedInvestWebSocketHandler, "api/v1/advanced-invest")
+                .setAllowedOrigins("*"); // 핸들러 URL 등록
+    }
+  
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic");
         registry.setApplicationDestinationPrefixes("/app");
@@ -30,4 +40,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins("*")
                 .withSockJS();
     }
+    
 }
