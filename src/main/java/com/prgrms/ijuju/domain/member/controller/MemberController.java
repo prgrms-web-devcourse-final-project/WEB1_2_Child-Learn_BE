@@ -214,5 +214,15 @@ public class MemberController {
         return ResponseEntity.ok(Map.of("message", message));
     }
 
+//    @PostMapping("/update-profile-image")
+//    public String updateProfileImage(@RequestParam("file")MultipartFile file, @RequestParam("memberId") Long memberId) {
+//        try {
+//            memberService.updateProfileImage(memberId, file);
+//            return "프로필 이미지 변경이 완료되었습니다.";
+//        } catch (Exception e) {
+//            return "프로필 변경에 실패했습니다." + e.getMessage();
+//        }
+//    }
+
 
 }

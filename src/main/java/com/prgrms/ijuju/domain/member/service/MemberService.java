@@ -35,6 +35,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AvatarRepository avatarRepository;
+    //private final S3ImageStorageService s3ImageStorageService;
 
     // 회원가입
     @Transactional
@@ -386,4 +387,20 @@ public class MemberService {
         }
     }
 
+//    // profileImage 저장
+//    @Transactional
+//    public void updateProfileImage(Long memberId, MultipartFile file) throws IOException {
+//        // 회원 조회
+//        Member member = memberRepository.findById(memberId)
+//                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+//
+//        // 이미지를 S3에 업로드하고 , 반환된 URL을 Member 엔티티에 저장
+//        String profileImageUrl = s3ImageStorageService.uploadImage(file);
+//
+//        // Member의 profileImage 필드에 s3 url 저장
+//        member.changeProfileImage(profileImageUrl);
+//
+//        // DB 에 저장
+//        memberRepository.save(member);
+//    }
 }

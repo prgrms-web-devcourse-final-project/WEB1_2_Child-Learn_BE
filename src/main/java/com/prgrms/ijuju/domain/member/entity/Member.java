@@ -114,4 +114,8 @@ public class Member extends BaseTimeEntity {
         this.isActive = isActive;
     }
 
+    public void changeProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 }
