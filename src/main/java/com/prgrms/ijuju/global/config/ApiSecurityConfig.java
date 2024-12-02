@@ -34,14 +34,6 @@ public class ApiSecurityConfig {
                         headers.frameOptions(frameOptions ->
                                 frameOptions.disable()
                         )
-
-
-                //테스트용
-                ).authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                ) //테스트용
-
-                /*
                 .authorizeHttpRequests(auth -> auth
                         // 정적 리소스 허용
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
