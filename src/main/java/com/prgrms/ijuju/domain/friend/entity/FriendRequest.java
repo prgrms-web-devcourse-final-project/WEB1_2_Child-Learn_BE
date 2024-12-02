@@ -1,8 +1,8 @@
 package com.prgrms.ijuju.domain.friend.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import com.prgrms.ijuju.global.exception.CustomException;
 
 import jakarta.persistence.Column;

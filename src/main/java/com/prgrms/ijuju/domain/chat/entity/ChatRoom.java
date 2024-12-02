@@ -1,7 +1,7 @@
 package com.prgrms.ijuju.domain.chat.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.BaseTimeEntity;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

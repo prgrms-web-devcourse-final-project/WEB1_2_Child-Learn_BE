@@ -2,7 +2,7 @@ package com.prgrms.ijuju.domain.chat.entity;
 
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.BaseTimeEntity;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import com.prgrms.ijuju.global.exception.CustomException;
 import java.time.Duration;
 import java.time.LocalDateTime;
