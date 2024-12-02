@@ -20,7 +20,7 @@ import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.global.exception.CustomException;
-import com.prgrms.ijuju.global.websocket.WebSocketHandler;
+import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
 import com.prgrms.ijuju.domain.member.entity.Member;
 
 import lombok.RequiredArgsConstructor;

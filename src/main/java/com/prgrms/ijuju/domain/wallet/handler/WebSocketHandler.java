@@ -1,4 +1,4 @@
-package com.prgrms.ijuju.global.websocket;
+package com.prgrms.ijuju.domain.wallet.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prgrms.ijuju.domain.wallet.dto.response.WalletResponseDTO;

@@ -1,7 +1,8 @@
 package com.prgrms.ijuju.domain.ranking.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.BaseTimeEntity;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;

@@ -18,9 +18,8 @@ import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 import com.prgrms.ijuju.domain.wallet.repository.PointTransactionRepository;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.repository.ExchangeTransactionRepository;
-import com.prgrms.ijuju.domain.wallet.repository.MiniGameRepository;
 import com.prgrms.ijuju.global.exception.CustomException;
-import com.prgrms.ijuju.global.websocket.WebSocketHandler;
+import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
 
 import jakarta.persistence.LockModeType;
 
