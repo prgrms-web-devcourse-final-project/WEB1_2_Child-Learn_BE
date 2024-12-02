@@ -2,7 +2,10 @@ package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -26,10 +29,13 @@ public class Purchase {
 
     private LocalDateTime purchaseDate;
 
+    private boolean isEquipped; // 구매 시 장착여부
+
     @Builder
-    public Purchase(Member member, Item item, LocalDateTime purchaseDate) {
+    public Purchase(Member member, Item item, LocalDateTime purchaseDate, boolean isEquipped) {
         this.member = member;
         this.item = item;
         this.purchaseDate = purchaseDate;
+        this.isEquipped = isEquipped;
     }
 }

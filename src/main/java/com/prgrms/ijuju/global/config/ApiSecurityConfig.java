@@ -30,6 +30,7 @@ public class ApiSecurityConfig {
     SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         log.info("security 실행 ");
         http
+                .cors(cors -> cors.configure(http))  // CORS 설정 추가
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers ->

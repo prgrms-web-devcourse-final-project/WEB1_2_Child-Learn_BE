@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/api/v1/test/stocks")
+@RequestMapping("/api/v1/adv-stocks")
 @RequiredArgsConstructor
 public class AdvStockController {
 

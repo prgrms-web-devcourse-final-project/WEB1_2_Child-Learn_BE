@@ -59,6 +59,11 @@ public class AdvStockServiceImpl implements AdvStockService {
 
     @Override
     public AdvStock saveStockData(String symbol, String name, PolygonCandleResponse response, DataType dataType) {
+
+        if (response.getResults() == null || response.getResults().isEmpty()) {
+            throw new IllegalArgumentException("해당 주식에 어떠한 값도 없습니다: " + symbol);
+        }
+
         List<Double> openPrices = response.getResults().stream().map(PolygonCandleResult::getO).toList();
         List<Double> highPrices = response.getResults().stream().map(PolygonCandleResult::getH).toList();
         List<Double> lowPrices = response.getResults().stream().map(PolygonCandleResult::getL).toList();
@@ -66,7 +71,12 @@ public class AdvStockServiceImpl implements AdvStockService {
         List<Long> volumes = response.getResults().stream().map(PolygonCandleResult::getV).toList();
         List<Long> timestamps = response.getResults().stream().map(PolygonCandleResult::getT).toList();
 
-        // Stock 엔티티 생성
+        int size = response.getResults().size();
+        if (openPrices.size() != size || highPrices.size() != size || lowPrices.size() != size ||
+                closePrices.size() != size || volumes.size() != size || timestamps.size() != size) {
+            throw new IllegalStateException("해당 심볼의 값들이 mismatch 났습니다. > 모든 수치가 전달되지 않았습니다: " + symbol);
+        }
+
         AdvStock advStock = AdvStock.builder()
                 .symbol(symbol)
                 .name(name)
@@ -79,7 +89,11 @@ public class AdvStockServiceImpl implements AdvStockService {
                 .dataType(dataType)
                 .build();
 
-        return advStockRepository.save(advStock);
+        try {
+            return advStockRepository.save(advStock);
+        } catch (Exception e) {
+            throw new RuntimeException("저장 실패: " + symbol, e);
+        }
     }
 
     @Override

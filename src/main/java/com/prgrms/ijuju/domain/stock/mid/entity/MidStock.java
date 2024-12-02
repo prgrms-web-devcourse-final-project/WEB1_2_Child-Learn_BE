@@ -1,11 +1,12 @@
 package com.prgrms.ijuju.domain.stock.mid.entity;
 
-import com.prgrms.ijuju.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 
 @Entity
 @Getter
