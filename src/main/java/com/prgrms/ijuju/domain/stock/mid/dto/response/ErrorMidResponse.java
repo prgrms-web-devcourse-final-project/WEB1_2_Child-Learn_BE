@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 public class ErrorMidResponse {
 
-    private String message;
-    private int status;
-    private String code;
+    private final String message;
+    private final int status;
+    private final String code;
 
     public ErrorMidResponse(MidStockErrorCode errorCode) {
         this.message = errorCode.getMessage();

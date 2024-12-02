@@ -2,7 +2,10 @@ package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

@@ -1,14 +1,12 @@
 package com.prgrms.ijuju.domain.friend.entity;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.global.common.BaseTimeEntity;
+import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.global.exception.CustomException;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -16,48 +14,71 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.FetchType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-public class FriendRequest {
+@Table(name = "friend_request")
+public class FriendRequest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
 
     @Enumerated(EnumType.STRING)
-    private RequestStatus status;
+    @Column(nullable = false)
+    private RequestStatus requestStatus;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private boolean isRead;
 
-    private LocalDateTime updatedAt;
+    @Builder
+    public FriendRequest(Member sender, Member receiver) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.requestStatus = RequestStatus.PENDING;
+        this.isRead = false;
+    }
 
-    public FriendRequest withStatus(RequestStatus status) {
-        return FriendRequest.builder()
-                .id(this.id)
-                .sender(this.sender)
-                .receiver(this.receiver)
-                .status(status)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .build();
+    public boolean isPending() {
+        return this.requestStatus == RequestStatus.PENDING;
+    }
+
+    public void accept() {
+        validatePendingStatus();
+        this.requestStatus = RequestStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        validatePendingStatus();
+        this.requestStatus = RequestStatus.REJECTED;
+    }
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    private void validatePendingStatus() {
+        if (this.requestStatus != RequestStatus.PENDING) {
+            throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED.getMessage());
+        }
     }
 }

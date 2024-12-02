@@ -1,6 +1,5 @@
 package com.prgrms.ijuju.domain.avatar.entity;
 
-import com.prgrms.ijuju.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,9 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -29,22 +26,26 @@ public class Item {
     @Enumerated(EnumType.STRING)    // 'enum'을 문자열로 저장
     private ItemCategory category;
 
+    private String imageUrl;
+
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Purchase> purchases = new ArrayList<>();
 
-    public Item(String name, String description, Long price, ItemCategory category) {
+    public Item(String name, String description, Long price, ItemCategory category, String imageUrl) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
+        this.imageUrl = imageUrl;
     }
 
     @Builder
-    public Item(String name, String description, Long price, ItemCategory category, List<Purchase> purchases) {
+    public Item(String name, String description, Long price, ItemCategory category, String imageUrl, List<Purchase> purchases) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
+        this.imageUrl = imageUrl;
         this.purchases = purchases;
     }
 }

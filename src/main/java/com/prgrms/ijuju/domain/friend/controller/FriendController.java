@@ -1,70 +1,91 @@
 package com.prgrms.ijuju.domain.friend.controller;
 
+import com.prgrms.ijuju.domain.friend.dto.request.FriendRequestStatusDTO;
 import com.prgrms.ijuju.domain.friend.dto.request.FriendRequestDTO;
-import com.prgrms.ijuju.domain.friend.dto.response.UserResponseDTO;
-import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
+import com.prgrms.ijuju.domain.friend.dto.response.FriendListResponseDTO;
+import com.prgrms.ijuju.domain.friend.dto.response.FriendResponseDTO;
+import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
 import com.prgrms.ijuju.domain.friend.service.FriendService;
-import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
-import com.prgrms.ijuju.domain.member.service.MemberService;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/friends")
+@RequestMapping("/api/v1/friends")
+@RequiredArgsConstructor
+@Slf4j
 public class FriendController {
+    
+    private final FriendService friendService;
 
-    @Autowired
-    private FriendService friendService;
-
-    @Autowired
-    private MemberService memberService;
-
-    @GetMapping("/search")
-    public ResponseEntity<List<UserResponseDTO>> searchUsers(@RequestParam String username) {
-        List<UserResponseDTO> users = friendService.searchUsersByUsername(username);
-        return ResponseEntity.ok(users);
+    // 친구 요청 보내기
+    @PostMapping("/requests")
+    public ResponseEntity<String> sendFriendRequest(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody FriendRequestDTO requestDTO) {
+        return ResponseEntity.ok(friendService.sendFriendRequest(user.getId(), requestDTO.getReceiverId()));
     }
 
-    @PostMapping("/request")
-    public ResponseEntity<Void> sendFriendRequest(@RequestBody FriendRequestDTO friendRequestDto) {
-        if (friendRequestDto.getSenderId() == null || friendRequestDto.getReceiverId() == null) {
-            return ResponseEntity.badRequest().build();
+    // 친구 요청 처리 (수락/거절)
+    @PostMapping("/requests/{requestId}")
+    public ResponseEntity<String> processFriendRequest(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long requestId,
+            @RequestBody FriendRequestStatusDTO statusDTO) {
+        String response;
+        if (statusDTO.getStatus() == RequestStatus.ACCEPTED) {
+            response = friendService.acceptFriendRequest(requestId, user.getId());
+        } else {
+            response = friendService.rejectFriendRequest(requestId, user.getId());
         }
-        friendService.sendFriendRequest(friendRequestDto);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/request/accept/{requestId}")
-    public ResponseEntity<Void> acceptFriendRequest(@PathVariable Long requestId) {
-        friendService.acceptFriendRequest(requestId);
-        return ResponseEntity.ok().build();
+    // 보낸 친구 요청 목록 조회
+    @GetMapping("/request/sent")
+    public ResponseEntity<List<FriendResponseDTO>> showSentFriendRequests(
+            @AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(friendService.showSentFriendRequests(user.getId()));
     }
 
-    @PostMapping("/request/reject/{requestId}")
-    public ResponseEntity<Void> rejectFriendRequest(@PathVariable Long requestId) {
-        friendService.rejectFriendRequest(requestId);
-        return ResponseEntity.ok().build();
+    // 보낸 친구 요청 취소
+    @DeleteMapping("/request/sent/{requestId}")
+    public ResponseEntity<String> cancelFriendRequest(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long requestId) {
+        String response = friendService.cancelFriendRequest(user.getId(), requestId);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/requests/received/{receiverId}")
-    public ResponseEntity<List<FriendRequest>> getReceivedFriendRequests(@PathVariable Long receiverId) {
-        List<FriendRequest> requests = friendService.getReceivedFriendRequests(receiverId);
-        return ResponseEntity.ok(requests);
+    // 받은 친구 요청 목록 조회
+    @GetMapping("/request/received")
+    public ResponseEntity<List<FriendResponseDTO>> showReceivedFriendRequests(
+            @AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(friendService.showReceivedFriendRequests(user.getId()));
     }
 
-    @GetMapping("/{memberId}/friends")
-    public ResponseEntity<List<UserResponseDTO>> getFriends(@PathVariable Long memberId) {
-        List<UserResponseDTO> friends = friendService.getFriends(memberId);
-        return ResponseEntity.ok(friends);
+    // 친구 목록 조회
+    @GetMapping("/list")
+    public ResponseEntity<Page<FriendListResponseDTO>> showFriends(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        return ResponseEntity.ok(friendService.showFriends(user.getId(), page, size));
     }
 
-    @DeleteMapping("/{memberId}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable Long memberId, @PathVariable Long friendId) {
-        friendService.removeFriend(memberId, friendId);
-        return ResponseEntity.ok().build();
+    // 친구 삭제
+    @DeleteMapping("/remove/{friendId}")
+    public ResponseEntity<String> removeFriend(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long friendId) {
+        return ResponseEntity.ok(friendService.removeFriend(user.getId(), friendId));
     }
-} 
+}

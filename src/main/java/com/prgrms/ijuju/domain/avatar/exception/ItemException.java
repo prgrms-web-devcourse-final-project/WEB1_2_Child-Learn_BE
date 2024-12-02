@@ -1,6 +1,5 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
-import com.prgrms.ijuju.domain.member.exception.MemberTaskException;
 import org.springframework.http.HttpStatus;
 
 public enum ItemException {

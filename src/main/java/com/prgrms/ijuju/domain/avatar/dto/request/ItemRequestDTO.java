@@ -1,13 +1,9 @@
 package com.prgrms.ijuju.domain.avatar.dto.request;
 
-import com.prgrms.ijuju.domain.avatar.entity.Inventory;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.domain.avatar.entity.ItemCategory;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class ItemRequestDTO {
 
@@ -30,7 +26,7 @@ public class ItemRequestDTO {
                     .description(description)
                     .price(price)
                     .category(getCategoryEnum())
-                    .purchases(new ArrayList<>())  // 소유자 추가
+                    //.purchases(new ArrayList<>())  // 소유자 추가
                     .build();
         }
 
@@ -43,12 +39,20 @@ public class ItemRequestDTO {
 
     }
 
+    // 아이템 장착
     @Data
     public static class ItemEquipRequestDTO {
-        private Long id;
-        private String name;
-        private Long price;
-        private String description;
-        private String category;
+        private Long memberId;
+        private Long itemId;
+//        private String name;
+//        private Long price;
+//        private String description;
+//        private String category;
+    }
+
+    // 아이템 해제
+    @Data
+    public static class ItemRemoveRequestDTO {
+        private Long itemId;
     }
 }

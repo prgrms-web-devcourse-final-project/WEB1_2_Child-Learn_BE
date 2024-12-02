@@ -24,11 +24,12 @@ public class AvatarService {
 
     // 아이템 장착
     @Transactional
-    public ItemResponseDTO.ItemEquipResponseDTO equipItem(Long memberId, Long itemId) {
+    public ItemResponseDTO.ItemEquipResponseDTO equipItem(ItemRequestDTO.ItemEquipRequestDTO dto, long memberId) {
+
         Avatar avatar = avatarRepository.findByMemberId(memberId)
                 .orElseThrow(() -> AvatarException.AVATAR_NOT_FOUND.getItemTaskException());
 
-        Item item = itemRepository.findById(itemId)
+        Item item = itemRepository.findById(dto.getItemId())
                 .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
 
         switch (item.getCategory()) {
@@ -43,7 +44,25 @@ public class AvatarService {
         return new ItemResponseDTO.ItemEquipResponseDTO("아이템이 장착되었습니다");
     }
 
+    // 아이템 해제
+    @Transactional
+    public ItemResponseDTO.ItemRemoveResponseDTO removeItem(ItemRequestDTO.ItemRemoveRequestDTO dto, long memberId) {
+        Avatar avatar = avatarRepository.findByMemberId(memberId).orElseThrow(() -> AvatarException.AVATAR_NOT_FOUND.getItemTaskException());
 
+        Item item = itemRepository.findById(dto.getItemId())
+                .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
 
+        log.info("해제할 아이템을 찾습니다");
 
+        switch (item.getCategory()) {
+            case HAT -> avatar.removeHat();
+            case PET -> avatar.removePet();
+            case BACKGROUND -> avatar.removeBackground();
+            default -> throw ItemException.INAVALID_ITEM_CATEGORY.getItemTaskException();
+        }
+
+        avatarRepository.save(avatar);
+
+        return new ItemResponseDTO.ItemRemoveResponseDTO("아이템이 성공적으로 해제되었습니다.");
+    }
 }

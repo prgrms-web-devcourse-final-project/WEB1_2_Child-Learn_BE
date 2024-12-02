@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCustom{
+public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     public MidStockPriceRepositoryImpl(EntityManager em) {
@@ -70,6 +70,22 @@ public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCusto
         return queryFactory
                 .selectFrom(midStockPrice)
                 .where(midStockPrice.midStock.id.eq(stockId))
+                .fetch();
+    }
+
+    @Override
+    public List<MidStockPrice> findFuture2WeeksPriceInfo(Long midStockId) {
+        QMidStockPrice midStockPrice = QMidStockPrice.midStockPrice;
+
+        LocalDateTime startDate = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endDate = startDate.plusWeeks(2).withHour(23).withMinute(59).withSecond(59);
+
+        return queryFactory
+                .selectFrom(midStockPrice)
+                .where(
+                        midStockPrice.midStock.id.eq(midStockId),
+                        midStockPrice.priceDate.between(startDate, endDate)
+                )
                 .fetch();
     }
 
