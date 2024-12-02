@@ -3,7 +3,7 @@ name: Ijuju backend deploy
 on:
   push:
     branches:
-      - main
+      - deploy
   workflow_dispatch:
 
 env:
