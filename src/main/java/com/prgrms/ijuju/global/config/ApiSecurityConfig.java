@@ -52,8 +52,6 @@ public class ApiSecurityConfig {
 
                         .anyRequest().authenticated()   // 나머지는 인증 필요
                 )
-
-                 */
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         log.info("JWT 필터 통과");
 
