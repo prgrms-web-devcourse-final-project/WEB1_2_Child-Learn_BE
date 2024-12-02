@@ -15,7 +15,7 @@ public interface AdvancedInvestService {
     void startGame(WebSocketSession session, Long memberId);
 
     // 게임 일시정지
-    void pauseGame(Long gameId, int second);
+    void pauseGame(Long gameId);
 
     // 게임 재개
     void resumeGame(WebSocketSession session, Long gameId);
