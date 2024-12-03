@@ -13,7 +13,7 @@ import com.prgrms.ijuju.domain.article.contant.DataType;
 
 
 @RestController
-@RequestMapping("/api/articles")
+@RequestMapping("/api/v1/articles")
 @RequiredArgsConstructor
 public class ArticleController {
 
