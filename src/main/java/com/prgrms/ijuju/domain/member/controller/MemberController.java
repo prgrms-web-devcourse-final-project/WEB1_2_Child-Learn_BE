@@ -109,17 +109,22 @@ public class MemberController {
 
     // 모든 회원 목록 조회
     @GetMapping("/all")
-    public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> readAll(MemberRequestDTO.PageRequestDTO dto) {
-        Page<MemberResponseDTO.ReadAllResponseDTO> readAllDTO = memberService.readAll(dto);
-        return ResponseEntity.ok(readAllDTO);
+    public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> readAll(
+            @AuthenticationPrincipal SecurityUser user,
+            MemberRequestDTO.PageRequestDTO dto) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> members = 
+            memberService.readAll(dto, user.getId());
+        return ResponseEntity.ok(members);
     }
-
+    
     // username으로 회원 검색
     @GetMapping("/search")
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
             @RequestParam String username,
-            MemberRequestDTO.PageRequestDTO dto) {
-        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = memberService.searchByUsername(username, dto);
+            MemberRequestDTO.PageRequestDTO dto,
+            @AuthenticationPrincipal SecurityUser user) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = 
+            memberService.searchByUsername(username, dto, user.getId());
         return ResponseEntity.ok(searchResults);
     }
 

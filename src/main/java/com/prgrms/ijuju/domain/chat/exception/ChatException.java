@@ -38,16 +38,4 @@ public enum ChatException {
         this.message = message;
         this.httpStatus = httpStatus;
     }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
 }

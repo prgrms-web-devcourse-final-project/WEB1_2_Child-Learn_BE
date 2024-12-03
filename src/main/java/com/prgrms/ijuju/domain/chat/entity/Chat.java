@@ -73,7 +73,7 @@ public class Chat extends BaseTimeEntity {
 
     public void delete() {
         if (!isDeletable()) {
-            throw new CustomException(ChatException.MESSAGE_DELETION_TIMEOUT.getMessage());
+            throw new CustomException(ChatException.MESSAGE_DELETION_TIMEOUT);
         }
         this.isDeleted = true;
         this.content = "삭제된 메시지입니다";

@@ -20,6 +20,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("Unexpected error: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .code("SERVER_ERROR")
+                .message("서버 오류가 발생했습니다.")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(MidStockException.class)
     protected ResponseEntity<ErrorMidResponse> handleMidStockException(final MidStockException e) {
         log.error("MidStockException: {}", e.getMessage());
@@ -34,32 +47,6 @@ public class GlobalExceptionHandler {
         final FlipCardErrorCode errorCode = e.getErrorCode();
         final ErrorFlipCardResponse response = ErrorFlipCardResponse.of(errorCode);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
-    }
-
-    // @ExceptionHandler(WalletException.class)
-    // public ResponseEntity<ErrorResponse> handleWalletException(WalletException e) {
-    //     log.error("WalletException: {}", e.getMessage());
-
-    //     ErrorResponse response = ErrorResponse.builder()
-    //             .code(e.getCode())
-    //             .message(e.getMessage())
-    //             .status(e.getHttpStatus().value())
-    //             .build();
-
-    //     return new ResponseEntity<>(response, e.getHttpStatus());
-    // }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("Unexpected error: {}", e.getMessage());
-
-        ErrorResponse response = ErrorResponse.builder()
-                .code("SERVER_ERROR")
-                .message("서버 오류가 발생했습니다.")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(WordQuizException.class)

@@ -78,7 +78,7 @@ public class FriendRequest extends BaseTimeEntity {
 
     private void validatePendingStatus() {
         if (this.requestStatus != RequestStatus.PENDING) {
-            throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED.getMessage());
+            throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED);
         }
     }
 }
