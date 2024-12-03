@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
 public record MidStockPriceResponse(
         long highPrice,
         long lowPrice,
