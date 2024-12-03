@@ -186,7 +186,7 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
@@ -199,7 +199,7 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();

@@ -69,4 +69,17 @@ public class GlobalExceptionHandler {
         final ErrorWordQuizResponse response = ErrorWordQuizResponse.of(errorCode);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        ErrorResponse response = ErrorResponse.builder()
+                .code(e.getCode())
+                .message(e.getMessage())
+                .status(e.getStatus())
+                .build();
+        
+        return ResponseEntity
+                .status(e.getStatus())
+                .body(response);
+    }
 }
