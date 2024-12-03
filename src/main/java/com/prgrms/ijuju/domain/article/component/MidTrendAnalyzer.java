@@ -4,7 +4,6 @@ import com.prgrms.ijuju.domain.article.data.Trend;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

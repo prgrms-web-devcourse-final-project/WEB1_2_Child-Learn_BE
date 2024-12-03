@@ -20,7 +20,7 @@ import java.util.Map;
 @Component
 public class AdvTrendAnalyzer {
 
-    // 트렌드 계산 메소드
+
     public List<Trend> analyzeTrends(AdvStock advStock) {
         Map<LocalDate, List<Double>> groupedData = groupByDate(advStock.getTimestamps(), advStock.getClosePrices());
 
@@ -30,6 +30,7 @@ public class AdvTrendAnalyzer {
     }
 
     // 한 시간 단위 데이터를 일 단위로 묶음
+    // AdvStock 은 timeStamps 로 구분되어 있기에, LocalData 로 변환할 과정이 필요하기에 생성된 메소드 입니다
     private Map<LocalDate, List<Double>> groupByDate(List<Long> timestamps, List<Double> closePrices) {
         Map<LocalDate, List<Double>> groupedData = new HashMap<>();
 
@@ -41,7 +42,7 @@ public class AdvTrendAnalyzer {
         return groupedData;
     }
 
-    // DailyTrend 계산
+
     private List<DailyTrend> calculateDailyTrends(Map<LocalDate, List<Double>> groupedData) {
         List<DailyTrend> dailyTrends = new ArrayList<>();
 
@@ -65,50 +66,36 @@ public class AdvTrendAnalyzer {
         return "STABLE";
     }
 
-    // Composite Trends 계산
+
     private List<Trend> calculateCompositeTrends(List<DailyTrend> dailyTrends, String symbol) {
         List<Trend> trends = new ArrayList<>();
 
-        // Short Term (3일)
+
         if (dailyTrends.size() >= 3) {
             trends.add(new Trend("SHORT_TERM",
                     calculateTrendDescription(dailyTrends.subList(0, Math.min(3, dailyTrends.size()))), symbol));
         }
 
-        // Mid Term (7일)
+
         if (dailyTrends.size() >= 7) {
             trends.add(new Trend("MID_TERM",
                     calculateTrendDescription(dailyTrends.subList(0, Math.min(7, dailyTrends.size()))), symbol));
         }
 
-        // Long Term (14일)
+
         trends.add(new Trend("LONG_TERM", calculateTrendDescription(dailyTrends), symbol));
 
         return trends;
     }
 
-    // 트렌드 설명 생성
+
     private String calculateTrendDescription(List<DailyTrend> dailyTrends) {
-        StringBuilder description = new StringBuilder();
-        String currentTrend = null;
-        int duration = 0;
 
-        for (DailyTrend dailyTrend : dailyTrends) {
-            if (!dailyTrend.getTrendType().equals(currentTrend)) {
-                if (currentTrend != null) {
-                    description.append(currentTrend).append(": ").append(duration).append("일, ");
-                }
-                currentTrend = dailyTrend.getTrendType();
-                duration = 1;
-            } else {
-                duration++;
-            }
-        }
+        long upCount = dailyTrends.stream().filter(d -> d.getTrendType().equals("UP")).count();
+        long downCount = dailyTrends.stream().filter(d -> d.getTrendType().equals("DOWN")).count();
 
-        if (currentTrend != null) {
-            description.append(currentTrend).append(": ").append(duration).append("일");
-        }
-
-        return description.toString();
+        if (upCount > downCount) return "UP";
+        if (downCount > upCount) return "DOWN";
+        return "STABLE";
     }
 }
