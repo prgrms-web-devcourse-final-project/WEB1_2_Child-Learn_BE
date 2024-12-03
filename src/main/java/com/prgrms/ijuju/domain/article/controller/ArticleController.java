@@ -20,14 +20,14 @@ public class ArticleController {
     // 모든 기사 조회
     @GetMapping
     public ResponseEntity<List<ArticleResponseDto>> getAllArticles() {
-        List<ArticleResponseDto> articles = articleService.getAllArticles();
+        List<ArticleResponseDto> articles = articleService.getAllArticlesForAdv();
         return ResponseEntity.ok(articles);
     }
 
     // 특정 주식 심볼로 기사 조회
     @GetMapping("/{stockSymbol}")
     public ResponseEntity<List<ArticleResponseDto>> getArticlesBySymbol(@PathVariable String stockSymbol) {
-        List<ArticleResponseDto> articles = articleService.getArticlesBySymbol(stockSymbol);
+        List<ArticleResponseDto> articles = articleService.getArticlesBySymbolForAdv(stockSymbol);
         return ResponseEntity.ok(articles);
     }
 

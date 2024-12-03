@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/adv-stocks")
 @RequiredArgsConstructor
 public class AdvStockController {
-    
+
     private final AdvStockScheduler advStockScheduler;
     private final AdvStockRepository advStockRepository;
 

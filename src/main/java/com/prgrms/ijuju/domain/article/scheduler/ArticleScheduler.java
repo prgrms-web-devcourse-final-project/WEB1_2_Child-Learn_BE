@@ -1,13 +1,11 @@
 package com.prgrms.ijuju.domain.article.scheduler;
 
-import com.prgrms.ijuju.domain.article.component.AdvTrendAnalyzerImpl;
+import com.prgrms.ijuju.domain.article.component.AdvTrendAnalyzer;
 import com.prgrms.ijuju.domain.article.data.Trend;
 import com.prgrms.ijuju.domain.article.entity.Article;
-import com.prgrms.ijuju.domain.article.service.ArticleGenerationService;
 import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
 import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
-import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,8 +21,8 @@ public class ArticleScheduler {
     private static final int MAX_ARTICLES = 10; // 최대 기사 개수
 
     private final AdvStockRepository advStockRepository;
-    private final AdvTrendAnalyzerImpl trendAnalyzer;
-    private final ArticleGenerationService articleGenerationService;
+    private final AdvTrendAnalyzer trendAnalyzer;
+    private final AdvArticleGenerationService articleGenerationService;
 
     @Scheduled(cron = "0 30 7 * * ?", zone = "Asia/Seoul")
     public void generateArticles() {

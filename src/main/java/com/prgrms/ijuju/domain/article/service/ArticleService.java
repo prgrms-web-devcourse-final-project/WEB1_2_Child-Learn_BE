@@ -1,14 +1,33 @@
 package com.prgrms.ijuju.domain.article.service;
 
-
 import com.prgrms.ijuju.domain.article.dto.ArticleResponseDto;
+import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public interface ArticleService {
+@Service
+@RequiredArgsConstructor
+public class ArticleService {
 
-    List<ArticleResponseDto> getAllArticles();
+    private final ArticleRepository articleRepository;
 
-    List<ArticleResponseDto> getArticlesBySymbol(String stockSymbol);
+    public List<ArticleResponseDto> getAllArticlesForAdv() {
+        return articleRepository.findAll()
+                .stream()
+                .map(ArticleResponseDto::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ArticleResponseDto> getArticlesBySymbolForAdv(String stockSymbol) {
+        return articleRepository.findByStockSymbol(stockSymbol)
+                .stream()
+                .map(ArticleResponseDto::toResponse)
+                .collect(Collectors.toList());
+    }
+
+
 
 }

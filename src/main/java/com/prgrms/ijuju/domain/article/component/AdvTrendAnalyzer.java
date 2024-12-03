@@ -13,8 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Adv 같은 경우는 timeStamp 로 이루어져 있으며, 한시간 봉으로 데이터가 이루어져 있습니다
+ * 데이터 분석을 위해서 모든 데이터를 전부 "하루" 단위로 변경합니다
+ */
 @Component
-public class AdvTrendAnalyzerImpl implements TrendAnalyzer {
+public class AdvTrendAnalyzer {
 
     // 트렌드 계산 메소드
     public List<Trend> analyzeTrends(AdvStock advStock) {
