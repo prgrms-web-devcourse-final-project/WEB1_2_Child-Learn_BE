@@ -36,11 +36,16 @@ public class MidStockPriceRepositoryImpl implements MidStockPriceRepositoryCusto
     public List<MidStockPrice> find2WeeksPriceInfo(Long midStockId) {
         QMidStockPrice midStockPrice = QMidStockPrice.midStockPrice;
 
+        LocalDateTime endDate = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+        LocalDateTime startDate = endDate.minusWeeks(2).withHour(0).withMinute(0).withSecond(0);
+
         return queryFactory
                 .selectFrom(midStockPrice)
-                .where(midStockPrice.midStock.id.eq(midStockId))
+                .where(
+                        midStockPrice.midStock.id.eq(midStockId),
+                        midStockPrice.priceDate.between(startDate, endDate)
+                )
                 .orderBy(midStockPrice.priceDate.asc())
-                .limit(16)
                 .fetch();
     }
 
