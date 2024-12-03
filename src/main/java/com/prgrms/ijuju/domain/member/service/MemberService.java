@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.friend.service.FriendService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final WalletRepository walletRepository;
     private final AvatarRepository avatarRepository;
+    private final FriendService friendService;
 
     // 회원가입
     @Transactional
@@ -205,10 +207,14 @@ public class MemberService {
     }
 
     // 모든 회원 목록
-    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto) {
+    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto, Long currentMemberId) {
         Pageable pageable = dto.getPageable();
         Page<Member> memberPage = memberRepository.findAll(pageable);
-        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+        
+        return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
+            member,
+            friendService.getFriendshipStatus(currentMemberId, member.getId())
+        ));
     }
 
     // 회원 조회

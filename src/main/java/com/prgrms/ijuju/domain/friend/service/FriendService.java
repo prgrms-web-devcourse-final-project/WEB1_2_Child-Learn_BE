@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.prgrms.ijuju.domain.friend.entity.FriendshipStatus;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -71,13 +72,16 @@ public class FriendService {
     // 보낸 친구 요청 취소
     @Transactional
     public String cancelFriendRequest(Long senderId, Long requestId) {
-        Member sender = memberRepository.findById(senderId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_NOT_FOUND.getMessage()));
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new CustomException(FriendException.FRIEND_REQUEST_NOT_FOUND.getMessage()));
                 
-        if (!request.getSender().equals(sender)) {
+        if (!request.getSender().getId().equals(senderId)) {
             throw new CustomException(FriendException.FRIEND_REQUEST_NOT_AUTHORIZED.getMessage());
+        }
+        
+        // 이미 처리된 요청인지 확인
+        if (request.getRequestStatus() != RequestStatus.PENDING) {
+            throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED.getMessage());
         }
         
         friendRequestRepository.delete(request);
@@ -212,5 +216,24 @@ public class FriendService {
             receiverId, 
             RequestStatus.PENDING
         );
+    }
+
+    // 친구 관계 상태 확인
+    public FriendshipStatus getFriendshipStatus(Long memberId, Long targetId) {
+        if (friendListRepository.existsByMemberIdAndFriendId(memberId, targetId)) {
+            return FriendshipStatus.FRIEND;
+        }
+        
+        if (friendRequestRepository.existsBySenderIdAndReceiverIdAndRequestStatus(
+                memberId, targetId, RequestStatus.PENDING)) {
+            return FriendshipStatus.PENDING;
+        }
+        
+        if (friendRequestRepository.existsBySenderIdAndReceiverIdAndRequestStatus(
+                targetId, memberId, RequestStatus.PENDING)) {
+            return FriendshipStatus.PENDING;
+        }
+        
+        return FriendshipStatus.NOT_FRIEND;
     }
 }
