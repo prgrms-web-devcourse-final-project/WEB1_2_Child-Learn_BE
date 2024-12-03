@@ -229,7 +229,7 @@ public class MemberService {
     }
 
     // username으로 회원 검색
-    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto) {
+    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         // 검색어 유효성 검사
         if (username == null || username.trim().isEmpty()) {
             throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
@@ -251,7 +251,10 @@ public class MemberService {
             throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
         }
         
-        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+        return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
+            member,
+            friendService.getFriendshipStatus(memberId, member.getId())
+        ));
     }
 
     // 회원 탈퇴

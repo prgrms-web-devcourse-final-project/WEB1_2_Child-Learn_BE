@@ -108,7 +108,7 @@ public class MemberController {
     }
 
     // 모든 회원 목록 조회
-    @GetMapping("/all)
+    @GetMapping("/all")
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> readAll(
             @AuthenticationPrincipal SecurityUser user,
             MemberRequestDTO.PageRequestDTO dto) {
@@ -121,8 +121,10 @@ public class MemberController {
     @GetMapping("/search")
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
             @RequestParam String username,
-            MemberRequestDTO.PageRequestDTO dto) {
-        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = memberService.searchByUsername(username, dto);
+            MemberRequestDTO.PageRequestDTO dto,
+            @AuthenticationPrincipal SecurityUser user) {
+        Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = 
+            memberService.searchByUsername(username, dto, user.getId());
         return ResponseEntity.ok(searchResults);
     }
 
