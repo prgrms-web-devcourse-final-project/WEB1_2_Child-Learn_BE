@@ -1,6 +1,8 @@
 package com.prgrms.ijuju.domain.stock.adv.advstock.controller;
 
+import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
+import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
 import com.prgrms.ijuju.domain.stock.adv.advstock.scheduler.AdvStockScheduler;
 import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockDataFetcher;
 import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockService;
@@ -18,25 +20,19 @@ import java.util.List;
 @RequestMapping("/api/v1/adv-stocks")
 @RequiredArgsConstructor
 public class AdvStockController {
-
-    private final AdvStockService advStockService;
-    private final AdvStockDataFetcher advStockDataFetcher;
+    
     private final AdvStockScheduler advStockScheduler;
+    private final AdvStockRepository advStockRepository;
 
 
-    @GetMapping("/reference")
-    public ResponseEntity<List<AdvStock>> getReferenceData() {
-        List<AdvStock> referenceData = advStockService.getReferenceData();
-        return ResponseEntity.ok(referenceData);
-    }
+    @DeleteMapping("/delete-all")
+    public ResponseEntity<String> deleteAllStockData() {
+        // Delete REFERENCE data
+        advStockRepository.deleteByDataType(DataType.REFERENCE);
+        // Delete LIVE data
+        advStockRepository.deleteByDataType(DataType.LIVE);
 
-
-    @GetMapping("/live/{hour}")
-    public ResponseEntity<AdvStock> getLiveData(
-            @RequestParam String symbol,
-            @PathVariable int hour) {
-        AdvStock liveData = advStockService.getLiveData(symbol, hour);
-        return ResponseEntity.ok(liveData);
+        return ResponseEntity.ok("All stock data has been successfully deleted.");
     }
 
     @PostMapping("/trigger-scheduler")
