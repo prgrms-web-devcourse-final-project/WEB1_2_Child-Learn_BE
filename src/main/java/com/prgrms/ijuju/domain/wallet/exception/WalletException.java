@@ -1,7 +1,9 @@
 package com.prgrms.ijuju.domain.wallet.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public enum WalletException {
 
     MEMBER_NOT_FOUND("MEMBER_001", "해당 회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -46,22 +48,5 @@ public enum WalletException {
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("PointException{code='%s', message='%s', httpStatus=%s}", code, message, httpStatus);
     }
 }

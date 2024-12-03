@@ -61,7 +61,7 @@ public class FriendService {
         simpMessagingTemplate.convertAndSend("/topic/friend-requests/" + receiverId, 
             "친구 요청이 도착했습니다: " + sender.getUsername());
         
-        return "친구 요청이 성공적으로 보내졌습니다.";
+        return FriendException.FRIEND_REQUEST_SENT.getMessage();
     }
     
     // 보낸 친구 요청 목록 조회
@@ -89,7 +89,7 @@ public class FriendService {
         }
         
         friendRequestRepository.delete(request);
-        return "친구 요청이 취소되었습니다.";
+        return FriendException.FRIEND_REQUEST_CANCELLED.getMessage();
     }
 
     // 받은 친구 요청 목록 조회
@@ -134,10 +134,13 @@ public class FriendService {
                 request.getReceiver().getUsername() + "님이 친구 요청을 수락했습니다."
             );
             
-            return "친구 요청이 수락되었습니다.";
-        } catch (Exception e) {
+            return FriendException.FRIEND_REQUEST_ACCEPTED.getMessage();
+        } catch (CustomException e) {
             log.error("친구 요청 수락 중 오류 발생: {}", e.getMessage());
             throw e;
+        } catch (Exception e) {
+            log.error("친구 요청 수락 중 시스템 오류 발생: {}", e.getMessage());
+            throw new CustomException(FriendException.SYSTEM_ERROR);
         }
     }
 
@@ -161,7 +164,7 @@ public class FriendService {
             request.getReceiver().getUsername() + "님이 친구 요청을 거절했습니다."
         );
         
-        return "친구 요청이 거절되었습니다.";
+        return FriendException.FRIEND_REQUEST_REJECTED.getMessage();
     }
     
     // 친구 목록 조회
@@ -190,7 +193,7 @@ public class FriendService {
         friendListRepository.deleteByMemberAndFriend(member, friend);
         friendListRepository.deleteByMemberAndFriend(friend, member);
         
-        return "친구가 성공적으로 삭제되었습니다.";
+        return FriendException.FRIEND_REMOVED.getMessage();
     }
 
     // 친구 요청 유효성 검사
