@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -206,14 +207,15 @@ public class MemberService {
         }
     }
 
-    // 모든 회원 목록
-    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto, Long currentMemberId) {
+    // 전체 회원 목록
+    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         Pageable pageable = dto.getPageable();
-        Page<Member> memberPage = memberRepository.findAll(pageable);
+
+        Page<Member> memberPage = memberRepository.findAllByIdNot(memberId, pageable); // 본인 제외
         
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
             member,
-            friendService.getFriendshipStatus(currentMemberId, member.getId())
+            friendService.getFriendshipStatus(memberId, member.getId())
         ));
     }
 

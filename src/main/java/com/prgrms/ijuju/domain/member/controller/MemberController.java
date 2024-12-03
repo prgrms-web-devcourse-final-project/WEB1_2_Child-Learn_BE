@@ -116,7 +116,7 @@ public class MemberController {
             memberService.readAll(dto, user.getId());
         return ResponseEntity.ok(members);
     }
-
+    
     // username으로 회원 검색
     @GetMapping("/search")
     public ResponseEntity<Page<MemberResponseDTO.ReadAllResponseDTO>> searchMembers(
