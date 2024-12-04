@@ -1,54 +1,66 @@
 package com.prgrms.ijuju.domain.chat.entity;
 
-import com.prgrms.ijuju.domain.chat.exception.ChatException;
-import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
-import com.prgrms.ijuju.global.exception.CustomException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-
-import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.prgrms.ijuju.domain.member.entity.Member;
+
+import com.prgrms.ijuju.global.exception.CustomException;
+import com.prgrms.ijuju.domain.chat.exception.ChatException;
+
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.Duration;
 
-@Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Chat extends BaseTimeEntity {
+import jakarta.validation.constraints.NotNull;
+
+@Document(collection = "chat_messages")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Chat { // mongodb 엔티티
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id")
+    
+    @NotNull
+    @Indexed
+    @Field(name = "chat_room")
     private ChatRoom chatRoom;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
+    
+    @NotNull
+    @Indexed
     private Member sender;
 
-    @Column(columnDefinition = "TEXT")
+    @Field(name = "sender_username")
+    private String senderUsername;
+    
+    @NotNull
+    @Field(name = "sender_profile_image")
+    private String senderProfileImage;
+    
+    @NotNull
     private String content;
-
+    
+    @Field(name = "image_url")
     private String imageUrl;
 
+    @Indexed
+    @Field(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Field(name = "is_read")
     private boolean isRead;
-
+    
+    @Field(name = "is_deleted")
     private boolean isDeleted;
-
-    @Builder
-    public Chat(ChatRoom chatRoom, Member sender, String content, String imageUrl) {
-        this.chatRoom = chatRoom;
-        this.sender = sender;
-        this.content = content;
-        this.imageUrl = imageUrl;
-        this.isRead = false;
-        this.isDeleted = false;
-    }
 
     public void markAsRead() {
         this.isRead = true;
@@ -64,6 +76,20 @@ public class Chat extends BaseTimeEntity {
     }
 
     public boolean isDeletable() {
-        return Duration.between(this.getCreatedAt(), LocalDateTime.now()).toMinutes() <= 5;
+        return Duration.between(this.createdAt, LocalDateTime.now()).toMinutes() <= 5;
+    }
+
+    public static Chat createChatMessage(ChatRoom chatRoom, Member sender, String content, String imageUrl) {
+        return Chat.builder()
+                .chatRoom(chatRoom)
+                .sender(sender)
+                .senderUsername(sender.getUsername())
+                .senderProfileImage(sender.getProfileImage())
+                .content(content)
+                .imageUrl(imageUrl)
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .isDeleted(false)
+                .build();
     }
 }

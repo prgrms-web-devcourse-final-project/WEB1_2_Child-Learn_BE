@@ -6,21 +6,25 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import com.prgrms.ijuju.domain.chat.dto.request.ChatMessageRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
+import com.prgrms.ijuju.domain.chat.dto.response.ChatReadResponseDTO;
 import com.prgrms.ijuju.domain.chat.entity.Chat;
 import com.prgrms.ijuju.domain.chat.entity.ChatRoom;
+import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
 import com.prgrms.ijuju.domain.chat.repository.ChatRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
+import com.prgrms.ijuju.domain.chat.repository.ChatMessageRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.global.exception.CustomException;
-import com.prgrms.ijuju.domain.member.entity.Member;
 
 import java.util.List;
 import java.util.Comparator;
+import java.time.LocalDateTime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +37,8 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRepository chatRepository;
     private final MemberRepository memberRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 채팅방 목록 조회
     public List<ChatRoomListResponseDTO> getChatRoomList(Long userId) {
@@ -84,15 +90,8 @@ public class ChatService {
 
     // 채팅방 메시지 조회
     public List<ChatMessageResponseDTO> getMessagesByChatRoomId(Long roomId, Long userId) {
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
-                
-        List<Chat> messages = chatRepository.findByChatRoomIdOrderByCreatedAtAsc(roomId);
-        messages.stream()
-                .filter(chat -> !chat.getSender().getId().equals(userId))
-                .forEach(Chat::markAsRead);
-                
-        return messages.stream()
+        return chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId)
+                .stream()
                 .map(ChatMessageResponseDTO::from)
                 .collect(Collectors.toList());
     }
@@ -103,22 +102,42 @@ public class ChatService {
                 .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
         
         Member sender = memberRepository.findById(senderId)
-                .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+            .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
 
-        Chat chat = chatRepository.save(Chat.builder()
+        Chat message = Chat.builder()
                 .chatRoom(room)
                 .sender(sender)
                 .content(request.getContent())
                 .imageUrl(request.getImageUrl())
-                .build());
-
-        return ChatMessageResponseDTO.from(chat);
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .isDeleted(false)
+                .build();
+                
+        Chat savedMessage = chatMessageRepository.save(message);
+        
+        // Redis pub/sub으로 실시간 메시지 전송
+        redisTemplate.convertAndSend("chat." + room.getId(), 
+            ChatMessageResponseDTO.from(savedMessage));
+            
+        return ChatMessageResponseDTO.from(savedMessage);
     }
 
     // 메시지 읽음 처리
-    public void markAsRead(Long roomId, Long userId) {
-        List<Chat> unreadChats = chatRepository.findByChatRoomIdAndIsReadFalseAndSenderIdNot(roomId, userId);
-        unreadChats.forEach(Chat::markAsRead);
+    public ChatReadResponseDTO markAsRead(Long roomId, Long userId) {
+        List<Chat> unreadMessages = chatMessageRepository
+            .findByChatRoomIdAndCreatedAtGreaterThanEqual(roomId, LocalDateTime.now().minusDays(14));
+            
+        unreadMessages.forEach(message -> {
+            message.setRead(true);
+            chatMessageRepository.save(message);
+        });
+        
+        return ChatReadResponseDTO.builder()
+            .roomId(roomId)
+            .userId(userId)
+            .readAt(LocalDateTime.now())
+            .build();
     }
 
     // 메시지 삭제

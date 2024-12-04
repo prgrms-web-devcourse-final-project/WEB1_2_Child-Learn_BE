@@ -5,9 +5,15 @@ import com.prgrms.ijuju.domain.chat.entity.Chat;
 import java.time.LocalDateTime;
 import java.time.Duration;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessageResponseDTO {
     
     private Long id;
@@ -22,17 +28,17 @@ public class ChatMessageResponseDTO {
     private Long elapsedMinutes;
     
     public static ChatMessageResponseDTO from(Chat chat) {
-        ChatMessageResponseDTO dto = new ChatMessageResponseDTO();
-        dto.setId(chat.getId());
-        dto.setSenderId(chat.getSender().getId());
-        dto.setSenderUsername(chat.getSender().getUsername());
-        dto.setSenderProfileImage(chat.getSender().getProfileImage());
-        dto.setContent(chat.getContent());
-        dto.setImageUrl(chat.getImageUrl());
-        dto.setCreatedAt(chat.getCreatedAt());
-        dto.setRead(chat.isRead());
-        dto.setDeleted(chat.isDeleted());
-        dto.setElapsedMinutes(Duration.between(chat.getCreatedAt(), LocalDateTime.now()).toMinutes());
-        return dto;
+        return ChatMessageResponseDTO.builder()
+                .id(chat.getId())
+                .senderId(chat.getSender().getId())
+                .senderUsername(chat.getSender().getUsername())
+                .senderProfileImage(chat.getSender().getProfileImage())
+                .content(chat.getContent())
+                .imageUrl(chat.getImageUrl())
+                .createdAt(chat.getCreatedAt())
+                .isRead(chat.isRead())
+                .isDeleted(chat.isDeleted())
+                .elapsedMinutes(Duration.between(chat.getCreatedAt(), LocalDateTime.now()).toMinutes())
+                .build();
     }
 }

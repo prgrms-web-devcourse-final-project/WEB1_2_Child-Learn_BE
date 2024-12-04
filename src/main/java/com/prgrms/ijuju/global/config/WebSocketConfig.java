@@ -2,9 +2,6 @@ package com.prgrms.ijuju.global.config;
 
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
@@ -20,7 +17,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
     }
 
-
     //핸들러 방식
     @Override
 
@@ -30,14 +26,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
     }
   
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/sub");
+        registry.setApplicationDestinationPrefixes("/pub");
     }
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
-                .setAllowedOrigins("*")
+        registry.addEndpoint("/ws", "/ws-stomp")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
     

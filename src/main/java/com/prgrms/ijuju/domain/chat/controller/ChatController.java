@@ -17,14 +17,13 @@ import com.prgrms.ijuju.global.auth.SecurityUser;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/chats")
+@RequestMapping("/api/v1/chat")
 @Slf4j
 @RequiredArgsConstructor
 public class ChatController {
 
     private final ChatService chatService;
 
-    // 채팅방 목록 조회
     @GetMapping("/list")
     public ResponseEntity<List<ChatRoomListResponseDTO>> getChatRoomList(
         @AuthenticationPrincipal SecurityUser user
@@ -32,7 +31,6 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getChatRoomList(user.getId()));
     }
 
-    // 채팅방(메시지) 조회
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<List<ChatMessageResponseDTO>> getMessagesByChatRoomId(
         @PathVariable Long roomId,
@@ -41,7 +39,6 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getMessagesByChatRoomId(roomId, user.getId()));
     }
 
-    // 채팅방 생성
     @PostMapping("/rooms")
     public ResponseEntity<ChatRoom> createChatRoom(
         @AuthenticationPrincipal SecurityUser user,
@@ -50,7 +47,6 @@ public class ChatController {
         return ResponseEntity.ok(chatService.createOrRestoreChatRoom(user.getId(), request.getFriendId()));
     }
 
-    // 채팅방 삭제
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<String> deleteChatRoom(
         @AuthenticationPrincipal SecurityUser user,
@@ -60,4 +56,3 @@ public class ChatController {
         return ResponseEntity.ok("채팅방이 삭제되었습니다.");
     }
 }
-
