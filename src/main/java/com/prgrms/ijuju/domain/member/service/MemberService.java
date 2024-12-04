@@ -56,6 +56,18 @@ public class MemberService {
                 throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
             }
 
+            // 입력한 이메일로 가입한 회원이 있는지 확인
+            if (checkEmail(dto.getEmail())) {
+                log.error("해당 이메일로 가입한 회원이 존재합니다 : {}", dto.getEmail());
+                throw MemberException.EMAIL_IS_DUPLICATED.getMemberTaskException();
+            }
+
+            // 별명 중복 확인 로직
+            if (checkUsername(dto.getUsername())) {
+                log.error("이미 존재하는 닉네임 : {}", dto.getUsername());
+                throw MemberException.USERNAME_IS_DUPLICATED.getMemberTaskException();
+            }
+
             // 비밀번호 암호화 처리
             String encodePw = dto.getPw();
             dto.setPw(passwordEncoder.encode(encodePw));
@@ -93,6 +105,18 @@ public class MemberService {
         return memberRepository.findByLoginId(loginId).isPresent();
     }
 
+    // 이메일 중복 검증 메서드
+    public boolean checkEmail(String email) {
+        log.info("이메일 중복 체크 : {}", email);
+        return memberRepository.findByEmail(email).isPresent();
+    }
+
+    // 별명 중복 검증 메서드
+    public boolean checkUsername(String username) {
+        log.info("별명 중복 체크 : {}", username);
+        return memberRepository.findByUsername(username).isPresent();
+    }
+
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
         // 동시 로그인 검증
@@ -114,8 +138,8 @@ public class MemberService {
 
         addRefreshTokenToCookie(refreshToken, response);
 
-        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
-        setRefreshToken(member.getId(), refreshToken, expiryDate);
+        LocalDateTime expiryAt = LocalDateTime.now().plusDays(3);
+        setRefreshToken(member.getId(), refreshToken, expiryAt);
 
         MemberResponseDTO.LoginResponseDTO responseDTO = new MemberResponseDTO.LoginResponseDTO(member);
         responseDTO.setAccessToken(accessToken);
@@ -155,9 +179,8 @@ public class MemberService {
 
         // 리프레시 토큰이 만료되었다면 로그아웃
         try {
-            Claims claims = JwtUtil.decode(refreshToken);   // 여기서 에러 처리가 남
+            Claims claims = JwtUtil.decode(refreshToken);
         } catch (ExpiredJwtException e) {
-            // 클라이언트한테 만료되었다고 알려주기
             throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
         }
         return generateAccessToken(member.getId(), member.getLoginId());
@@ -176,9 +199,9 @@ public class MemberService {
 
     // 리프레시 토큰 저장
     @Transactional
-    public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
+    public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryAt) {
         Member member = memberRepository.findById(id).get();
-        member.updateRefreshToken(refreshToken, expiryDate);
+        member.updateRefreshToken(refreshToken, expiryAt);
     }
 
     // 나의 회원 정보 조회
@@ -372,9 +395,9 @@ public class MemberService {
         log.info("회원 ID: {}의 활성 상태가 {}로 변경되었습니다.", id, isActive);
     }
 
-    // 로그아웃 처리 시 활성 상태 변경
+    // 로그아웃
     @Transactional
-    public void logout(Long id) {
+    public void logout(Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
                 
@@ -382,6 +405,9 @@ public class MemberService {
             log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
             return;
         }
+
+        // 쿠키에 있는 refreshToken 제거
+        removeRefreshTokenToCookie(member.getRefreshToken(), response);
         
         // 로그아웃 시 비활성 상태로 변경
         member.updateActiveStatus(false);
@@ -390,6 +416,15 @@ public class MemberService {
         member.updateRefreshToken(null, null); // null로 변경
         memberRepository.save(member);
         log.info("회원 ID: {}가 로그아웃 되었습니다.", id);
+    }
+
+    public void removeRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     // 동시 로그인 방지를 위한 메서드 추가
@@ -402,4 +437,21 @@ public class MemberService {
             throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
         }
     }
+
+//    // profileImage 저장
+//    @Transactional
+//    public void updateProfileImage(Long memberId, MultipartFile file) throws IOException {
+//        // 회원 조회
+//        Member member = memberRepository.findById(memberId)
+//                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+//
+//        // 이미지를 S3에 업로드하고 , 반환된 URL을 Member 엔티티에 저장
+//        String profileImageUrl = s3ImageStorageService.uploadImage(file);
+//
+//        // Member의 profileImage 필드에 s3 url 저장
+//        member.changeProfileImage(profileImageUrl);
+//
+//        // DB 에 저장
+//        memberRepository.save(member);
+//    }
 }

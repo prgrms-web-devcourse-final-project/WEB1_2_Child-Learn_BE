@@ -50,9 +50,11 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isActive = false;
 
-    // pw 초기화 관련
-    //private String resetPwToken;
-    private LocalDateTime resetPwTokenExpiryDate;
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Role role;
+
+    private LocalDateTime resetPwTokenExpiryAt;
 
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
@@ -64,13 +66,16 @@ public class Member extends BaseTimeEntity {
     private Ranking ranking;
 
     @Builder
-    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth){
+    public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, String profileImage, Avatar avatar, Role role){
         this.id = id;
         this.loginId=loginId;
         this.pw=pw;
         this.username=username;
         this.email=email;
         this.birth=birth;
+        this.profileImage=profileImage;
+        this.avatar=avatar;
+        this.role=role;
     }
 
     // 회원의 아바타(착용한 아이템들을 포함)
@@ -91,9 +96,9 @@ public class Member extends BaseTimeEntity {
         this.pw=pw;
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
+    public void updateRefreshToken(String refreshToken, LocalDateTime expiryAt){
         this.refreshToken=refreshToken;
-        this.resetPwTokenExpiryDate=expiryDate;
+        this.resetPwTokenExpiryAt=expiryAt;
     }
 
     public void increaseBeginStockPlayCount() {
@@ -111,6 +116,15 @@ public class Member extends BaseTimeEntity {
 
     public void updateActiveStatus(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public void changeProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    ///**** OAuth2 로그인에서만 사용 *****///
+    public void changeEmail(String email) {
+        this.email=email;
     }
 
 }
