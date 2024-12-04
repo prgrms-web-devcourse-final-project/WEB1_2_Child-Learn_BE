@@ -1,6 +1,5 @@
 package com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizResponseDto {
+public class QuizAnswerResponseDto {
     private Long oxQuizDataId;  // 퀴즈 데이터 ID
-    private String question;    // 문제 내용
-    private String difficulty;  // 난이도
+    private String explanation; // 설명
+    private boolean isCorrect;  // 정답 여부
 }
