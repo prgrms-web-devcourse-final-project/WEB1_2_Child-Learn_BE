@@ -31,47 +31,28 @@ public class ChatRoom extends BaseTimeEntity {
     @JoinColumn(name = "friend_id")
     private Member friend;
 
-    private boolean isDeleted;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     private List<Chat> chats = new ArrayList<>();
-
-    @Column(name = "last_message")
-    private String lastMessage;
-
-    @Column(name = "last_message_time")
-    private LocalDateTime lastMessageTime;
-
-    @Column(name = "unread_count")
-    private int unreadCount;
 
     @Builder
     public ChatRoom(Member member, Member friend) {
         this.member = member;
         this.friend = friend;
-        this.isDeleted = false;
-        this.unreadCount = 0;
     }
 
-    public void updateLastMessage(Chat chat) {
-        this.lastMessage = chat.getContent();
-        this.lastMessageTime = chat.getCreatedAt();
-    }
-
-    public void incrementUnreadCount() {
-        this.unreadCount++;
-    }
-
-    public void resetUnreadCount() {
-        this.unreadCount = 0;
-    }
-
-    public void delete() {
-        this.isDeleted = true;
+    public void markAsDeleted() {
+        this.deletedAt = LocalDateTime.now();
     }
 
     public void restore() {
-        this.isDeleted = false;
+        this.deletedAt = null;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public Chat getLastMessage() {

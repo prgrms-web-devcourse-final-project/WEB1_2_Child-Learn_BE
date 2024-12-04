@@ -50,7 +50,7 @@ public class ChatRoomListResponseDTO {
             friend.isActive(),
             lastMessageContent,
             lastMessageTime,
-            chatRoom.getUnreadCount()
+            chatRoom.getUnreadCount(userId)
         );
     }
 } 

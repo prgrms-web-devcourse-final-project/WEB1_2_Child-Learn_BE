@@ -24,25 +24,21 @@ public class Chat extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
+    @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id")
     private Member sender;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "image_url")
     private String imageUrl;
 
     private boolean isRead;
 
     private boolean isDeleted;
-
-    @Column(name = "elapsed_time")
-    private Long elapsedTime;
 
     @Builder
     public Chat(ChatRoom chatRoom, Member sender, String content, String imageUrl) {
@@ -52,23 +48,10 @@ public class Chat extends BaseTimeEntity {
         this.imageUrl = imageUrl;
         this.isRead = false;
         this.isDeleted = false;
-        this.elapsedTime = 0L;
     }
 
     public void markAsRead() {
         this.isRead = true;
-    }
-
-    @PrePersist
-    @PreUpdate
-    public void updateElapsedTime() {
-        if (this.getCreatedAt() != null) {
-            this.elapsedTime = Duration.between(this.getCreatedAt(), LocalDateTime.now()).toMinutes();
-        }
-    }
-
-    public boolean isDeletable() {
-        return Duration.between(this.getCreatedAt(), LocalDateTime.now()).toMinutes() <= 5;
     }
 
     public void delete() {
@@ -78,5 +61,9 @@ public class Chat extends BaseTimeEntity {
         this.isDeleted = true;
         this.content = "삭제된 메시지입니다";
         this.imageUrl = null;
+    }
+
+    public boolean isDeletable() {
+        return Duration.between(this.getCreatedAt(), LocalDateTime.now()).toMinutes() <= 5;
     }
 }

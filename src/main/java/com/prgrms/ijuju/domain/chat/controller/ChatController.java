@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.prgrms.ijuju.domain.chat.dto.request.CreateChatRoomRequestDTO;
+import com.prgrms.ijuju.domain.chat.dto.request.ChatRoomRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
 import com.prgrms.ijuju.domain.chat.entity.ChatRoom;
@@ -45,9 +45,9 @@ public class ChatController {
     @PostMapping("/rooms")
     public ResponseEntity<ChatRoom> createChatRoom(
         @AuthenticationPrincipal SecurityUser user,
-        @RequestBody CreateChatRoomRequestDTO request
+        @RequestBody ChatRoomRequestDTO request
     ) {
-        return ResponseEntity.ok(chatService.createChatRoom(user.getId(), request.getFriendId()));
+        return ResponseEntity.ok(chatService.createOrRestoreChatRoom(user.getId(), request.getFriendId()));
     }
 
     // 채팅방 삭제
