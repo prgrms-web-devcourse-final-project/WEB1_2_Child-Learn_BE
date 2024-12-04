@@ -17,8 +17,12 @@ public class Notification extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @JoinColumn(name = "receiver_id")
+    private Member receiver;
+
+    private String senderLoginId;
+
+    private String senderUsername;
 
     @Column(nullable = false)
     private String title;
