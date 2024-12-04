@@ -8,24 +8,20 @@ import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockQuizResponse;
 import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockResponse;
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginQuiz;
-import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
 import com.prgrms.ijuju.domain.stock.begin.entity.LimitBeginStock;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockErrorCode;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockException;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginQuizRepository;
-import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.begin.repository.LimitBeginStockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional
@@ -44,9 +40,12 @@ public class BeginStockService {
         List<BeginQuiz> quizResponse = beginQuizRepository.findByCreatedDate(LocalDate.now())
                         .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND));
 
-        Random random = new Random();
-        int randomIndex = random.nextInt(quizResponse.size());
-        List<BeginStockQuizResponse> randomQuizResponse = List.of(BeginStockQuizResponse.from(quizResponse.get(randomIndex)));
+        if (quizResponse.isEmpty()) {
+            throw new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND);
+        }
+
+        BeginQuiz randomQuiz = quizResponse.get(new Random().nextInt(quizResponse.size()));
+        List<BeginStockQuizResponse> randomQuizResponse = List.of(BeginStockQuizResponse.from(randomQuiz));
 
         return new BeginStockResponse(stockData, randomQuizResponse);
     }
