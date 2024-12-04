@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.member.dto.request;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.entity.Role;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +37,7 @@ public class MemberRequestDTO {
         private String email;
 
         @NotBlank(message = "닉네임은 반드시 입력해야 합니다")
-        @Size(min = 2, max = 30)
+        @Size(min = 2, max = 8)
         private String username;
 
         @NotNull(message = "생년월일(YYYY-MM-DD) 8자리를 반드시 입력해야 합니다")
@@ -49,6 +50,7 @@ public class MemberRequestDTO {
                     .email(email)
                     .username(username)
                     .birth(birth)
+                    .role(Role.USER)
                     .build();
         }
     }

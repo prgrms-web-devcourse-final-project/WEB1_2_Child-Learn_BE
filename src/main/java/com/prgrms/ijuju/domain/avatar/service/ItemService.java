@@ -8,7 +8,6 @@ import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class ItemService {
-    private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final PurchaseRepository purchaseRepository;
     private final MemberService memberService;

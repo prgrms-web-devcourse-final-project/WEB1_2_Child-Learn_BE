@@ -77,19 +77,20 @@ public class MemberController {
     @PostMapping("/refresh")
     public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@CookieValue("refreshToken") String refreshToken) {
         String accessToken = memberService.refreshAccessToken(refreshToken);
+        LocalDateTime expiryAt = LocalDateTime.now().plusMinutes(15);
         MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO =
-                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급");
+                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급", expiryAt);
 
         return ResponseEntity.ok(responseDTO);
     }
 
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user) {
-        // memberService.setRefreshToken(user.getId(), "null"); 에러 수정
-        memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
+    public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user, HttpServletResponse response) {
 
-        memberService.logout(user.getId());
+        // memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
+
+        memberService.logout(user.getId(), response);
 
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
     }
@@ -217,4 +218,16 @@ public class MemberController {
         String message = isActive ? "활성 상태로 변경되었습니다." : "비활성 상태로 변경되었습니다.";
         return ResponseEntity.ok(Map.of("message", message));
     }
+
+//    @PostMapping("/update-profile-image")
+//    public String updateProfileImage(@RequestParam("file")MultipartFile file, @RequestParam("memberId") Long memberId) {
+//        try {
+//            memberService.updateProfileImage(memberId, file);
+//            return "프로필 이미지 변경이 완료되었습니다.";
+//        } catch (Exception e) {
+//            return "프로필 변경에 실패했습니다." + e.getMessage();
+//        }
+//    }
+
+
 }
