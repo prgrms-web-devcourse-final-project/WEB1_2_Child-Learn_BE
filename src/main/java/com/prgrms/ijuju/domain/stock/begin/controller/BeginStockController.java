@@ -7,11 +7,14 @@ import com.prgrms.ijuju.domain.stock.begin.service.BeginStockService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,20 +38,20 @@ public class BeginStockController {
         return ResponseEntity.ok().build();
     }
 
-    @Profile("dev")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/generations/manual")
-    public ResponseEntity<String> generateDailyData() {
-        log.info("오늘의 모의투자 초급 데이터 수동 생성");
+    public ResponseEntity<String> generateDailyData(@AuthenticationPrincipal SecurityUser user ) {
+        log.info("오늘의 모의투자 초급 데이터 수동 생성 중 by 관리자: {}", user.getUsername());
         try {
             beginStockPriceService.createWeeklyStockPrice();
 
             for (int i = 0; i < 5; i++) {
                 beginStockGptService.generateBeginQuiz();
             }
-            return ResponseEntity.ok("Daily data generated successfully");
+            return ResponseEntity.ok("오늘의 모의 투자 초급 데이터가 성공적으로 생성되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to generate data: " + e.getMessage());
+                    .body("오늘의 모의 투자 초급 데이터 생성에 실패하였습니다: " + e.getMessage());
         }
     }
 
