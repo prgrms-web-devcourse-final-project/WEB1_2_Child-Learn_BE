@@ -16,11 +16,13 @@ public class FriendResponseDTO {
     private RequestStatus status;
     private boolean isRead;
     private String senderUsername;
+    private String receiverUsername;
 
     public FriendResponseDTO(FriendRequest friendRequest) {
         this.id = friendRequest.getId();
         this.status = friendRequest.getRequestStatus();
         this.isRead = friendRequest.isRead();
         this.senderUsername = friendRequest.getSender().getUsername();
+        this.receiverUsername = friendRequest.getReceiver().getUsername();
     }
 } 

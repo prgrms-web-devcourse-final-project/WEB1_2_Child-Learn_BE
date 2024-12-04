@@ -68,7 +68,7 @@ dependencies {
 
     // WebSocket + STOMP
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    
+
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
