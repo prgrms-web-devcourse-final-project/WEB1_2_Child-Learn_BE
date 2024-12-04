@@ -1,0 +1,603 @@
+[
+  {
+    "question": "사과를 사고팔 때 사용하는 돈을 화폐라고 한다.",
+    "answer": "O",
+    "explanation": "화폐는 물건을 사고팔 때 사용하는 공식적인 돈입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "저금통에 돈을 모으는 것은 소비라고 한다.",
+    "answer": "X",
+    "explanation": "저금통에 돈을 모으는 것은 소비가 아니라 저축입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "은행에 돈을 맡기면 이자를 받을 수 있다.",
+    "answer": "O",
+    "explanation": "은행은 맡긴 돈에 대해 약속된 이자를 지급합니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "돈은 나무에서 자란다.",
+    "answer": "X",
+    "explanation": "돈은 나무가 아니라 중앙은행에서 만들어집니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "가게에서 물건을 파는 사람은 '판매자'라고 부른다.",
+    "answer": "O",
+    "explanation": "물건을 파는 사람은 판매자, 사는 사람은 소비자라고 합니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "물건의 가격은 항상 변하지 않는다.",
+    "answer": "X",
+    "explanation": "물건의 가격은 수요와 공급에 따라 변할 수 있습니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "사람들이 물건을 많이 사면 물건의 가격이 떨어진다.",
+    "answer": "X",
+    "explanation": "사람들이 많이 사면 수요가 증가하여 가격이 오를 가능성이 큽니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "모든 사람이 같은 양의 돈을 가지고 있다.",
+    "answer": "X",
+    "explanation": "사람마다 일하는 시간과 수입이 다르기 때문에 돈의 양도 다릅니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "돈을 잘 쓰는 것도 경제 활동이다.",
+    "answer": "O",
+    "explanation": "소비와 투자도 중요한 경제 활동입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "공짜로 물건을 받는 것을 '소비'라고 한다.",
+    "answer": "X",
+    "explanation": "소비는 돈을 사용해서 물건이나 서비스를 받는 것을 의미합니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "동전과 지폐는 같은 가치를 가진다.",
+    "answer": "X",
+    "explanation": "동전과 지폐의 가치는 명시된 금액에 따라 다릅니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "돈을 모으는 것은 경제 활동이다.",
+    "answer": "O",
+    "explanation": "돈을 모으는 저축도 경제 활동의 일부입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "은행은 돈을 빌려주는 곳이다.",
+    "answer": "O",
+    "explanation": "은행은 대출 서비스를 통해 돈을 빌려줍니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "화폐는 물건을 교환하는 데 필수적이다.",
+    "answer": "O",
+    "explanation": "화폐는 물물교환보다 더 효율적인 거래 수단입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "저축은 돈을 쓰지 않고 모으는 것을 말한다.",
+    "answer": "O",
+    "explanation": "저축은 미래를 위해 돈을 모으는 행위입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "은행에 돈을 맡기면 무조건 늘어난다.",
+    "answer": "X",
+    "explanation": "은행은 이자를 지급하지만, 인플레이션 등으로 인해 실제 가치는 줄어들 수 있습니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "상품의 가격은 공급이 많아지면 낮아질 수 있다.",
+    "answer": "O",
+    "explanation": "공급이 많아지면 경쟁으로 인해 가격이 낮아질 가능성이 큽니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "모든 사람이 월급을 받는다.",
+    "answer": "X",
+    "explanation": "월급은 고용된 사람들이 받는 대가로, 자영업자는 따로 수익을 냅니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "세금은 정부의 수입원이 된다.",
+    "answer": "O",
+    "explanation": "세금은 정부가 공공서비스를 제공하기 위해 걷는 돈입니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "돈을 빌리면 갚지 않아도 된다.",
+    "answer": "X",
+    "explanation": "돈을 빌리면 약속한 대로 갚아야 합니다.",
+    "difficulty": "easy"
+  },
+  {
+    "question": "주식은 회사의 소유권을 나누어 가진 것을 뜻한다.",
+    "answer": "O",
+    "explanation": "주식은 회사의 일부를 소유하는 권리를 제공합니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "기업이 파산하면 주식 투자자는 회사의 빚을 갚아야 한다.",
+    "answer": "X",
+    "explanation": "주주는 회사의 빚에 대해 책임지지 않습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "배당금은 회사가 이익을 내지 않아도 받을 수 있다.",
+    "answer": "X",
+    "explanation": "배당금은 회사가 이익을 낼 때 지급됩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "환율이 상승하면 수출 기업의 주식 가격이 상승할 가능성이 높다.",
+    "answer": "O",
+    "explanation": "환율이 상승하면 자국 제품이 해외에서 더 싸져 수출이 증가할 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "모든 주식은 동일한 배당금을 지급한다.",
+    "answer": "X",
+    "explanation": "배당금은 회사와 주식의 종류에 따라 다릅니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "IPO는 회사가 처음으로 주식을 공개하는 것을 의미한다.",
+    "answer": "O",
+    "explanation": "IPO는 기업이 처음으로 주식을 일반 투자자들에게 발행하는 과정입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장은 항상 안정적으로 작동한다.",
+    "answer": "X",
+    "explanation": "주식 시장은 경제 상황과 투자 심리에 따라 변동성이 큽니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식의 가치는 회사의 실적에 따라 달라질 수 있다.",
+    "answer": "O",
+    "explanation": "회사의 실적이 좋으면 주식의 가치도 상승할 가능성이 높습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "배당주는 이익을 나누는 데 초점을 맞춘 주식이다.",
+    "answer": "O",
+    "explanation": "배당주는 배당금을 지급하는 데 초점을 둔 주식입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식을 팔면 항상 이익을 볼 수 있다.",
+    "answer": "X",
+    "explanation": "주식 거래는 손실의 위험이 있으며, 항상 이익을 보는 것은 아닙니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식의 가치는 회사의 매출과 무관하다.",
+    "answer": "X",
+    "explanation": "회사의 매출은 주식 가치에 중요한 영향을 미칩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장에서 주식을 사면 기업의 결정에 투표할 권리가 생길 수 있다.",
+    "answer": "O",
+    "explanation": "일부 주식은 주주들에게 의결권을 제공합니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장은 나라의 경제 상황과 연관되어 있다.",
+    "answer": "O",
+    "explanation": "주식 시장은 국가 경제 상황을 반영하기도 합니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "배당금은 주식을 오래 보유한 사람에게만 지급된다.",
+    "answer": "X",
+    "explanation": "배당금은 배당 기준일에 주식을 보유한 사람에게 지급됩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "회사의 주식 가격이 오르면 그 회사의 실적이 항상 좋은 것이다.",
+    "answer": "X",
+    "explanation": "주식 가격은 시장의 기대감에도 영향을 받을 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "ETF는 개별 주식에 투자하는 것과 다르다.",
+    "answer": "O",
+    "explanation": "ETF는 여러 주식이나 자산으로 구성된 펀드에 투자하는 방식입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식은 고정된 수익을 제공한다.",
+    "answer": "X",
+    "explanation": "주식은 투자에 따른 변동성이 있으며 고정 수익을 제공하지 않습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장에서 거래를 하려면 중개인을 통해야 한다.",
+    "answer": "O",
+    "explanation": "주식 거래는 일반적으로 증권사를 통해 이루어집니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식은 대출의 한 형태이다.",
+    "answer": "X",
+    "explanation": "주식은 소유권의 일부를 구매하는 것이며 대출과는 다릅니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식을 소유하면 회사의 이익을 나눠 받을 가능성이 있다.",
+    "answer": "O",
+    "explanation": "주식 소유자는 배당금 등을 통해 회사의 이익을 나눌 수 있습니다.",
+    "difficulty": "medium"
+  },
+
+  {
+    "question": "주식은 회사의 한 조각을 소유한다는 것을 의미한다.",
+    "answer": "O",
+    "explanation": "주식은 회사의 일부를 소유하는 권리입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식의 가격은 항상 같다.",
+    "answer": "X",
+    "explanation": "주식의 가격은 사람들이 사고팔려는 수요와 공급에 따라 달라집니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "회사가 돈을 많이 벌면 주식 가격이 올라갈 가능성이 높다.",
+    "answer": "O",
+    "explanation": "회사가 돈을 많이 벌면 투자자들이 주식을 더 사고 싶어 합니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식은 주식 시장에서 사고팔 수 있다.",
+    "answer": "O",
+    "explanation": "주식은 거래소를 통해 사고팔 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "배당금은 주식을 가진 사람에게 주는 돈이다.",
+    "answer": "O",
+    "explanation": "배당금은 회사가 이익을 낼 때 주주들에게 나눠주는 돈입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식을 팔면 반드시 이익을 본다.",
+    "answer": "X",
+    "explanation": "주식 거래에는 손해를 볼 위험도 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식의 가치는 회사의 성과와 관련이 없다.",
+    "answer": "X",
+    "explanation": "회사의 성과는 주식의 가치에 큰 영향을 미칩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장은 나라의 경제 상황과 관계가 있다.",
+    "answer": "O",
+    "explanation": "주식 시장은 나라의 경제 상태를 반영하기도 합니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "회사가 망하면 주식은 쓸모가 없어질 수 있다.",
+    "answer": "O",
+    "explanation": "회사가 파산하면 주식의 가치는 없어질 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식은 물건처럼 손에 들 수 있다.",
+    "answer": "X",
+    "explanation": "주식은 디지털 형태로 관리됩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식을 오래 가지고 있으면 반드시 돈을 번다.",
+    "answer": "X",
+    "explanation": "주식을 오래 가지고 있어도 손해를 볼 수도 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식을 사려면 증권사를 이용해야 한다.",
+    "answer": "O",
+    "explanation": "주식 거래는 증권사를 통해 이루어집니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장은 매일 24시간 열린다.",
+    "answer": "X",
+    "explanation": "주식 시장은 정해진 시간에만 열립니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 가격은 회사가 잘못된 결정을 내려도 변하지 않는다.",
+    "answer": "X",
+    "explanation": "회사가 잘못된 결정을 내리면 주식 가격이 떨어질 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "ETF는 여러 회사의 주식을 한 번에 투자할 수 있게 해준다.",
+    "answer": "O",
+    "explanation": "ETF는 다양한 회사의 주식을 포함한 투자 상품입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장에서는 한 번에 한 주식만 사고팔 수 있다.",
+    "answer": "X",
+    "explanation": "주식 시장에서는 여러 주식을 한꺼번에 거래할 수 있습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "배당금은 회사가 돈을 벌지 못해도 받을 수 있다.",
+    "answer": "X",
+    "explanation": "배당금은 회사가 이익을 낼 때만 지급됩니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식의 가치는 투자자들이 얼마나 사고 싶어 하는지에 따라 변한다.",
+    "answer": "O",
+    "explanation": "주식의 가치는 수요와 공급에 따라 달라집니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "주식 시장은 사람들이 회사의 주식을 사고파는 장소이다.",
+    "answer": "O",
+    "explanation": "주식 시장은 주식을 거래하는 곳입니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "회사가 성공하면 주식 가격도 오를 가능성이 있다.",
+    "answer": "O",
+    "explanation": "회사가 성공하면 주식 가격이 상승할 가능성이 높습니다.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "GDP는 한 국가에서 일정 기간 동안 생산된 재화와 서비스의 총 가치를 나타낸다.",
+    "answer": "O",
+    "explanation": "GDP는 국내총생산으로, 국가 경제 규모를 측정하는 데 사용됩니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주주들은 회사의 빚을 갚을 의무가 있다.",
+    "answer": "X",
+    "explanation": "주주는 회사의 소유권을 가지고 있지만, 회사의 부채에는 책임이 없습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "인플레이션은 물가가 지속적으로 하락하는 현상을 의미한다.",
+    "answer": "X",
+    "explanation": "인플레이션은 물가가 지속적으로 상승하는 현상입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "중앙은행이 금리를 낮추면 주식 시장에 긍정적인 영향을 미칠 수 있다.",
+    "answer": "O",
+    "explanation": "금리 인하는 대출 비용을 줄이고 투자와 소비를 촉진하여 주식 시장을 활성화할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "IPO는 주식 시장에서 회사의 주식을 처음으로 공개 매도하는 것을 의미한다.",
+    "answer": "O",
+    "explanation": "IPO는 기업이 처음으로 일반 대중에게 주식을 발행하는 과정입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "경기 침체기에는 대부분의 주식 가격이 상승한다.",
+    "answer": "X",
+    "explanation": "경기 침체기에는 소비와 투자 감소로 주식 가격이 하락할 가능성이 높습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "기업의 부채 비율이 높으면 그만큼 주식 투자 위험이 낮아진다.",
+    "answer": "X",
+    "explanation": "부채 비율이 높을수록 회사의 재정 안정성이 낮아져 투자 위험이 커집니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "환율 변동은 수출 기업의 주식 가치에 영향을 줄 수 있다.",
+    "answer": "O",
+    "explanation": "환율 변동은 수출 기업의 수익성에 영향을 미쳐 주식 가격에도 영향을 줍니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "배당 수익률이 높은 주식은 안정적인 투자로 간주될 수 있다.",
+    "answer": "O",
+    "explanation": "배당 수익률이 높으면 주식 투자에서 안정적인 수익을 기대할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "리스크와 수익은 항상 반비례 관계에 있다.",
+    "answer": "X",
+    "explanation": "리스크와 수익은 높은 리스크에서 높은 수익을 기대할 수 있지만, 항상 반비례하지는 않습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "유동성이 높은 주식은 쉽게 사고팔 수 있다.",
+    "answer": "O",
+    "explanation": "유동성이 높은 주식은 시장에서 거래가 활발하게 이루어져 매매가 용이합니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "장기적으로 주식 시장은 항상 상승한다.",
+    "answer": "X",
+    "explanation": "주식 시장은 장기적으로 상승 경향이 있지만, 특정 시점에 따라 하락할 수도 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "분산 투자는 투자 리스크를 줄이는 데 도움이 된다.",
+    "answer": "O",
+    "explanation": "다양한 자산에 투자하면 특정 자산의 리스크가 다른 자산으로 상쇄될 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "회사의 재무제표는 주식 투자에 큰 영향을 미치지 않는다.",
+    "answer": "X",
+    "explanation": "재무제표는 회사의 수익성과 안정성을 평가하는 중요한 자료입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주가는 항상 회사의 실제 가치와 동일하다.",
+    "answer": "X",
+    "explanation": "주가는 시장의 기대와 심리적 요인에 따라 실제 가치와 다를 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식 매매 차익은 항상 비과세된다.",
+    "answer": "X",
+    "explanation": "일부 국가에서는 주식 매매 차익에 세금을 부과합니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "펀드는 여러 투자자의 돈을 모아 다양한 자산에 투자한다.",
+    "answer": "O",
+    "explanation": "펀드는 분산 투자를 통해 투자 위험을 줄이는 금융 상품입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식의 거래량은 시장의 관심도를 반영한다.",
+    "answer": "O",
+    "explanation": "거래량은 해당 주식에 대한 투자자들의 관심과 거래 활동을 보여줍니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "공매도는 주가가 상승할 것을 기대하는 투자 전략이다.",
+    "answer": "X",
+    "explanation": "공매도는 주가가 하락할 것을 예상하고 차익을 얻으려는 투자 전략입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "경제 성장률이 높으면 주식 시장도 반드시 상승한다.",
+    "answer": "X",
+    "explanation": "경제 성장률이 높더라도 다른 요인에 따라 주식 시장은 하락할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 회사의 한 부분을 소유한다는 것을 뜻한다.",
+    "answer": "O",
+    "explanation": "주식은 회사의 소유권을 나누어 가진 것입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "배당금은 회사가 이익을 낼 때 주식 소유자에게 주는 보너스와 같다.",
+    "answer": "O",
+    "explanation": "배당금은 회사의 이익을 주주들과 나누는 방식입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식을 사고팔 때는 항상 이익을 얻을 수 있다.",
+    "answer": "X",
+    "explanation": "주식 거래에는 손실의 위험도 따릅니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "경제가 좋아지면 주식 시장도 항상 좋아진다.",
+    "answer": "X",
+    "explanation": "경제가 좋아지더라도 다른 요인에 따라 주식 시장은 변동될 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식 시장은 사람들이 회사의 주식을 사고파는 곳이다.",
+    "answer": "O",
+    "explanation": "주식 시장은 주식을 사고팔 수 있는 거래소입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "회사가 돈을 많이 벌면 주식 가격이 내려갈 수 있다.",
+    "answer": "X",
+    "explanation": "회사가 돈을 많이 벌면 주식 가격이 오를 가능성이 높습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 돈을 벌기 위해 투자하는 방법 중 하나이다.",
+    "answer": "O",
+    "explanation": "주식은 회사의 성공에 투자해 수익을 얻는 방법입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식의 가격은 사람들이 얼마나 사고 싶어 하는지에 따라 달라진다.",
+    "answer": "O",
+    "explanation": "주식의 가격은 수요와 공급에 따라 변동됩니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "회사가 파산하면 주식을 소유한 사람은 돈을 돌려받는다.",
+    "answer": "X",
+    "explanation": "회사가 파산하면 주주들은 투자금을 돌려받을 수 없습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "배당금을 받으려면 주식을 한 주라도 소유해야 한다.",
+    "answer": "O",
+    "explanation": "배당금은 주식을 소유한 사람에게 지급됩니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 반드시 전문가만 투자해야 한다.",
+    "answer": "X",
+    "explanation": "주식은 누구나 배울 수 있고 투자할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "ETF는 여러 회사의 주식을 한 번에 살 수 있게 해준다.",
+    "answer": "O",
+    "explanation": "ETF는 다양한 회사의 주식을 포함한 투자 상품입니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "환율이 오르면 외국에서 우리나라의 제품을 더 싸게 살 수 있다.",
+    "answer": "X",
+    "explanation": "환율이 오르면 외국에서는 우리나라 제품이 더 비싸게 느껴질 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 회사가 망하면 가치가 없어질 수 있다.",
+    "answer": "O",
+    "explanation": "회사가 파산하면 주식은 무가치해질 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 같은 회사를 소유한 사람들끼리 나눠 갖는다.",
+    "answer": "O",
+    "explanation": "주식은 회사 소유권을 나눈 것이기 때문에 여러 사람이 소유할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "모든 주식은 매달 같은 금액의 배당금을 준다.",
+    "answer": "X",
+    "explanation": "배당금은 회사의 이익과 정책에 따라 달라질 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식 시장은 평일에만 열린다.",
+    "answer": "O",
+    "explanation": "주식 시장은 주말과 공휴일에는 열리지 않습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식은 물건처럼 손에 들고 다닐 수 있다.",
+    "answer": "X",
+    "explanation": "주식은 디지털 데이터로 관리됩니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식을 오래 보유하면 반드시 돈을 벌 수 있다.",
+    "answer": "X",
+    "explanation": "주식을 오래 보유해도 시장 상황에 따라 손실이 발생할 수 있습니다.",
+    "difficulty": "hard"
+  },
+  {
+    "question": "주식 시장의 가격은 하루 종일 변할 수 있다.",
+    "answer": "O",
+    "explanation": "주식 시장에서 가격은 실시간으로 변동됩니다.",
+    "difficulty": "hard"
+  }
+]

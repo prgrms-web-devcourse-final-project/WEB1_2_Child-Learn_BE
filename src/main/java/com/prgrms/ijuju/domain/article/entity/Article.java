@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.article.entity;
 
+import com.prgrms.ijuju.domain.article.contant.DataType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,4 +33,15 @@ public class Article {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DataType type;
+
+    public void decreaseDuration() {
+        if (duration > 0) {
+            duration--;
+        }
+    }
+
 }

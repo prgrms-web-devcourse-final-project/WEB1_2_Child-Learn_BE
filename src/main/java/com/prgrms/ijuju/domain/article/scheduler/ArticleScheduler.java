@@ -1,13 +1,12 @@
 package com.prgrms.ijuju.domain.article.scheduler;
 
-import com.prgrms.ijuju.domain.article.component.AdvTrendAnalyzerImpl;
+import com.prgrms.ijuju.domain.article.contant.DataType;
 import com.prgrms.ijuju.domain.article.data.Trend;
 import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
 import com.prgrms.ijuju.domain.article.service.ArticleGenerationService;
-import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
-import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
-import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
-import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockService;
+import com.prgrms.ijuju.domain.article.service.StockTrendService;
+import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,50 +19,71 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleScheduler {
 
-    private static final int MAX_ARTICLES = 10; // 최대 기사 개수
+    private static final int MAX_ARTICLES = 5;
 
-    private final AdvStockRepository advStockRepository;
-    private final AdvTrendAnalyzerImpl trendAnalyzer;
     private final ArticleGenerationService articleGenerationService;
+    private final ArticleRepository articleRepository;
+    private final StockTrendService stockTrendService;
+    private final MidStockRepository midStockRepository;
+
 
     @Scheduled(cron = "0 30 7 * * ?", zone = "Asia/Seoul")
-    public void generateArticles() {
-        // 1. 현재 기사 개수 확인
-        int currentArticleCount = articleGenerationService.getArticleCount();
-        int articlesToGenerate = MAX_ARTICLES - currentArticleCount;
+    public void manageArticles() {
 
-        if (articlesToGenerate <= 0) {
-            return; // 추가 생성 필요 없음
+        decrementDurationAndDeleteExpiredArticles();
+
+        manageArticlesByType(DataType.ADVANCED);
+
+        manageArticlesByType(DataType.MID);
+    }
+
+    private void decrementDurationAndDeleteExpiredArticles() {
+        List<Article> articles = articleRepository.findAll(); // 모든 기사 조회
+
+        articles.forEach(Article::decreaseDuration);
+
+        articleRepository.deleteByDuration(0);
+    }
+
+
+    private void manageArticlesByType(DataType type) {
+
+        long currentCount = articleRepository.countByType(type);
+
+        if (currentCount >= MAX_ARTICLES) {
+            return;
         }
 
-        // 2. FORECAST 데이터 가져오기
-        List<AdvStock> forecastStocks = advStockRepository.findByDataType(DataType.FORECAST);
 
-        // 3. 트렌드 분석 및 기사 생성
-        List<Article> newArticles = generateRandomArticles(forecastStocks, articlesToGenerate);
+        List<Trend> trends = fetchTrendsByType(type);
+        articleGenerationService.generateArticles(trends, type);
 
-        // 4. 새 기사 저장
-        newArticles.forEach(articleGenerationService::saveArticle);
-
-        // 5. 유지 기간이 지난 기사 삭제
-        articleGenerationService.deleteExpiredArticles();
+        removeExcessArticles(type);
     }
 
-    private List<Article> generateRandomArticles(List<AdvStock> forecastStocks, int articlesToGenerate) {
-        // 1. 주식의 모든 트렌드 데이터 가져오기
-        List<Trend> allTrends = forecastStocks.stream()
-                .flatMap(stock -> trendAnalyzer.analyzeTrends(stock).stream())
-                .collect(Collectors.toList());
+    private List<Trend> fetchTrendsByType(DataType type) {
+        if (type == DataType.ADVANCED) {
+            return stockTrendService.analyzeTrendsForAdvStock();
+        } else if (type == DataType.MID) {
+            List<Long> midStockIds = midStockRepository.findAllIds();
 
-        // 2. 트렌드 데이터를 랜덤하게 섞고 필요한 개수만큼 선택
-        Collections.shuffle(allTrends);
-        List<Trend> selectedTrends = allTrends.stream()
-                .limit(articlesToGenerate)
-                .collect(Collectors.toList());
-
-        // 3. 선택된 트렌드 기준으로 기사 생성
-        return selectedTrends.stream()
-                .map(trend -> articleGenerationService.createArticleFromTrend(trend))
-                .collect(Collectors.toList());
+            return midStockIds.stream()
+                    .flatMap(id -> stockTrendService.analyzeTrendsForMidStock(id).stream())
+                    .collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("Unknown DataType: " + type);
+        }
     }
+
+    private void removeExcessArticles(DataType type) {
+        List<Article> articles = articleRepository.findByType(type);
+
+        if (articles.size() > MAX_ARTICLES) {
+            Collections.shuffle(articles);
+            List<Article> articlesToRemove = articles.subList(MAX_ARTICLES, articles.size());
+            articleRepository.deleteAll(articlesToRemove);
+        }
+    }
+
+
 }

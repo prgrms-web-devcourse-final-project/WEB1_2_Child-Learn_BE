@@ -24,12 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.friend.service.FriendService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -40,6 +42,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final WalletRepository walletRepository;
     private final AvatarRepository avatarRepository;
+    private final FriendService friendService;
 
     // 회원가입
     @Transactional
@@ -207,7 +210,7 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
@@ -220,18 +223,23 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND.getMessage()));
+                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
     }
 
-    // 모든 회원 목록
-    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto) {
+    // 전체 회원 목록
+    public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         Pageable pageable = dto.getPageable();
-        Page<Member> memberPage = memberRepository.findAll(pageable);
-        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+
+        Page<Member> memberPage = memberRepository.findAllByIdNot(memberId, pageable); // 본인 제외
+        
+        return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
+            member,
+            friendService.getFriendshipStatus(memberId, member.getId())
+        ));
     }
 
     // 회원 조회
@@ -246,7 +254,7 @@ public class MemberService {
     }
 
     // username으로 회원 검색
-    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto) {
+    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         // 검색어 유효성 검사
         if (username == null || username.trim().isEmpty()) {
             throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
@@ -268,7 +276,10 @@ public class MemberService {
             throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
         }
         
-        return memberPage.map(MemberResponseDTO.ReadAllResponseDTO::new);
+        return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
+            member,
+            friendService.getFriendshipStatus(memberId, member.getId())
+        ));
     }
 
     // 회원 탈퇴

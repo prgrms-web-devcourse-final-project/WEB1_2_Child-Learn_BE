@@ -1,14 +1,31 @@
 package com.prgrms.ijuju.global.exception;
 
-public class CustomException extends RuntimeException {
-    private final String message;
+    import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 
-    public CustomException(String message) {
-        super(message);
-        this.message = message;
+import lombok.Getter;
+
+@Getter
+public class CustomException extends RuntimeException {
+    private final String code;
+    private final int status;
+
+    public CustomException(FriendException exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
     }
 
-    public String getMessage() {
-        return message;
+    public CustomException(WalletException exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
+    }
+
+    public CustomException(ChatException exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
     }
 }

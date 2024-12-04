@@ -1,7 +1,8 @@
 package com.prgrms.ijuju.domain.member.dto.response;
 
-import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.domain.friend.entity.FriendshipStatus;
+import com.prgrms.ijuju.domain.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -132,15 +133,17 @@ public class MemberResponseDTO {
         private Long id;
         private String loginId;
         private String username;
+        private FriendshipStatus friendshipStatus;
 
-        public ReadAllResponseDTO(Member member) {
+        public ReadAllResponseDTO(Member member, FriendshipStatus friendshipStatus) {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
+            this.friendshipStatus = friendshipStatus;
         }
     }
 
-    // OAuth2
+    // OAuth2 (수정중입니다)
     @Data
     public static class OAuth2ResponseDTO {
         private Map<String, Object> attribute;

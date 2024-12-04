@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.stock.mid.controller;
 
+import com.prgrms.ijuju.domain.stock.mid.config.InitMidDb;
 import com.prgrms.ijuju.domain.stock.mid.dto.request.MidStockTradePointRequest;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.*;
 import com.prgrms.ijuju.domain.stock.mid.service.MidStockService;
@@ -9,11 +10,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,10 @@ import java.util.Map;
 public class MidStockController {
     private final MidStockService midStockService;
     private final MidStockTradeService midStockTradeService;
+    private final InitMidDb initMidDb;
+
+    @Value("${admin.key}")
+    private String adminKey;
 
     // 중급거래목록 3가지 가져오기
     @GetMapping("/list")
@@ -95,5 +102,21 @@ public class MidStockController {
         Map<String, Long> response = Map.of("earnedPoints", profit);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/init-data")
+    @ResponseStatus(HttpStatus.OK)
+    public void initMidStock(@RequestHeader("Admin-Key") String requestKey) {
+        // 보안을 위한 관리자 키 검증
+        if (!adminKey.equals(requestKey)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid admin key");
+        }
+
+        initMidDb.init();
+    }
+
+    private boolean isValidAdminKey(String adminKey) {
+        // 환경 변수나 설정에서 관리자 키 확인
+        return adminKey.equals(System.getenv("ADMIN_SECRET_KEY"));
     }
 }

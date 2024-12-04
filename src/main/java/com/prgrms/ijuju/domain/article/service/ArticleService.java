@@ -1,14 +1,29 @@
 package com.prgrms.ijuju.domain.article.service;
 
-
-import com.prgrms.ijuju.domain.article.dto.ArticleResponseDto;
+import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
+import com.prgrms.ijuju.domain.article.contant.DataType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-public interface ArticleService {
+@Service
+@RequiredArgsConstructor
+public class ArticleService {
 
-    List<ArticleResponseDto> getAllArticles();
+    private final ArticleRepository articleRepository;
 
-    List<ArticleResponseDto> getArticlesBySymbol(String stockSymbol);
+    public List<Article> findArticlesByType(DataType type) {
+        return articleRepository.findByType(type);
+    }
 
+    public Article findArticleById(Long id) {
+        return articleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Article not found with ID: " + id));
+    }
+
+    public List<Article> findAllArticles() {
+        return articleRepository.findAll();
+    }
 }
