@@ -27,7 +27,7 @@ public class FriendController {
     private final FriendService friendService;
 
     // 친구 요청 보내기
-    @PostMapping("/requests")
+    @PostMapping("/request")
     public ResponseEntity<String> sendFriendRequest(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody FriendRequestDTO requestDTO) {
@@ -35,7 +35,7 @@ public class FriendController {
     }
 
     // 친구 요청 처리 (수락/거절)
-    @PostMapping("/requests/{requestId}")
+    @PostMapping("/request/{requestId}")
     public ResponseEntity<String> processFriendRequest(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long requestId,

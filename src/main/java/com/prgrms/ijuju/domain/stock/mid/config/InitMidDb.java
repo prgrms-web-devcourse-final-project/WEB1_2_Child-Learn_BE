@@ -8,7 +8,6 @@ import com.prgrms.ijuju.domain.stock.mid.service.MidStockChartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Profile("dev")
 public class InitMidDb {
     private static final int DAYS_TO_KEEP = 15;
 
@@ -34,6 +32,7 @@ public class InitMidDb {
     public void init() {
         // 데이터가 이미 존재하는지 확인
         if (isDataExists()) {
+            log.info("중급 초기 데이터 이미 존재");
             return;  // 데이터가 있으면 초기화 건너뛰기
         }
         log.info("중급 초기 데이터 생성");

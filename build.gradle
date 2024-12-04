@@ -68,9 +68,9 @@ dependencies {
 
     // WebSocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework:spring-messaging'
 
     // FCM
+    implementation 'org.springframework:spring-messaging'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
