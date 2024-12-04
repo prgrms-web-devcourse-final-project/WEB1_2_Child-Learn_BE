@@ -40,7 +40,6 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final WalletRepository walletRepository;
     private final AvatarRepository avatarRepository;
-    //private final S3ImageStorageService s3ImageStorageService;
 
     // 회원가입
     @Transactional
@@ -52,6 +51,18 @@ public class MemberService {
             if (checkLoginId(dto.getLoginId())) {
                 log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
                 throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
+            }
+
+            // 입력한 이메일로 가입한 회원이 있는지 확인
+            if (checkEmail(dto.getEmail())) {
+                log.error("해당 이메일로 가입한 회원이 존재합니다 : {}", dto.getEmail());
+                throw MemberException.EMAIL_IS_DUPLICATED.getMemberTaskException();
+            }
+
+            // 별명 중복 확인 로직
+            if (checkUsername(dto.getUsername())) {
+                log.error("이미 존재하는 닉네임 : {}", dto.getUsername());
+                throw MemberException.USERNAME_IS_DUPLICATED.getMemberTaskException();
             }
 
             // 비밀번호 암호화 처리
@@ -89,6 +100,18 @@ public class MemberService {
     public boolean checkLoginId(String loginId) {
         log.info("아이디 중복 체크 : {}", loginId);
         return memberRepository.findByLoginId(loginId).isPresent();
+    }
+
+    // 이메일 중복 검증 메서드
+    public boolean checkEmail(String email) {
+        log.info("이메일 중복 체크 : {}", email);
+        return memberRepository.findByEmail(email).isPresent();
+    }
+
+    // 별명 중복 검증 메서드
+    public boolean checkUsername(String username) {
+        log.info("별명 중복 체크 : {}", username);
+        return memberRepository.findByUsername(username).isPresent();
     }
 
     // 로그인

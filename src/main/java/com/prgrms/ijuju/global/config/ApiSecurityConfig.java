@@ -51,15 +51,12 @@ public class ApiSecurityConfig {
                             "/api/v1/member/refresh",
                             "/api/v1/member/reset-pw",
                             "/api/v1/member/find-id",
-                            "/api/v1/member/check-id")
+                            "/api/v1/member/check-id",
+                            "/api/v1/member/logout")
                         .permitAll() // 로그인과 토큰 갱신 허용
 
                         .anyRequest().authenticated()   // 나머지는 인증 필요
                 )
-//                .oauth2Login()
-//                .defaultSuccessUrl("/main", true)
-//                .userInfoEndpoint()
-//                .userService(oAuth2Service)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         log.info("JWT 필터 통과");
 
