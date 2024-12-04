@@ -1,13 +1,14 @@
 package com.prgrms.ijuju.domain.member.dto.response;
-import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 
 public class MemberResponseDTO {
@@ -136,6 +137,25 @@ public class MemberResponseDTO {
             this.id = member.getId();
             this.loginId = member.getLoginId();
             this.username = member.getUsername();
+        }
+    }
+
+    // OAuth2
+    @Data
+    public static class OAuth2ResponseDTO {
+        private Map<String, Object> attribute;
+        private String provider = "kakao";
+        private String providerId;
+        private String email;
+        private String name;
+        private String profileImage;
+
+        public OAuth2ResponseDTO(Map<String, Object> attribute) {
+            this.attribute = attribute;
+            this.providerId = (String) attribute.get("id");
+            this.email = (String) attribute.get("email");
+            this.name = (String) attribute.get("name");
+            this.profileImage = (String) attribute.get("profile_image");
         }
     }
 }

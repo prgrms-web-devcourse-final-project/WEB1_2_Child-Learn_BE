@@ -30,6 +30,14 @@ public class ApiSecurityConfig {
     SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         log.info("security 실행 ");
         http
+                .oauth2Login(oauth2 -> oauth2
+                        //.loginPage("/login") // 로그인 페이지 설정
+                        .defaultSuccessUrl("/ouath/loginInfo", true)   // 로그인 성공 후 리다이렉트 경로
+                        //.failureUrl("/login?error=true") // 로그인 실패 시 리다이렉트 경로
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(oAuth2Service)) // OAuth2 로그인 후 사용자 정보 처리
+                );
+        http
                 .cors(cors -> cors.configure(http))  // CORS 설정 추가
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -43,6 +51,7 @@ public class ApiSecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/resources/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/login", "/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
 
                         // API 엔드포인트 허용
                         .requestMatchers(
