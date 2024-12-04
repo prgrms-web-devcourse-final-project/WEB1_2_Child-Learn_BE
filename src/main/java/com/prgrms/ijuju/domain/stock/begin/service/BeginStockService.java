@@ -17,6 +17,8 @@ import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.begin.repository.LimitBeginStockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,26 +33,14 @@ import java.util.stream.Collectors;
 @Service
 public class BeginStockService {
     private final MemberService memberService;
+    private final BeginStockPriceService beginStockPriceService;
     private final MemberRepository memberRepository;
-    private final BeginStockPriceRepository beginStockGraphRepository;
     private final LimitBeginStockRepository limitBeginStockRepository;
     private final BeginQuizRepository beginQuizRepository;
 
     @Transactional(readOnly = true)
-    public List<BeginStockPriceResponse> getBeginStockData() {
-        log.info("당일을 기준으로 -3일 ~ +3일의 주식 데이터 조회");
-
-        LocalDate today = LocalDate.now();
-        List<BeginStockPrice> weeklyBeginStockData = beginStockGraphRepository.find7BeginStockData(today.minusDays(3), today.plusDays(3));
-
-        return weeklyBeginStockData.stream()
-                .map(BeginStockPriceResponse::from)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public BeginStockResponse getBeginStockDataWithQuiz() {
-        List<BeginStockPriceResponse> stockData = getBeginStockData();
+        List<BeginStockPriceResponse> stockData = beginStockPriceService.getBeginStockData();
         List<BeginQuiz> quizResponse = beginQuizRepository.findByCreatedDate(LocalDate.now())
                         .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.QUIZ_NOT_FOUND));
 
@@ -79,6 +69,11 @@ public class BeginStockService {
         limitBeginStock.updateLastPlayedDate();
         limitBeginStockRepository.save(limitBeginStock);
         memberService.increaseBeginStockPlayCount(member);
+    }
+
+    @CacheEvict(value = "stockData", key = "'weeklyData'")
+    public void refreshStockDataCache() {
+        log.info("모의 투자 초급 데이터 캐시 갱신");
     }
 
 }
