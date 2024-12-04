@@ -77,9 +77,9 @@ public class MemberController {
     @PostMapping("/refresh")
     public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@CookieValue("refreshToken") String refreshToken) {
         String accessToken = memberService.refreshAccessToken(refreshToken);
-        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+        LocalDateTime expiryAt = LocalDateTime.now().plusMinutes(15);
         MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO =
-                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급", expiryDate);
+                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급", expiryAt);
 
         return ResponseEntity.ok(responseDTO);
     }

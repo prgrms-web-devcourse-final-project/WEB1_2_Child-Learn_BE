@@ -54,7 +54,7 @@ public class Member extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
-    private LocalDateTime resetPwTokenExpiryDate;
+    private LocalDateTime resetPwTokenExpiryAt;
 
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
@@ -96,9 +96,9 @@ public class Member extends BaseTimeEntity {
         this.pw=pw;
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiryDate){
+    public void updateRefreshToken(String refreshToken, LocalDateTime expiryAt){
         this.refreshToken=refreshToken;
-        this.resetPwTokenExpiryDate=expiryDate;
+        this.resetPwTokenExpiryAt=expiryAt;
     }
 
     public void increaseBeginStockPlayCount() {

@@ -49,12 +49,12 @@ public class MemberResponseDTO {
     public static class RefreshAccessTokenResponseDTO {
         private String accessToken;
         private String message;
-        private LocalDateTime expiryDate;
+        private LocalDateTime expiryAt;
 
-        public RefreshAccessTokenResponseDTO(String accessToken, String message, LocalDateTime expiryDate) {
+        public RefreshAccessTokenResponseDTO(String accessToken, String message, LocalDateTime expiryAt) {
             this.accessToken = accessToken;
             this.message = message;
-            this.expiryDate = expiryDate;
+            this.expiryAt = expiryAt;
         }
     }
 
@@ -82,8 +82,6 @@ public class MemberResponseDTO {
         private LocalDate birth;
         private Long currentPoints;
         private Long currentCoins;
-        private long points;
-        private long coins;
         private boolean isActive;
 
         public ReadMyInfoResponseDTO(Member member, Wallet wallet) {

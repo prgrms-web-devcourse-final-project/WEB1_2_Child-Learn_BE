@@ -138,8 +138,8 @@ public class MemberService {
 
         addRefreshTokenToCookie(refreshToken, response);
 
-        LocalDateTime expiryDate = LocalDateTime.now().plusDays(3);
-        setRefreshToken(member.getId(), refreshToken, expiryDate);
+        LocalDateTime expiryAt = LocalDateTime.now().plusDays(3);
+        setRefreshToken(member.getId(), refreshToken, expiryAt);
 
         MemberResponseDTO.LoginResponseDTO responseDTO = new MemberResponseDTO.LoginResponseDTO(member);
         responseDTO.setAccessToken(accessToken);
@@ -199,9 +199,9 @@ public class MemberService {
 
     // 리프레시 토큰 저장
     @Transactional
-    public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryDate) {
+    public void setRefreshToken(Long id, String refreshToken, LocalDateTime expiryAt) {
         Member member = memberRepository.findById(id).get();
-        member.updateRefreshToken(refreshToken, expiryDate);
+        member.updateRefreshToken(refreshToken, expiryAt);
     }
 
     // 나의 회원 정보 조회
