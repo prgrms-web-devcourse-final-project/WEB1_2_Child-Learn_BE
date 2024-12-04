@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.controller;
 
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.request.QuizAnswerRequestDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.request.QuizRequestDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizAnswerResponseDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizResponseDto;
@@ -28,7 +29,8 @@ public class OXQuizProgressionController {
     @PostMapping("/{oxQuizDataId}")
     public ResponseEntity<QuizAnswerResponseDto> submitAnswer(
             @PathVariable Long oxQuizDataId,
-            @RequestBody String userAnswer) {
+            @RequestBody QuizAnswerRequestDto requestDto) {
+        String userAnswer = requestDto.getUserAnswer();
         QuizAnswerResponseDto response = progressionService.checkAnswer(oxQuizDataId, userAnswer);
         return ResponseEntity.ok(response);
     }

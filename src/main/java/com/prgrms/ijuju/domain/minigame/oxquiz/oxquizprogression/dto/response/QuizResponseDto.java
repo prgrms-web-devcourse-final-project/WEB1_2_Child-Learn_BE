@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response;
 
 
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.constant.Answer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
