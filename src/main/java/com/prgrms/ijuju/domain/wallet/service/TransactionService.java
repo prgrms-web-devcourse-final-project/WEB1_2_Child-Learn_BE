@@ -19,7 +19,6 @@ import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
 import com.prgrms.ijuju.domain.member.entity.Member;
 
@@ -56,7 +55,7 @@ public class TransactionService {
         pointTransactionRepository.save(transaction);
         
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-            .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+            .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
             
         notifyPointUpdate(member.getId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
     }
@@ -151,7 +150,7 @@ public class TransactionService {
         } catch (Exception e) {
             log.error("실시간 포인트 업데이트 실패: memberId={}, error={}", 
                      memberId, e.getMessage());
-            throw new CustomException(WalletException.REALTIME_SYNC_FAILED);
+            throw WalletException.REALTIME_SYNC_FAILED.toException();
         }
     }
 }

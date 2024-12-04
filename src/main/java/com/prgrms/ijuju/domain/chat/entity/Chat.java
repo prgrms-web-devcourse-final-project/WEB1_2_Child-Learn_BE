@@ -8,9 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.chat.exception.ChatTaskException;
 
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -68,7 +67,10 @@ public class Chat { // mongodb 엔티티
 
     public void delete() {
         if (!isDeletable()) {
-            throw new CustomException(ChatException.MESSAGE_DELETION_TIMEOUT);
+            throw new ChatTaskException(
+                ChatException.MESSAGE_DELETION_TIMEOUT.getCode(), 
+                ChatException.MESSAGE_DELETION_TIMEOUT.getMessage(), 
+                ChatException.MESSAGE_DELETION_TIMEOUT.getHttpStatus().value());
         }
         this.isDeleted = true;
         this.content = "삭제된 메시지입니다";

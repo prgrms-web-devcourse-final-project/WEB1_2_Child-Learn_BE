@@ -21,7 +21,6 @@ import com.prgrms.ijuju.domain.wallet.entity.PointType;
 import com.prgrms.ijuju.domain.wallet.entity.StockType;
 import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
 import com.prgrms.ijuju.domain.wallet.service.WalletService;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
@@ -150,7 +149,7 @@ public class MidStockTradeService {
     // 거래 가능 여부 확인
     private boolean isTradeAvailable(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
         return wallet.getCurrentPoints() >= tradePoint;
     }
 
@@ -164,7 +163,7 @@ public class MidStockTradeService {
     // 올인하였을때 경고 판단 - 남은돈을 다 투자했을때 경고로
     private boolean isAllInWarning(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
         return wallet.getCurrentPoints() == tradePoint;
     }
 }

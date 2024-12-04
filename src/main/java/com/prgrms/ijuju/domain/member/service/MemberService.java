@@ -8,7 +8,6 @@ import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.global.util.JwtUtil;
 import com.prgrms.ijuju.global.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
@@ -187,7 +186,7 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                    .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
             return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
@@ -200,7 +199,7 @@ public class MemberService {
         if (opMember.isPresent()) {
             Member member = opMember.get();
             Wallet wallet = walletRepository.findByMemberId(member.getId())
-                    .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                    .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
             return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();

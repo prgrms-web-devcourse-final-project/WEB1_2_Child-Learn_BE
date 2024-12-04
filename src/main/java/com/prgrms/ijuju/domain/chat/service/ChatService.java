@@ -20,7 +20,7 @@ import com.prgrms.ijuju.domain.chat.repository.ChatRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatMessageRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-import com.prgrms.ijuju.global.exception.CustomException;
+import com.prgrms.ijuju.domain.chat.exception.ChatTaskException;
 
 import java.util.List;
 import java.util.Comparator;
@@ -54,9 +54,9 @@ public class ChatService {
     // 채팅방 생성 또는 복구
     public ChatRoom createOrRestoreChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+                .orElseThrow(() -> ChatException.USER_NOT_FOUND.toException());
         Member friend = memberRepository.findById(friendId)
-                .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+                .orElseThrow(() -> ChatException.USER_NOT_FOUND.toException());
 
         List<ChatRoom> existingRooms = chatRoomRepository
                 .findByMemberIdOrFriendId(memberId, friendId);
@@ -78,11 +78,11 @@ public class ChatService {
     // 채팅방 삭제
     public void deleteChatRoom(Long roomId, Long userId) {
         ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
+                .orElseThrow(() -> ChatException.CHATROOM_NOT_FOUND.toException());
 
         if (!room.getMember().getId().equals(userId) && 
             !room.getFriend().getId().equals(userId)) {
-            throw new CustomException(ChatException.UNAUTHORIZED_CHATROOM_ACCESS);
+            throw ChatException.CHATROOM_ACCESS_DENIED.toException();
         }
 
         room.markAsDeleted();
@@ -99,10 +99,10 @@ public class ChatService {
     // 메시지 전송
     public ChatMessageResponseDTO sendMessage(ChatMessageRequestDTO request, Long senderId) {
         ChatRoom room = chatRoomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
+                .orElseThrow(() -> ChatException.CHATROOM_NOT_FOUND.toException());
         
         Member sender = memberRepository.findById(senderId)
-            .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+            .orElseThrow(() -> ChatException.USER_NOT_FOUND.toException());
 
         Chat message = Chat.builder()
                 .chatRoom(room)
@@ -143,10 +143,10 @@ public class ChatService {
     // 메시지 삭제
     public void deleteMessage(Long messageId, Long userId) {
         Chat chat = chatRepository.findById(messageId)
-                .orElseThrow(() -> new CustomException(ChatException.MESSAGE_NOT_FOUND));
+                .orElseThrow(() -> ChatException.MESSAGE_NOT_FOUND.toException());
 
         if (!chat.getSender().getId().equals(userId)) {
-            throw new CustomException(ChatException.UNAUTHORIZED_MESSAGE_DELETION);
+            throw ChatException.MESSAGE_DELETION_DENIED.toException();
         }
 
         chat.delete();
