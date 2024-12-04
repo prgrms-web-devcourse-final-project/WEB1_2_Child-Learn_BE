@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class BeginStockGptService {
     private final RestClient chatGptRestClient;
     private final BeginQuizRepository beginQuizRepository;
-    private final BeginStockService beginStockService;
+    private final BeginStockPriceService beginStockPriceService;
 
     private final String MODEL = "gpt-3.5-turbo";
     private final String SYSTEM_ROLE = "system";
@@ -35,7 +36,7 @@ public class BeginStockGptService {
     private final double TEMPERATURE = 0.6; // 0일수록 일관되고 예측 가능, 1일수록 창의적이고 다양한 응답
 
     public void generateBeginQuiz() {
-        List<BeginStockPriceResponse> graphData = beginStockService.getBeginStockData();
+        List<BeginStockPriceResponse> graphData = beginStockPriceService.getBeginStockData();
 
         String stockData = graphData.stream()
                 .map(stock -> stock.tradeDay() + " : " + stock.price())
@@ -45,6 +46,7 @@ public class BeginStockGptService {
 
         BeginQuiz quiz = parseGptResponse(response);
         beginQuizRepository.save(quiz);
+        log.info("{}의 모의 투자 초급 퀴즈 생성", LocalDate.now());
     }
 
     private String gptResponse(String stockData) {
