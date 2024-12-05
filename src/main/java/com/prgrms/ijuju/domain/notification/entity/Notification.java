@@ -35,21 +35,12 @@ public class Notification extends BaseTimeEntity {
     @Column(nullable = false)
     private Boolean isDeleted; // soft delete
 
-    @Column(nullable = false)
-    private Boolean isAccepted;  // 친구 요청 수락 여부
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationType type;
 
     // 읽음 처리 메서드
     public void markAsRead() {
-        this.isRead = true;
-    }
-
-    // 친구 요청 수락/거절 처리 메서드
-    public void handleFriendRequest(boolean accepted) {
-        this.isAccepted = accepted;
         this.isRead = true;
     }
 

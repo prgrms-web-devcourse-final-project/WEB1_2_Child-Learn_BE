@@ -15,7 +15,7 @@ import static jakarta.persistence.GenerationType.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FCMToken extends BaseTimeEntity {
+public class FcmToken extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
@@ -40,5 +40,4 @@ public class FCMToken extends BaseTimeEntity {
             member.getFcmTokens().add(this);
         }
     }
-
 }

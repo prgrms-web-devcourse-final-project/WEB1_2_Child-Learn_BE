@@ -20,7 +20,6 @@ public class NotificationResponseDto {
     private Boolean isRead;
     private LocalDateTime createdAt;
     private String profileImageUrl;
-    private Boolean isAccepted;    // 친구 요청 수락 여부
     private String elapsedTime;    // "20분 전" 같은 경과 시간
 
     public static NotificationResponseDto of(Notification notification, String profileImageUrl) {
@@ -34,15 +33,8 @@ public class NotificationResponseDto {
                 .isRead(notification.getIsRead())
                 .createdAt(notification.getCreatedAt())
                 .profileImageUrl(profileImageUrl)
-                .isAccepted(checkIsAccepted(notification))
                 .elapsedTime(calculateElapsedTime(notification.getCreatedAt()))
                 .build();
-    }
-
-    private static Boolean checkIsAccepted(Notification notification) {
-        return notification.getType() == NotificationType.FRIEND_REQUEST
-                ? notification.getIsAccepted()
-                : null;
     }
 
     private static String calculateElapsedTime(LocalDateTime createdAt) {

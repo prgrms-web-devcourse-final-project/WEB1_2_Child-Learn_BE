@@ -6,9 +6,9 @@ import com.google.firebase.messaging.Message;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-import com.prgrms.ijuju.domain.notification.entity.FCMToken;
+import com.prgrms.ijuju.domain.notification.entity.FcmToken;
 import com.prgrms.ijuju.domain.notification.entity.Notification;
-import com.prgrms.ijuju.domain.notification.repository.FCMTokenRepository;
+import com.prgrms.ijuju.domain.notification.repository.FcmTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +23,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class FCMService {
+public class FcmService {
     private final MemberRepository memberRepository;
-    private final FCMTokenRepository fcmTokenRepository;
+    private final FcmTokenRepository fcmTokenRepository;
     private final FirebaseMessaging firebaseMessaging;
 
 
@@ -33,12 +33,17 @@ public class FCMService {
         Member member = memberRepository.findById(notification.getReceiver().getId())
                 .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
-        List<FCMToken> tokens = member.getFcmTokens();
-        // 실패한 토큰 리스트 초기화
-        List<FCMToken> faliedTokens = new ArrayList<>();
+        // 중복 토큰 제거
+        List<FcmToken> tokens = member.getFcmTokens().stream()
+                .distinct()
+                .toList();
 
-        for (FCMToken token : tokens) {
-            try{
+        // 실패한 토큰 리스트 초기화
+        List<FcmToken> failedTokens = new ArrayList<>();
+
+        // 메시지 전송
+        for (FcmToken token : tokens) {
+            try {
                 Map<String, String> data = new HashMap<>();
                 data.put("type", notification.getType().name());
                 data.put("senderLoginId", notification.getSenderLoginId().toString());
@@ -50,22 +55,26 @@ public class FCMService {
 
                 Message message = Message.builder()
                         .setToken(token.getTokenValue())
-                        .setNotification(com.google.firebase.messaging.Notification.builder() // 알림 메시지 설정
-                                .setTitle(notification.getTitle())
-                                .setBody(notification.getContent())
-                                .build())
+//                        .setNotification(com.google.firebase.messaging.Notification.builder()
+//                                .setTitle(notification.getTitle())
+//                                .setBody(notification.getContent())
+//                                .build())
                         .putAllData(data)
                         .build();
+
                 // FCM 메시지 전송
                 firebaseMessaging.send(message);
+                log.info("알림 전송 완료 - Notification ID: {}", notification.getId());
             } catch (FirebaseMessagingException e) {
-                faliedTokens.add(token);
+                failedTokens.add(token);
                 log.error("FCM 메시지 전송 실패: {}", e.getMessage());
             }
         }
+
         // 실패한 토큰 삭제
-        if (!faliedTokens.isEmpty()) {
-            fcmTokenRepository.deleteAll(faliedTokens);
+        if (!failedTokens.isEmpty()) {
+            fcmTokenRepository.deleteAll(failedTokens);
         }
     }
+
 }

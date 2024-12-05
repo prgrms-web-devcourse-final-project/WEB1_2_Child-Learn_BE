@@ -1,8 +1,7 @@
 package com.prgrms.ijuju.domain.notification.entity;
 
 public enum NotificationType {
-    CHAT,
+    MESSAGE,
     FRIEND_REQUEST,
     FRIEND_ACCEPT,
-    ARTICLE
 }

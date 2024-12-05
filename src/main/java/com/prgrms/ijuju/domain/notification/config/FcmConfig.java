@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Configuration
 @Slf4j
-public class FCMConfig {
+public class FcmConfig {
     private String firebaseConfigPath = "firebase/firebase_service_key.json"; // 추후 하드코딩 개선
 
     @Bean
