@@ -1,14 +1,15 @@
 package com.prgrms.ijuju.domain.member.entity;
 
-import com.prgrms.ijuju.domain.wallet.entity.Wallet;
-import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
 import com.prgrms.ijuju.domain.ranking.entity.Ranking;
-
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -106,6 +107,10 @@ public class Member extends BaseTimeEntity {
 
     public void changeRanking(Ranking ranking) {
         this.ranking = ranking;
+    }
+
+    public void changeAvatar(Avatar avatar) {
+        this.avatar = avatar;
     }
 
     public void getRemainingCoins(Long coins, Long price) {
