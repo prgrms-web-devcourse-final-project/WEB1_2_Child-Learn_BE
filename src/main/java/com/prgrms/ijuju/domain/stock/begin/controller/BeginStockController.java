@@ -7,14 +7,11 @@ import com.prgrms.ijuju.domain.stock.begin.service.BeginStockService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +21,9 @@ public class BeginStockController {
     private final BeginStockService beginStockService;
     private final BeginStockPriceService beginStockPriceService;
     private final BeginStockGptService beginStockGptService;
+
+    @Value("${admin.key}")
+    private String adminKey;
 
     @GetMapping
     public ResponseEntity<BeginStockResponse> getBeginStock() {
@@ -38,10 +38,14 @@ public class BeginStockController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/generations/manual")
-    public ResponseEntity<String> generateDailyData(@AuthenticationPrincipal SecurityUser user ) {
-        log.info("오늘의 모의투자 초급 데이터 수동 생성 중 by 관리자: {}", user.getUsername());
+    public ResponseEntity<String> generateDailyData(@RequestHeader("Admin-Key") String requestKey) {
+        if (!adminKey.equals(requestKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("관리자 키가 유효하지 않습니다.");
+        }
+
+        log.info("오늘의 모의투자 초급 데이터 수동 생성 중");
         try {
             beginStockPriceService.createWeeklyStockPrice();
 
