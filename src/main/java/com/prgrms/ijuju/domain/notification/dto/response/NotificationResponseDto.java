@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class NotificationResponseDto {
-    private Long id;
+    private Long notificationId;
     private Long senderLoginId;
     private String senderUsername;
     private String title;
@@ -24,7 +24,7 @@ public class NotificationResponseDto {
 
     public static NotificationResponseDto of(Notification notification, String profileImageUrl) {
         return NotificationResponseDto.builder()
-                .id(notification.getId())
+                .notificationId(notification.getId())
                 .senderLoginId(notification.getSenderLoginId())
                 .senderUsername(notification.getSenderUsername())
                 .title(notification.getTitle())

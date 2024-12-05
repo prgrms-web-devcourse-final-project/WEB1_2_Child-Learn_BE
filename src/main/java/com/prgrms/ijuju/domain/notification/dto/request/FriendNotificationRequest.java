@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendNotificationRequest {
-    private String receiverLoginId;
+    private String receiverUsername;
 }

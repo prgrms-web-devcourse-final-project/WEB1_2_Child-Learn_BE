@@ -1,11 +1,11 @@
 package com.prgrms.ijuju.domain.notification.controller;
 
-import com.prgrms.ijuju.domain.notification.dto.request.FriendNotificationRequest;
-import com.prgrms.ijuju.domain.notification.dto.request.MessageNotificationRequest;
 import com.prgrms.ijuju.domain.notification.dto.response.NotificationResponseDto;
+import com.prgrms.ijuju.domain.notification.dto.response.SseNotificationResponseDto;
 import com.prgrms.ijuju.domain.notification.service.NotificationService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationController {
     private final NotificationService notificationService;
 
@@ -34,70 +35,33 @@ public class NotificationController {
 
     // 알림 읽음 처리
     @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(
+    public ResponseEntity<String> markAsRead(
             @PathVariable Long notificationId,
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
+        log.info(("알림 읽음 처리"));
         notificationService.markAsRead(notificationId, securityUser.getId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("알림 읽음 처리 완료.");
     }
 
     // 모든 알림 읽음 처리
     @PatchMapping("/all/read")
-    public ResponseEntity<Void> markAllAsRead(
+    public ResponseEntity<String> markAllAsRead(
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
+        log.info("모든 알림 읽음 처리");
         notificationService.markAllAsRead(securityUser.getId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("모든 알림 읽음 처리 완료.");
     }
 
     // 알림 삭제 처리
     @DeleteMapping("/{notificationId}")
-    public ResponseEntity<Void> deleteNotification(
+    public ResponseEntity<String> deleteNotification(
             @PathVariable Long notificationId,
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
+        log.info("알림 삭제 처리");
         notificationService.markAsDeleted(notificationId, securityUser.getId());
-        return ResponseEntity.noContent().build();
-    }
-
-    // 친구 요청 알림 생성
-    @PostMapping("/friend-request")
-    public ResponseEntity<Void> createFriendRequestNotification(
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody FriendNotificationRequest request
-    ) {
-        notificationService.createFriendRequestNotification(
-                securityUser.getUsername(),
-                request.getReceiverLoginId()
-        );
-        return ResponseEntity.ok().build();
-    }
-
-    // 친구 수락 알림 생성
-    @PostMapping("/friend-accept")
-    public ResponseEntity<Void> createFriendAcceptNotification(
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody FriendNotificationRequest request
-    ) {
-        notificationService.createFriendAcceptNotification(
-                securityUser.getUsername(),
-                request.getReceiverLoginId()
-        );
-        return ResponseEntity.ok().build();
-    }
-
-    // 메시지 알림 생성
-    @PostMapping("/message")
-    public ResponseEntity<Void> createMessageNotification(
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody MessageNotificationRequest request
-    ) {
-        notificationService.createMessageNotification(
-                securityUser.getUsername(),
-                request.getReceiverLoginId(),
-                request.getMessageContent()
-        );
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("알림 삭제 완료");
     }
 }

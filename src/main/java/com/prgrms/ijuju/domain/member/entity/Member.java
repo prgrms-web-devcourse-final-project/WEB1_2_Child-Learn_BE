@@ -1,6 +1,5 @@
 package com.prgrms.ijuju.domain.member.entity;
 
-import com.prgrms.ijuju.domain.notification.entity.FcmToken;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
@@ -63,9 +62,6 @@ public class Member extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "member", orphanRemoval = true)
     private Ranking ranking;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FcmToken> fcmTokens = new ArrayList<>();
 
     @Builder
     public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth){
