@@ -1,10 +1,11 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
+import com.prgrms.ijuju.global.exception.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum ItemErrorCode {
+public enum ItemErrorCode implements ErrorCode {
 
     ITEM_NOT_FOUND("CH001", "존재하지 않는 아이템입니다.", HttpStatus.NOT_FOUND),
     NOT_ENOUGH_COINS("CH002", "코인이 부족합니다.", HttpStatus.BAD_REQUEST),

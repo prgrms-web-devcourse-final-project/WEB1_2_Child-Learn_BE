@@ -1,10 +1,11 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
+import com.prgrms.ijuju.global.exception.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum AvatarErrorCode {
+public enum AvatarErrorCode implements ErrorCode {
 
     AVATAR_NOT_FOUND("CH001", "아바타가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 

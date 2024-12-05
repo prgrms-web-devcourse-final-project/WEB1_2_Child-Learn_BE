@@ -1,15 +1,9 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
-public class AvatarException extends RuntimeException {
+import com.prgrms.ijuju.global.exception.BusinessException;
 
-    private final AvatarErrorCode errorCode;
-
+public class AvatarException extends BusinessException {
     public AvatarException(AvatarErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
-
-    public AvatarErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode);
     }
 }

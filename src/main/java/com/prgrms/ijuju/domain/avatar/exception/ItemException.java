@@ -1,15 +1,10 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
-public class ItemException extends RuntimeException {
+import com.prgrms.ijuju.global.exception.BusinessException;
 
-    private final ItemErrorCode errorCode;
+public class ItemException extends BusinessException {
 
     public ItemException(ItemErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
-
-    public ItemErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode);
     }
 }

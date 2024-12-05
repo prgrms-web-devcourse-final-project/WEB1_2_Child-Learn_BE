@@ -1,15 +1,10 @@
 package com.prgrms.ijuju.domain.member.exception;
 
-public class MemberException extends RuntimeException {
+import com.prgrms.ijuju.global.exception.BusinessException;
 
-    private final MemberErrorCode errorCode;
+public class MemberException extends BusinessException {
 
     public MemberException(MemberErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
-
-    public MemberErrorCode getErrorCode() {
-        return errorCode;
+        super(errorCode);
     }
 }

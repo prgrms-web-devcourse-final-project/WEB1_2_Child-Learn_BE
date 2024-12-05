@@ -1,10 +1,11 @@
 package com.prgrms.ijuju.domain.member.exception;
 
+import com.prgrms.ijuju.global.exception.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum MemberErrorCode {
+public enum MemberErrorCode implements ErrorCode {
 
     // 회원가입
     MEMBER_NOT_REGISTERED("CH001", "회원가입에 실패했습니다", HttpStatus.BAD_REQUEST),
