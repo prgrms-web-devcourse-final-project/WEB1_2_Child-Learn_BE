@@ -29,4 +29,16 @@ public class FCMToken extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public void updateExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+        if (!member.getFcmTokens().contains(this)) { // 중복 방지
+            member.getFcmTokens().add(this);
+        }
+    }
+
 }

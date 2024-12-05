@@ -14,6 +14,6 @@ public class NotificationRequestDto {
     private String title;
     private String content;
     private NotificationType type;
-    private String fcmToken;
-    private Long memberId;
+    private Long senderLoginId;
+    private String senderUsername;
 }
