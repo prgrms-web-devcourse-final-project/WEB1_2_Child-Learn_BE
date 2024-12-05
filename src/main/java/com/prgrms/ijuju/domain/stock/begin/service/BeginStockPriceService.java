@@ -29,6 +29,7 @@ public class BeginStockPriceService {
 
     private final BeginStockPriceRepository beginStockPriceRepository;
 
+    @Transactional
     public void createWeeklyStockPrice() {
         BeginStockPrice latestStock = beginStockPriceRepository.findTopByOrderByBeginIdDesc()
                 .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.STOCK_NOT_FOUND));
