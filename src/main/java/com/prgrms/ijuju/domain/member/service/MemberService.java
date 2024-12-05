@@ -2,12 +2,15 @@ package com.prgrms.ijuju.domain.member.service;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
+import com.prgrms.ijuju.domain.friend.service.FriendService;
 import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.global.util.JwtUtil;
 import com.prgrms.ijuju.global.util.PasswordUtil;
@@ -22,16 +25,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
-import com.prgrms.ijuju.domain.wallet.exception.WalletException;
-import com.prgrms.ijuju.domain.friend.service.FriendService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
