@@ -6,6 +6,7 @@ import com.prgrms.ijuju.domain.friend.service.FriendService;
 import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
@@ -25,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,19 +53,19 @@ public class MemberService {
             log.info("아이디 중복 확인 : {}", dto.getLoginId());
             if (checkLoginId(dto.getLoginId())) {
                 log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
-                throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
+                throw new MemberException(MemberErrorCode.LOGINID_IS_DUPLICATED);
             }
 
             // 입력한 이메일로 가입한 회원이 있는지 확인
             if (checkEmail(dto.getEmail())) {
                 log.error("해당 이메일로 가입한 회원이 존재합니다 : {}", dto.getEmail());
-                throw MemberException.EMAIL_IS_DUPLICATED.getMemberTaskException();
+                throw new MemberException(MemberErrorCode.EMAIL_IS_DUPLICATED);
             }
 
             // 별명 중복 확인 로직
             if (checkUsername(dto.getUsername())) {
                 log.error("이미 존재하는 닉네임 : {}", dto.getUsername());
-                throw MemberException.USERNAME_IS_DUPLICATED.getMemberTaskException();
+                throw new MemberException(MemberErrorCode.USERNAME_IS_DUPLICATED);
             }
 
             // 비밀번호 암호화 처리
@@ -95,7 +95,7 @@ public class MemberService {
 
             return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
         } catch (Exception e) {
-            throw MemberException.MEMBER_NOT_REGISTERED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_REGISTERED);
         }
     }
 
@@ -123,10 +123,10 @@ public class MemberService {
         validateActiveStatus(loginId);
         
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(pw, member.getPw())) {
-            throw MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_LOGIN_DENIED);
         }
 
         // 로그인 시 활성 상태로 변경
@@ -175,13 +175,13 @@ public class MemberService {
     public String refreshAccessToken(String refreshToken) {
         // 화이트리스트 처리
         Member member = memberRepository.findByRefreshToken(refreshToken)
-                .orElseThrow( () -> MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException());
+                .orElseThrow( () -> new MemberException(MemberErrorCode.MEMBER_LOGIN_DENIED));
 
         // 리프레시 토큰이 만료되었다면 로그아웃
         try {
             Claims claims = JwtUtil.decode(refreshToken);
         } catch (ExpiredJwtException e) {
-            throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_REFRESHTOKEN_EXPIRED);
         }
         return generateAccessToken(member.getId(), member.getLoginId());
     }
@@ -213,7 +213,7 @@ public class MemberService {
                     .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -226,7 +226,7 @@ public class MemberService {
                     .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -247,7 +247,7 @@ public class MemberService {
         Optional<Member> opMember = memberRepository.findById(id);
 
         if (opMember.isEmpty()) {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
 
         return opMember.get();
@@ -257,7 +257,7 @@ public class MemberService {
     public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         // 검색어 유효성 검사
         if (username == null || username.trim().isEmpty()) {
-            throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_EMPTY);
         }
         
         // 검색어 공백 제거 및 정리
@@ -265,7 +265,7 @@ public class MemberService {
         
         // 최소 검색어 길이 체크
         if (trimmedUsername.length() < 2) {
-            throw MemberException.SEARCH_KEYWORD_TOO_SHORT.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_TOO_SHORT);
         }
         
         Pageable pageable = dto.getPageable();
@@ -273,7 +273,7 @@ public class MemberService {
         
         if (memberPage.isEmpty()) {
             log.info("검색 결과가 없습니다. 검색어: {}", trimmedUsername);
-            throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_RESULT_NOT_FOUND);
         }
         
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
@@ -295,7 +295,7 @@ public class MemberService {
 
             memberRepository.delete(member);
         } else {
-            throw MemberException.MEMBER_NOT_REMOVED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_REMOVED);
         }
     }
 
@@ -317,7 +317,7 @@ public class MemberService {
 
             return new MemberResponseDTO.UpdateMyInfoResponseDTO("회원 정보 수정이 완료되었습니다.");
         } else {
-            throw MemberException.MEMBER_NOT_MODIFIED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_MODIFIED);
         }
     }
 
@@ -328,7 +328,7 @@ public class MemberService {
             String loginId = opMember.get().getLoginId();
             return maskLoginId(loginId);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -359,7 +359,7 @@ public class MemberService {
 
             return templatePw;
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -373,7 +373,7 @@ public class MemberService {
     // 회원 활동 상태 확인
     public boolean checkMemberIsActive(Long id) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         return member.isActive();
     }
 
@@ -381,7 +381,7 @@ public class MemberService {
     @Transactional
     public void updateMemberActiveStatus(Long id, boolean isActive) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
                 
         // 이미 같은 상태인 경우 처리
         if (member.isActive() == isActive) {
@@ -399,7 +399,7 @@ public class MemberService {
     @Transactional
     public void logout(Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
                 
         if (!member.isActive()) {
             log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
@@ -430,11 +430,11 @@ public class MemberService {
     // 동시 로그인 방지를 위한 메서드 추가
     public void validateActiveStatus(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
                 
         if (member.isActive()) {
             log.warn("회원 ID: {}는 이미 다른 곳에서 로그인 중입니다.", loginId);
-            throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_ALREADY_LOGGED_IN);
         }
     }
 

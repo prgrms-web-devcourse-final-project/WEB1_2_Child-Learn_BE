@@ -1,8 +1,11 @@
 package com.prgrms.ijuju.global.exception;
 
+    import com.prgrms.ijuju.domain.avatar.exception.AvatarErrorCode;
+    import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
     import com.prgrms.ijuju.domain.chat.exception.ChatException;
 import com.prgrms.ijuju.domain.friend.exception.FriendException;
-import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+    import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+    import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 
 import lombok.Getter;
 
@@ -24,6 +27,24 @@ public class CustomException extends RuntimeException {
     }
 
     public CustomException(ChatException exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
+    }
+
+    public CustomException(MemberErrorCode exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
+    }
+
+    public CustomException(ItemErrorCode exception) {
+        super(exception.getMessage());
+        this.code = exception.getCode();
+        this.status = exception.getHttpStatus().value();
+    }
+
+    public CustomException(AvatarErrorCode exception) {
         super(exception.getMessage());
         this.code = exception.getCode();
         this.status = exception.getHttpStatus().value();

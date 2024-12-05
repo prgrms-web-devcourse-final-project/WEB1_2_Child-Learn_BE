@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.stock.begin.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
@@ -63,7 +64,7 @@ public class BeginStockService {
 
     public void playBeginStockQuiz(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         LimitBeginStock limitBeginStock = limitBeginStockRepository.findByMemberId(member.getId())
                         .orElseGet(() -> {

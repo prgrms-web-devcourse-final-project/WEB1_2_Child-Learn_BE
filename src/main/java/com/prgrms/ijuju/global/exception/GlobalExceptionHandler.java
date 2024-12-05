@@ -1,5 +1,14 @@
 package com.prgrms.ijuju.global.exception;
 
+import com.prgrms.ijuju.domain.avatar.dto.response.ErrorAvatarResponse;
+import com.prgrms.ijuju.domain.avatar.dto.response.ErrorItemResponse;
+import com.prgrms.ijuju.domain.avatar.exception.AvatarErrorCode;
+import com.prgrms.ijuju.domain.avatar.exception.AvatarException;
+import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
+import com.prgrms.ijuju.domain.avatar.exception.ItemException;
+import com.prgrms.ijuju.domain.member.dto.response.ErrorMemberResponse;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.ErrorFlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardErrorCode;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardException;
@@ -54,6 +63,30 @@ public class GlobalExceptionHandler {
         log.error("WordQuizException: {}", e.getMessage());
         final WordQuizErrorCode errorCode = e.getErrorCode();
         final ErrorWordQuizResponse response = ErrorWordQuizResponse.of(errorCode);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(MemberException.class)
+    protected ResponseEntity<ErrorMemberResponse> handleMemberException(final MemberException e) {
+        log.error("MemberException: {}", e.getMessage());
+        final MemberErrorCode errorCode = e.getErrorCode();
+        final ErrorMemberResponse response = ErrorMemberResponse.of(errorCode);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(ItemException.class)
+    protected ResponseEntity<ErrorItemResponse> handleItemException(final ItemException e) {
+        log.error("ItemException: {}", e.getMessage());
+        final ItemErrorCode errorCode = e.getErrorCode();
+        final ErrorItemResponse response = ErrorItemResponse.of(errorCode);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(AvatarException.class)
+    protected ResponseEntity<ErrorAvatarResponse> handleAvatarException(final AvatarException e) {
+        log.error("AvatarException: {}", e.getMessage());
+        final AvatarErrorCode errorCode = e.getErrorCode();
+        final ErrorAvatarResponse response = ErrorAvatarResponse.of(errorCode);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

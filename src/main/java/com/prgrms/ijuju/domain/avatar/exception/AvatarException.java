@@ -1,20 +1,15 @@
 package com.prgrms.ijuju.domain.avatar.exception;
 
-import org.springframework.http.HttpStatus;
+public class AvatarException extends RuntimeException {
 
-public enum AvatarException {
+    private final AvatarErrorCode errorCode;
 
-    AVATAR_NOT_FOUND("아바타가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
-
-    private final String message;
-    private final HttpStatus status;
-
-    AvatarException(String message, HttpStatus status) {
-        this.message = message;
-        this.status = status;
+    public AvatarException(AvatarErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 
-    public ItemTaskException getItemTaskException(){
-        return new ItemTaskException(this.message, this.status.value());
+    public AvatarErrorCode getErrorCode() {
+        return errorCode;
     }
 }

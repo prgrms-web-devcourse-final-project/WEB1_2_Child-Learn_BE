@@ -3,6 +3,7 @@ package com.prgrms.ijuju.domain.avatar.service;
 import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
+import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class AdminItemService {
     public ItemResponseDTO.ItemRegisterResponseDTO registerItem(ItemRequestDTO.ItemRegisterRequestDTO dto) {
         try {
             if (itemRepository.existsByName(dto.getName())) {
-                throw ItemException.ITEM_IS_ALREADY_REGISTED.getItemTaskException();
+                throw new ItemException(ItemErrorCode.ITEM_IS_ALREADY_REGISTED);
             }
 
             Item newItem = dto.toEntity();
@@ -33,7 +34,7 @@ public class AdminItemService {
             return new ItemResponseDTO.ItemRegisterResponseDTO(savedItem);
 
         } catch (Exception e) {
-            throw ItemException.ITEM_NOT_REGISTERED.getItemTaskException();
+            throw new ItemException(ItemErrorCode.ITEM_NOT_REGISTERED);
         }
     }
 }

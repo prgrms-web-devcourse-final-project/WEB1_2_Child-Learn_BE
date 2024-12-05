@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.member.oAuth2;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // CustomUserPrincipal을 생성하여 반환
         return new CustomUserPrincipal(member);
