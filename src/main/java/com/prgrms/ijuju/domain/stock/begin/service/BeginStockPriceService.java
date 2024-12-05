@@ -1,12 +1,15 @@
 package com.prgrms.ijuju.domain.stock.begin.service;
 
+import com.prgrms.ijuju.domain.stock.begin.dto.response.BeginStockPriceResponse;
 import com.prgrms.ijuju.domain.stock.begin.entity.BeginStockPrice;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockErrorCode;
 import com.prgrms.ijuju.domain.stock.begin.exception.BeginStockException;
 import com.prgrms.ijuju.domain.stock.begin.repository.BeginStockPriceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class BeginStockPriceService {
 
     private final BeginStockPriceRepository beginStockPriceRepository;
 
+    @Transactional
     public void createWeeklyStockPrice() {
         BeginStockPrice latestStock = beginStockPriceRepository.findTopByOrderByBeginIdDesc()
                 .orElseThrow(() -> new BeginStockException(BeginStockErrorCode.STOCK_NOT_FOUND));
@@ -34,7 +39,7 @@ public class BeginStockPriceService {
         LocalDate startDate = LocalDate.now().plusDays(1);
 
         if (isGenerationDate(recordCount, latestStock)) {
-            log.info("초급 주식 주식 가격 일주일 데이터 생성");
+            log.info("모의 투자 초급 주식 가격 일주일 데이터 생성");
             List<BeginStockPrice> newWeeklyStocks = generateWeeklyBeginStockData(startDate, lastPrice);
             beginStockPriceRepository.saveAll(newWeeklyStocks);
         }
@@ -77,5 +82,18 @@ public class BeginStockPriceService {
         int priceUnits = (maxPrice - minPrice) / UNIT;
 
         return (random.nextInt(priceUnits + 1) * UNIT) + minPrice;
+    }
+
+    @Cacheable(value = "stockData", key = "'weeklyPriceData'")
+    @Transactional(readOnly = true)
+    public List<BeginStockPriceResponse> getBeginStockData() {
+        log.info("당일을 기준으로 -3일 ~ +3일의 주식 데이터 조회");
+
+        LocalDate today = LocalDate.now();
+        List<BeginStockPrice> weeklyBeginStockData = beginStockPriceRepository.find7BeginStockData(today.minusDays(3), today.plusDays(3));
+
+        return weeklyBeginStockData.stream()
+                .map(BeginStockPriceResponse::from)
+                .collect(Collectors.toList());
     }
 }
