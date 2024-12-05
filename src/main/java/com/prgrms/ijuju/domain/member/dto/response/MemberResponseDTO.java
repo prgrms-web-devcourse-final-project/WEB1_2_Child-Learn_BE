@@ -159,4 +159,11 @@ public class MemberResponseDTO {
             this.profileImage = (String) attribute.get("profile_image");
         }
     }
+
+    // ProfileImage
+    @Data
+    @AllArgsConstructor
+    public static class updateProfileImageDTO {
+        private String message;
+    }
 }

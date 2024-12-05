@@ -17,7 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -219,15 +221,18 @@ public class MemberController {
         return ResponseEntity.ok(Map.of("message", message));
     }
 
-//    @PostMapping("/update-profile-image")
-//    public String updateProfileImage(@RequestParam("file")MultipartFile file, @RequestParam("memberId") Long memberId) {
-//        try {
-//            memberService.updateProfileImage(memberId, file);
-//            return "프로필 이미지 변경이 완료되었습니다.";
-//        } catch (Exception e) {
-//            return "프로필 변경에 실패했습니다." + e.getMessage();
-//        }
-//    }
+    // ProfileImage 저장
+    @PostMapping("/update-profile-image")
+    public ResponseEntity<MemberResponseDTO.updateProfileImageDTO> updateProfileImage(@RequestParam("profileImage") MultipartFile file,
+                                                                                      @AuthenticationPrincipal SecurityUser user) {
+        Long id = user.getId();
+        try {
+            return ResponseEntity.ok(memberService.updateProfileImage(id, file));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MemberResponseDTO.updateProfileImageDTO("파일 업로드 실패" + e.getMessage()));
+        }
+    }
 
 
 }
