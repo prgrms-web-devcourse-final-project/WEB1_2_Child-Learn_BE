@@ -85,7 +85,6 @@ public class WordQuizService {
         return gameResponse;
     }
 
-    @Transactional
     public WordQuizResponse handleAnswer(Long memberId, HttpSession session, Boolean isCorrect) {
         Long sessionMemberId = (Long) session.getAttribute("memberId");
         if (sessionMemberId == null || !sessionMemberId.equals(memberId)) {
