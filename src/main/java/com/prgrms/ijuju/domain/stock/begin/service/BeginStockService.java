@@ -46,9 +46,12 @@ public class BeginStockService {
         }
 
         BeginQuiz randomQuiz = quizResponse.get(new Random().nextInt(quizResponse.size()));
-        List<BeginStockQuizResponse> randomQuizResponse = List.of(BeginStockQuizResponse.from(randomQuiz));
+        BeginStockQuizResponse randomQuizResponse = BeginStockQuizResponse.from(randomQuiz);
+        log.info("선택된 문제: {} ", randomQuizResponse.content());
+        log.info("선택된 문제의 o 지문: {} ", randomQuizResponse.oContent());
+        log.info("선택된 문제의 x 지문: {} ", randomQuizResponse.xContent());
 
-        return new BeginStockResponse(stockData, randomQuizResponse);
+        return new BeginStockResponse(stockData, List.of(randomQuizResponse));
     }
 
     public void playBeginStockQuiz(Long memberId) {
