@@ -61,7 +61,6 @@ public class WordQuizService {
                 .orElse(true);
     }
 
-    @Transactional(readOnly = true)
     public WordQuizResponse startOrContinueWordQuiz(HttpSession session, Long memberId, Difficulty difficulty) {
         Member member = getMemberOrThrowException(memberId);
 
