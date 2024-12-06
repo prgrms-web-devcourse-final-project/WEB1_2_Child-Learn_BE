@@ -3,18 +3,31 @@ package com.prgrms.ijuju.global.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+@Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
+    @Value("${secret.key}")
+    private String SECRET_KEY;
 
-    private static final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    private static SecretKey key;
 
+    @PostConstruct
+    public void init() {
+        key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static SecretKey getKey() {
+        return key;
+    }
 
     // Access Token 생성
     public static String encodeAccessToken(long minute, Map<String, Object> data) {

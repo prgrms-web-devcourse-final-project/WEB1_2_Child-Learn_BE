@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "avatar")
 public class Avatar extends BaseTimeEntity {
 
@@ -20,7 +19,7 @@ public class Avatar extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "avatar", fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
