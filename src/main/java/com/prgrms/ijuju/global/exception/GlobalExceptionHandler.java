@@ -41,4 +41,12 @@ public class GlobalExceptionHandler {
         final ErrorResponse response = ErrorResponse.of(errorCode);
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }
+
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ErrorResponse> handleException(final Exception e) {
+        log.error("서버 에러: {}", e.getMessage(), e);
+        final ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
+        final ErrorResponse response = ErrorResponse.of(errorCode);
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
+    }
 }
