@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.global.exception;
 
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.ErrorFlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardErrorCode;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardException;
@@ -54,4 +55,5 @@ public class GlobalExceptionHandler {
         final CommonErrorResponse response = CommonErrorResponse.of(errorCode);
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }
+
 }

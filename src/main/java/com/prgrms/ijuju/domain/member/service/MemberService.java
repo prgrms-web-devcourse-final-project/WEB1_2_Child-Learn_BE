@@ -2,17 +2,21 @@ package com.prgrms.ijuju.domain.member.service;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
+import com.prgrms.ijuju.domain.avatar.service.FileStorageService;
+import com.prgrms.ijuju.domain.friend.service.FriendService;
 import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.dto.response.MemberResponseDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.global.util.JwtUtil;
 import com.prgrms.ijuju.global.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +26,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
-import com.prgrms.ijuju.domain.wallet.exception.WalletException;
-import com.prgrms.ijuju.domain.friend.service.FriendService;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -43,60 +46,61 @@ public class MemberService {
     private final WalletRepository walletRepository;
     private final AvatarRepository avatarRepository;
     private final FriendService friendService;
+    private final FileStorageService fileStorageService;
 
     // 회원가입
     @Transactional
     public MemberResponseDTO.CreateResponseDTO create(MemberRequestDTO.CreateRequestDTO dto) {
         log.info("회원가입 요청 시작 : {} ", dto.getLoginId());
-        try {
-            // 입력한 loginId로 가입한 회원이 있는지 확인
-            log.info("아이디 중복 확인 : {}", dto.getLoginId());
-            if (checkLoginId(dto.getLoginId())) {
-                log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
-                throw MemberException.LOGINID_IS_DUPLICATED.getMemberTaskException();
-            }
 
-            // 입력한 이메일로 가입한 회원이 있는지 확인
-            if (checkEmail(dto.getEmail())) {
-                log.error("해당 이메일로 가입한 회원이 존재합니다 : {}", dto.getEmail());
-                throw MemberException.EMAIL_IS_DUPLICATED.getMemberTaskException();
-            }
+        // 입력한 loginId로 가입한 회원이 있는지 확인
+        log.info("아이디 중복 확인 : {}", dto.getLoginId());
+        if (checkLoginId(dto.getLoginId())) {
+            log.error("이미 존재하는 아이디 : {}", dto.getLoginId());
+            throw new MemberException(MemberErrorCode.LOGINID_IS_DUPLICATED);
+        }
 
-            // 별명 중복 확인 로직
-            if (checkUsername(dto.getUsername())) {
-                log.error("이미 존재하는 닉네임 : {}", dto.getUsername());
-                throw MemberException.USERNAME_IS_DUPLICATED.getMemberTaskException();
-            }
+        // 입력한 이메일로 가입한 회원이 있는지 확인
+        if (checkEmail(dto.getEmail())) {
+            log.error("해당 이메일로 가입한 회원이 존재합니다 : {}", dto.getEmail());
+            throw new MemberException(MemberErrorCode.EMAIL_IS_DUPLICATED);
+        }
 
-            // 비밀번호 암호화 처리
-            String encodePw = dto.getPw();
-            dto.setPw(passwordEncoder.encode(encodePw));
+        // 별명 중복 확인 로직
+        if (checkUsername(dto.getUsername())) {
+            log.error("이미 존재하는 닉네임 : {}", dto.getUsername());
+            throw new MemberException(MemberErrorCode.USERNAME_IS_DUPLICATED);
+        }
 
-            // 회원 저장
-            Member savedMember = memberRepository.save(dto.toEntity());
+        // 비밀번호 암호화 처리
+        String encodePw = dto.getPw();
+        dto.setPw(passwordEncoder.encode(encodePw));
 
-            // Wallet 생성 및 초기화
-            Wallet wallet = Wallet.builder()
+        // 회원 저장
+        Member savedMember = memberRepository.save(dto.toEntity());
+
+        // Wallet 생성 및 초기화
+        Wallet wallet = Wallet.builder()
                 .member(savedMember)
                 .currentCoins(0L)
                 .currentPoints(0L)
                 .build();
-            walletRepository.save(wallet);
-            
-            // 아바타 생성
-            Avatar newAvatar = Avatar.builder()
-                    .member(savedMember)
-                    .background(null)
-                    .pet(null)
-                    .hat(null)
-                    .build();
+        walletRepository.save(wallet);
 
-            avatarRepository.save(newAvatar);
+        // 아바타 생성
+        Avatar newAvatar = Avatar.builder()
+                .member(savedMember)
+                .background(null)
+                .pet(null)
+                .hat(null)
+                .build();
 
-            return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
-        } catch (Exception e) {
-            throw MemberException.MEMBER_NOT_REGISTERED.getMemberTaskException();
-        }
+        savedMember.changeAvatar(newAvatar);
+
+        avatarRepository.save(newAvatar);
+        memberRepository.save(savedMember);
+
+        return new MemberResponseDTO.CreateResponseDTO("회원가입이 완료되었습니다.");
     }
 
     // 회원가입 시 같은 아이디 검증 메서드
@@ -121,12 +125,12 @@ public class MemberService {
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
         // 동시 로그인 검증
         validateActiveStatus(loginId);
-        
+
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(pw, member.getPw())) {
-            throw MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_LOGIN_DENIED);
         }
 
         // 로그인 시 활성 상태로 변경
@@ -175,14 +179,20 @@ public class MemberService {
     public String refreshAccessToken(String refreshToken) {
         // 화이트리스트 처리
         Member member = memberRepository.findByRefreshToken(refreshToken)
-                .orElseThrow( () -> MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_LOGIN_DENIED));
 
         // 리프레시 토큰이 만료되었다면 로그아웃
-        try {
-            Claims claims = JwtUtil.decode(refreshToken);
-        } catch (ExpiredJwtException e) {
-            throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
+//        try {
+//            Claims claims = JwtUtil.decode(refreshToken);
+//        } catch (ExpiredJwtException e) {
+//            throw new MemberException(MemberErrorCode.MEMBER_REFRESHTOKEN_EXPIRED);
+//        }
+        Claims claims = JwtUtil.decode(refreshToken); // decode가 만약 만료된 토큰이라면 null을 반환한다고 가정
+        if (claims == null || claims.getExpiration().before(new Date())) {
+            // 리프레시 토큰이 만료된 경우
+            throw new MemberException(MemberErrorCode.MEMBER_REFRESHTOKEN_EXPIRED);
         }
+
         return generateAccessToken(member.getId(), member.getLoginId());
     }
 
@@ -213,7 +223,7 @@ public class MemberService {
                     .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadMyInfoResponseDTO(member, wallet);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -226,7 +236,7 @@ public class MemberService {
                     .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
             return new MemberResponseDTO.ReadOthersInfoResponseDTO(member, wallet);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -235,10 +245,10 @@ public class MemberService {
         Pageable pageable = dto.getPageable();
 
         Page<Member> memberPage = memberRepository.findAllByIdNot(memberId, pageable); // 본인 제외
-        
+
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
-            member,
-            friendService.getFriendshipStatus(memberId, member.getId())
+                member,
+                friendService.getFriendshipStatus(memberId, member.getId())
         ));
     }
 
@@ -247,7 +257,7 @@ public class MemberService {
         Optional<Member> opMember = memberRepository.findById(id);
 
         if (opMember.isEmpty()) {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
 
         return opMember.get();
@@ -257,28 +267,28 @@ public class MemberService {
     public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         // 검색어 유효성 검사
         if (username == null || username.trim().isEmpty()) {
-            throw MemberException.SEARCH_KEYWORD_EMPTY.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_EMPTY);
         }
-        
+
         // 검색어 공백 제거 및 정리
         String trimmedUsername = username.trim();
-        
+
         // 최소 검색어 길이 체크
         if (trimmedUsername.length() < 2) {
-            throw MemberException.SEARCH_KEYWORD_TOO_SHORT.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_TOO_SHORT);
         }
-        
+
         Pageable pageable = dto.getPageable();
         Page<Member> memberPage = memberRepository.findByUsernameContainingIgnoreCase(trimmedUsername, pageable);
-        
+
         if (memberPage.isEmpty()) {
             log.info("검색 결과가 없습니다. 검색어: {}", trimmedUsername);
-            throw MemberException.SEARCH_RESULT_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.SEARCH_RESULT_NOT_FOUND);
         }
-        
+
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
-            member,
-            friendService.getFriendshipStatus(memberId, member.getId())
+                member,
+                friendService.getFriendshipStatus(memberId, member.getId())
         ));
     }
 
@@ -295,7 +305,7 @@ public class MemberService {
 
             memberRepository.delete(member);
         } else {
-            throw MemberException.MEMBER_NOT_REMOVED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_REMOVED);
         }
     }
 
@@ -317,7 +327,7 @@ public class MemberService {
 
             return new MemberResponseDTO.UpdateMyInfoResponseDTO("회원 정보 수정이 완료되었습니다.");
         } else {
-            throw MemberException.MEMBER_NOT_MODIFIED.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_MODIFIED);
         }
     }
 
@@ -328,7 +338,7 @@ public class MemberService {
             String loginId = opMember.get().getLoginId();
             return maskLoginId(loginId);
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -359,7 +369,7 @@ public class MemberService {
 
             return templatePw;
         } else {
-            throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -373,7 +383,7 @@ public class MemberService {
     // 회원 활동 상태 확인
     public boolean checkMemberIsActive(Long id) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         return member.isActive();
     }
 
@@ -381,15 +391,15 @@ public class MemberService {
     @Transactional
     public void updateMemberActiveStatus(Long id, boolean isActive) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
-                
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         // 이미 같은 상태인 경우 처리
         if (member.isActive() == isActive) {
             String status = isActive ? "이미 활성화" : "이미 비활성화";
             log.info("회원 ID: {}는 {} 상태입니다.", id, status);
             return;
         }
-        
+
         member.updateActiveStatus(isActive);
         memberRepository.save(member);
         log.info("회원 ID: {}의 활성 상태가 {}로 변경되었습니다.", id, isActive);
@@ -399,8 +409,8 @@ public class MemberService {
     @Transactional
     public void logout(Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
-                
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         if (!member.isActive()) {
             log.info("회원 ID: {}는 이미 로그아웃 상태입니다.", id);
             return;
@@ -408,10 +418,10 @@ public class MemberService {
 
         // 쿠키에 있는 refreshToken 제거
         removeRefreshTokenToCookie(member.getRefreshToken(), response);
-        
+
         // 로그아웃 시 비활성 상태로 변경
         member.updateActiveStatus(false);
-        
+
         // refresh token 제거
         member.updateRefreshToken(null, null); // null로 변경
         memberRepository.save(member);
@@ -430,28 +440,30 @@ public class MemberService {
     // 동시 로그인 방지를 위한 메서드 추가
     public void validateActiveStatus(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
-                
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         if (member.isActive()) {
             log.warn("회원 ID: {}는 이미 다른 곳에서 로그인 중입니다.", loginId);
-            throw MemberException.MEMBER_ALREADY_LOGGED_IN.getMemberTaskException();
+            throw new MemberException(MemberErrorCode.MEMBER_ALREADY_LOGGED_IN);
         }
     }
 
-//    // profileImage 저장
-//    @Transactional
-//    public void updateProfileImage(Long memberId, MultipartFile file) throws IOException {
-//        // 회원 조회
-//        Member member = memberRepository.findById(memberId)
-//                .orElseThrow(() -> MemberException.MEMBER_NOT_FOUND.getMemberTaskException());
-//
-//        // 이미지를 S3에 업로드하고 , 반환된 URL을 Member 엔티티에 저장
-//        String profileImageUrl = s3ImageStorageService.uploadImage(file);
-//
-//        // Member의 profileImage 필드에 s3 url 저장
-//        member.changeProfileImage(profileImageUrl);
-//
-//        // DB 에 저장
-//        memberRepository.save(member);
-//    }
+    // profileImage 저장
+    @Transactional
+    public MemberResponseDTO.updateProfileImageDTO updateProfileImage(Long id, MultipartFile file) throws IOException {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 이미지 파일을 로컬에 저장하고 URl 경로로 반환받음
+        String profileImageUrl = fileStorageService.storeFile(file);
+
+        // 파일 경로(URl)
+        member.changeProfileImage(profileImageUrl);
+
+        memberRepository.save(member);
+
+        return new MemberResponseDTO.updateProfileImageDTO("프로필 이미지가 업데이트되었습니다.");
+    }
+
+
 }

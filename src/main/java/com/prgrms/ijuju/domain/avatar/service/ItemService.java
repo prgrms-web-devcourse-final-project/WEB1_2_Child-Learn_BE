@@ -4,10 +4,12 @@ import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
+import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,16 +33,17 @@ public class ItemService {
         Member member = memberService.getMemberById(memberId);
 
         // 사려는 아이템 확인
-        Item item = itemRepository.findById(dto.getItemId()).orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
+        Item item = itemRepository.findById(dto.getItemId())
+                .orElseThrow(() -> new ItemException(ItemErrorCode.ITEM_NOT_FOUND));
 
         Optional<Purchase> findPurchase = purchaseRepository.findByItemIdAndMemberId(dto.getItemId(), memberId);
         if (findPurchase.isPresent()) {
-            throw ItemException.ITEM_IS_ALREADY_PURCHASED.getItemTaskException();
+            throw new ItemException(ItemErrorCode.ITEM_NOT_FOUND);
         }
 
         // 회원의 코인 확인
         if (member.getWallet().getCurrentCoins() < item.getPrice()) {
-            throw ItemException.NOT_ENOUGH_COINS.getItemTaskException();
+            throw new ItemException(ItemErrorCode.NOT_ENOUGH_COINS);
         }
 
         // 코인 차감

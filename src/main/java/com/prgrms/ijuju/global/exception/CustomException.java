@@ -1,9 +1,9 @@
 package com.prgrms.ijuju.global.exception;
 
-    import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.chat.exception.ChatException;
 import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
-
 import lombok.Getter;
 
 @Getter
