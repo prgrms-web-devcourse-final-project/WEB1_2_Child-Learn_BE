@@ -13,10 +13,10 @@ import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
 import com.prgrms.ijuju.domain.chat.entity.Chat;
 import com.prgrms.ijuju.domain.chat.entity.ChatRoom;
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.repository.ChatRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.member.entity.Member;
 
 import java.util.List;
@@ -51,9 +51,9 @@ public class ChatService {
     @Transactional
     public ChatRoom createChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
         Member friend = memberRepository.findById(friendId)
-            .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
             
         // 내 채팅방만 확인 (삭제된 경우 새로 생성)
         Optional<ChatRoom> existingChatRoom = chatRoomRepository.findByMemberIdAndFriendIdAndIsDeletedFalse(memberId, friendId);
@@ -76,7 +76,7 @@ public class ChatService {
     public List<ChatMessageResponseDTO> getMessagesByChatRoomId(Long roomId, Long userId) {
         // 채팅방이 존재하는지 확인
         chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
         
         // 채팅방의 메시지 목록을 조회
         return chatRepository.findByChatRoomIdOrderByCreatedAtDesc(roomId).stream()
@@ -88,11 +88,11 @@ public class ChatService {
     @Transactional
     public void deleteChatRoom(Long roomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
         
         if (!chatRoom.getMember().getId().equals(userId) && 
             !chatRoom.getFriend().getId().equals(userId)) {
-            throw new CustomException(ChatException.UNAUTHORIZED_CHATROOM_ACCESS);
+            throw new ChatException(ChatErrorCode.USER_ACCESS_DENIED);
         }
         
         // 삭제 처리
@@ -104,11 +104,11 @@ public class ChatService {
     @Transactional
     public ChatMessageResponseDTO saveMessage(ChatMessageRequestDTO request, Long senderId) {
         ChatRoom senderChatRoom = chatRoomRepository.findById(request.getRoomId())
-            .orElseThrow(() -> new CustomException(ChatException.CHATROOM_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
         
         // 발신자와 수신자 확인
         Member sender = memberRepository.findById(senderId)
-            .orElseThrow(() -> new CustomException(ChatException.USER_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
         Member receiver = senderChatRoom.getMember().getId().equals(senderId) 
             ? senderChatRoom.getFriend() 
             : senderChatRoom.getMember();
@@ -159,10 +159,10 @@ public class ChatService {
     // 메시지 삭제
     public void deleteMessage(Long messageId, Long userId) {
         Chat chat = chatRepository.findById(messageId)
-            .orElseThrow(() -> new CustomException(ChatException.MESSAGE_NOT_FOUND));
+            .orElseThrow(() -> new ChatException(ChatErrorCode.MESSAGE_NOT_FOUND));
             
         if (!chat.getSender().getId().equals(userId)) {
-            throw new CustomException(ChatException.UNAUTHORIZED_MESSAGE_DELETION);
+            throw new ChatException(ChatErrorCode.USER_ACCESS_DENIED);
         }
         
         chat.delete();

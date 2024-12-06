@@ -3,6 +3,7 @@ package com.prgrms.ijuju.domain.friend.service;
 import com.prgrms.ijuju.domain.friend.dto.response.FriendListResponseDTO;
 import com.prgrms.ijuju.domain.friend.dto.response.FriendResponseDTO;
 import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.domain.friend.exception.FriendErrorCode;
 import com.prgrms.ijuju.domain.friend.entity.FriendList;
 import com.prgrms.ijuju.domain.friend.entity.FriendRequest;
 import com.prgrms.ijuju.domain.friend.entity.RequestStatus;
@@ -11,7 +12,6 @@ import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.friend.repository.FriendRequestRepository;
 import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.friend.entity.FriendshipStatus;
-import com.prgrms.ijuju.global.exception.CustomException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +41,10 @@ public class FriendService {
     @Transactional
     public String sendFriendRequest(Long senderId, Long receiverId) {
         Member sender = memberRepository.findById(senderId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
                 
         Member receiver = memberRepository.findById(receiverId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
         
         validateFriendRequest(sender.getId(), receiver.getId());
 
@@ -61,7 +61,7 @@ public class FriendService {
         simpMessagingTemplate.convertAndSend("/topic/friend-requests/" + receiverId, 
             "친구 요청이 도착했습니다: " + sender.getUsername());
         
-        return FriendException.FRIEND_REQUEST_SENT.getMessage();
+        return FriendErrorCode.FRIEND_REQUEST_SENT.getMessage();
     }
     
     // 보낸 친구 요청 목록 조회
@@ -77,19 +77,19 @@ public class FriendService {
     @Transactional
     public String cancelFriendRequest(Long senderId, Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_REQUEST_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
                 
         if (!request.getSender().getId().equals(senderId)) {
-            throw new CustomException(FriendException.FRIEND_REQUEST_NOT_AUTHORIZED);
+            throw new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_AUTHORIZED);
         }
         
         // 이미 처리된 요청인지 확인
         if (request.getRequestStatus() != RequestStatus.PENDING) {
-            throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED);
+            throw new FriendException(FriendErrorCode.REQUEST_ALREADY_PROCESSED);
         }
         
         friendRequestRepository.delete(request);
-        return FriendException.FRIEND_REQUEST_CANCELLED.getMessage();
+        return FriendErrorCode.FRIEND_REQUEST_CANCELLED.getMessage();
     }
 
     // 받은 친구 요청 목록 조회
@@ -103,7 +103,7 @@ public class FriendService {
     @Transactional
     public void markRequestAsRead(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-            .orElseThrow(() -> new CustomException(FriendException.FRIEND_REQUEST_NOT_FOUND));
+            .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
         request.markAsRead();
         friendRequestRepository.save(request);
     }
@@ -113,16 +113,16 @@ public class FriendService {
     public String acceptFriendRequest(Long requestId, Long receiverId) {
         try {
             FriendRequest request = friendRequestRepository.findById(requestId)
-                    .orElseThrow(() -> new CustomException(FriendException.FRIEND_REQUEST_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
             
             // 수신자 검증
             if (!request.getReceiver().getId().equals(receiverId)) {
-                throw new CustomException(FriendException.FRIEND_REQUEST_NOT_AUTHORIZED);
+                throw new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_AUTHORIZED);
             }
             
             // 상태 검증
             if (request.getRequestStatus() != RequestStatus.PENDING) {
-                throw new CustomException(FriendException.REQUEST_ALREADY_PROCESSED);
+                throw new FriendException(FriendErrorCode.REQUEST_ALREADY_PROCESSED);
             }
             
             request.accept();
@@ -134,13 +134,10 @@ public class FriendService {
                 request.getReceiver().getUsername() + "님이 친구 요청을 수락했습니다."
             );
             
-            return FriendException.FRIEND_REQUEST_ACCEPTED.getMessage();
-        } catch (CustomException e) {
-            log.error("친구 요청 수락 중 오류 발생: {}", e.getMessage());
-            throw e;
+            return FriendErrorCode.FRIEND_REQUEST_ACCEPTED.getMessage();
         } catch (Exception e) {
             log.error("친구 요청 수락 중 시스템 오류 발생: {}", e.getMessage());
-            throw new CustomException(FriendException.SYSTEM_ERROR);
+            throw new FriendException(FriendErrorCode.SYSTEM_ERROR);
         }
     }
 
@@ -148,11 +145,11 @@ public class FriendService {
     @Transactional
     public String rejectFriendRequest(Long requestId, Long receiverId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_REQUEST_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
         
         // 수신자 검증
         if (!request.getReceiver().getId().equals(receiverId)) {
-            throw new CustomException(FriendException.FRIEND_REQUEST_NOT_AUTHORIZED);
+            throw new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_AUTHORIZED);
         }
         
         request.reject();
@@ -164,7 +161,7 @@ public class FriendService {
             request.getReceiver().getUsername() + "님이 친구 요청을 거절했습니다."
         );
         
-        return FriendException.FRIEND_REQUEST_REJECTED.getMessage();
+        return FriendErrorCode.FRIEND_REQUEST_REJECTED.getMessage();
     }
     
     // 친구 목록 조회
@@ -182,32 +179,32 @@ public class FriendService {
     @Transactional
     public String removeFriend(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
         Member friend = memberRepository.findById(friendId)
-                .orElseThrow(() -> new CustomException(FriendException.FRIEND_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
         
         if (!friendListRepository.existsByMemberIdAndFriendId(memberId, friendId)) {
-            throw new CustomException(FriendException.FRIEND_NOT_FRIEND);
+            throw new FriendException(FriendErrorCode.FRIEND_NOT_FRIEND);
         }
         
         friendListRepository.deleteByMemberAndFriend(member, friend);
         friendListRepository.deleteByMemberAndFriend(friend, member);
         
-        return FriendException.FRIEND_REMOVED.getMessage();
+        return FriendErrorCode.FRIEND_REMOVED.getMessage();
     }
 
     // 친구 요청 유효성 검사
     private void validateFriendRequest(Long senderId, Long receiverId) {
         if (senderId.equals(receiverId)) {
-            throw new CustomException(FriendException.SELF_REQUEST_NOT_ALLOWED);
+            throw new FriendException(FriendErrorCode.SELF_REQUEST_NOT_ALLOWED);
         }
 
         if (friendListRepository.existsByMemberIdAndFriendId(senderId, receiverId)) {
-            throw new CustomException(FriendException.FRIEND_ALREADY_EXISTS);
+            throw new FriendException(FriendErrorCode.FRIEND_ALREADY_EXISTS);
         }
 
         if (existsPendingRequest(senderId, receiverId)) {
-            throw new CustomException(FriendException.FRIEND_REQUEST_ALREADY_SENT);
+            throw new FriendException(FriendErrorCode.FRIEND_REQUEST_ALREADY_SENT);
         }
     }
 

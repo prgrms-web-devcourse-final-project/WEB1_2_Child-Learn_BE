@@ -17,7 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,19 +79,20 @@ public class MemberController {
     @PostMapping("/refresh")
     public ResponseEntity<MemberResponseDTO.RefreshAccessTokenResponseDTO> loginAccessToken(@CookieValue("refreshToken") String refreshToken) {
         String accessToken = memberService.refreshAccessToken(refreshToken);
+        LocalDateTime expiryAt = LocalDateTime.now().plusMinutes(15);
         MemberResponseDTO.RefreshAccessTokenResponseDTO responseDTO =
-                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급");
+                new MemberResponseDTO.RefreshAccessTokenResponseDTO(accessToken, "새로운 Access Token 발급", expiryAt);
 
         return ResponseEntity.ok(responseDTO);
     }
 
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user) {
-        // memberService.setRefreshToken(user.getId(), "null"); 에러 수정
-        memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
+    public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user, HttpServletResponse response) {
 
-        memberService.logout(user.getId());
+        // memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
+
+        memberService.logout(user.getId(), response);
 
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
     }
@@ -217,4 +220,19 @@ public class MemberController {
         String message = isActive ? "활성 상태로 변경되었습니다." : "비활성 상태로 변경되었습니다.";
         return ResponseEntity.ok(Map.of("message", message));
     }
+
+    // ProfileImage 저장
+    @PostMapping("/update-profile-image")
+    public ResponseEntity<MemberResponseDTO.updateProfileImageDTO> updateProfileImage(@RequestParam("profileImage") MultipartFile file,
+                                                                                      @AuthenticationPrincipal SecurityUser user) {
+        Long id = user.getId();
+        try {
+            return ResponseEntity.ok(memberService.updateProfileImage(id, file));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MemberResponseDTO.updateProfileImageDTO("파일 업로드 실패" + e.getMessage()));
+        }
+    }
+
+
 }

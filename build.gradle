@@ -69,9 +69,12 @@ dependencies {
     // WebSocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
-    // FCM
-    implementation 'org.springframework:spring-messaging'
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    //OAuth2.0
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // Spring Cache - caffeine
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {

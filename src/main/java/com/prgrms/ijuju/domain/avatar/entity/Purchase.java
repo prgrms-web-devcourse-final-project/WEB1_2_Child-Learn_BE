@@ -1,17 +1,21 @@
 package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "purchase")
 public class Purchase {
 
@@ -27,6 +31,7 @@ public class Purchase {
     @JoinColumn(name = "item_id")
     private Item item;  // 구매한 아이템
 
+    @CreatedDate
     private LocalDateTime purchaseDate;
 
     private boolean isEquipped; // 구매 시 장착여부

@@ -1,7 +1,8 @@
 package com.prgrms.ijuju.domain.ranking.controller;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.domain.member.exception.MemberTaskException;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.ranking.dto.response.RankingResponse;
 import com.prgrms.ijuju.domain.ranking.service.RankingService;
@@ -12,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,7 +29,7 @@ public class RankingController {
         log.info("랭킹 검색 : {}", username);
 
         Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new MemberTaskException("존재하지 않는 사용자입니다.", 404));
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         return ResponseEntity.ok(RankingResponse.of(
                 rankingService.findRankByMemberId(member.getId()),

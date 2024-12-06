@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.prgrms.ijuju.domain.wallet.entity.GameType;
 
 @Getter
@@ -15,6 +17,11 @@ public class GamePointRequestDTO {
     
     private Long memberId;
     private Long points;
-    private boolean isWin;
+    @JsonProperty("isWin") 
+    private boolean win;
     private GameType gameType;
+
+    public boolean isWin() {
+        return win;
+    }
 }

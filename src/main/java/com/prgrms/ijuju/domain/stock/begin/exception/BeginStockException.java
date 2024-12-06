@@ -1,8 +1,9 @@
 package com.prgrms.ijuju.domain.stock.begin.exception;
 
-public class BeginStockException extends RuntimeException {
+import com.prgrms.ijuju.global.exception.BusinessException;
 
-    public BeginStockException(BeginStockErrorCode beginStockErrorCode) {
-        super(beginStockErrorCode.getMessage());
+public class BeginStockException extends BusinessException {
+    public BeginStockException(BeginStockErrorCode errorCode) {
+        super(errorCode);
     }
 }

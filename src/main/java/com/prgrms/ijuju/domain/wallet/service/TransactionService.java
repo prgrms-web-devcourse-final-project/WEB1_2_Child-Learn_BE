@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.prgrms.ijuju.domain.wallet.exception.WalletErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,6 @@ import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
 import com.prgrms.ijuju.domain.member.entity.Member;
 
@@ -56,7 +56,7 @@ public class TransactionService {
         pointTransactionRepository.save(transaction);
         
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-            .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+            .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
             
         notifyPointUpdate(member.getId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
     }
@@ -151,7 +151,7 @@ public class TransactionService {
         } catch (Exception e) {
             log.error("실시간 포인트 업데이트 실패: memberId={}, error={}", 
                      memberId, e.getMessage());
-            throw new CustomException(WalletException.REALTIME_SYNC_FAILED);
+            throw new WalletException(WalletErrorCode.REALTIME_SYNC_FAILED);
         }
     }
 }
