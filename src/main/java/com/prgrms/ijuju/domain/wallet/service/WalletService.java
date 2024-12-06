@@ -163,16 +163,20 @@ public class WalletService {
     public WalletResponseDTO processMiniGamePoints(GamePointRequestDTO request) {
         validateGamePoints(request);
 
+        // 패배한 경우 현재 지갑 상태만 반환
+        if (!request.isWin()) {
+            Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                    .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+            return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+        }
+
         Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
                 .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
 
-        // isWin이 true일 때만 EARNED로 설정, 아니면 MAINTAINED
-        TransactionType transactionType = request.isWin() ? TransactionType.EARNED : TransactionType.MAINTAINED;
-
-        // 포인트 업데이트 및 거래 내역 저장
-        wallet.updatePointsAndCoins(request.getPoints(), transactionType);
-        String description = request.getGameType().toString() + ":" + (request.isWin() ? "승리" : "패배");
-        savePointTransaction(wallet.getMember(), transactionType, request.getPoints(), PointType.GAME, description);
+        // 승리한 경우에만 포인트 업데이트 및 거래 내역 저장
+        wallet.updatePointsAndCoins(request.getPoints(), TransactionType.EARNED);
+        String description = request.getGameType().toString();
+        savePointTransaction(wallet.getMember(), TransactionType.EARNED, request.getPoints(), PointType.GAME, description);
 
         // 실시간 업데이트
         notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
