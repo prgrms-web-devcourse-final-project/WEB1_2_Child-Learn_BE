@@ -29,6 +29,9 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 String query = request.getURI().getQuery();
                 if (query != null && query.contains("authorization=")) {
                     jwtToken = query.split("authorization=")[1];
+                    if (jwtToken.startsWith("Bearer ")) {
+                        jwtToken = jwtToken.substring("Bearer ".length());
+                    }
                 }
             }
 
