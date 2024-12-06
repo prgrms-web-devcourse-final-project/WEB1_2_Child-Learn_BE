@@ -1,14 +1,10 @@
 package com.prgrms.ijuju.domain.minigame.wordquiz.exception;
 
-public class WordQuizException extends RuntimeException {
-    private final WordQuizErrorCode errorCode;
+import com.prgrms.ijuju.global.exception.BusinessException;
+
+public class WordQuizException extends BusinessException {
 
     public WordQuizException(WordQuizErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
-
-    public WordQuizErrorCode getErrorCode(){
-        return errorCode;
+        super(errorCode);
     }
 }

@@ -4,7 +4,9 @@ import com.prgrms.ijuju.domain.avatar.dto.request.ItemRequestDTO;
 import com.prgrms.ijuju.domain.avatar.dto.response.ItemResponseDTO;
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Item;
+import com.prgrms.ijuju.domain.avatar.exception.AvatarErrorCode;
 import com.prgrms.ijuju.domain.avatar.exception.AvatarException;
+import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
@@ -27,16 +29,16 @@ public class AvatarService {
     public ItemResponseDTO.ItemEquipResponseDTO equipItem(ItemRequestDTO.ItemEquipRequestDTO dto, long memberId) {
 
         Avatar avatar = avatarRepository.findByMemberId(memberId)
-                .orElseThrow(() -> AvatarException.AVATAR_NOT_FOUND.getItemTaskException());
+                .orElseThrow(() -> new AvatarException(AvatarErrorCode.AVATAR_NOT_FOUND));
 
         Item item = itemRepository.findById(dto.getItemId())
-                .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
+                .orElseThrow(() -> new ItemException(ItemErrorCode.ITEM_NOT_FOUND));
 
         switch (item.getCategory()) {
             case HAT -> avatar.changeHat(item);
             case PET -> avatar.changePet(item);
             case BACKGROUND -> avatar.changeBackground(item);
-            default -> throw ItemException.INAVALID_ITEM_CATEGORY.getItemTaskException();
+            default -> throw new ItemException(ItemErrorCode.INAVALID_ITEM_CATEGORY);
         }
 
         avatarRepository.save(avatar);
@@ -47,10 +49,11 @@ public class AvatarService {
     // 아이템 해제
     @Transactional
     public ItemResponseDTO.ItemRemoveResponseDTO removeItem(ItemRequestDTO.ItemRemoveRequestDTO dto, long memberId) {
-        Avatar avatar = avatarRepository.findByMemberId(memberId).orElseThrow(() -> AvatarException.AVATAR_NOT_FOUND.getItemTaskException());
+        Avatar avatar = avatarRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new AvatarException(AvatarErrorCode.AVATAR_NOT_FOUND));
 
         Item item = itemRepository.findById(dto.getItemId())
-                .orElseThrow(() -> ItemException.ITEM_NOT_FOUND.getItemTaskException());
+                .orElseThrow(() -> new ItemException(ItemErrorCode.ITEM_NOT_FOUND));
 
         log.info("해제할 아이템을 찾습니다");
 
@@ -58,7 +61,7 @@ public class AvatarService {
             case HAT -> avatar.removeHat();
             case PET -> avatar.removePet();
             case BACKGROUND -> avatar.removeBackground();
-            default -> throw ItemException.INAVALID_ITEM_CATEGORY.getItemTaskException();
+            default -> throw new ItemException(ItemErrorCode.INAVALID_ITEM_CATEGORY);
         }
 
         avatarRepository.save(avatar);

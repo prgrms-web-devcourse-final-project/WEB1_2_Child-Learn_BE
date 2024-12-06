@@ -1,9 +1,9 @@
 package com.prgrms.ijuju.domain.chat.entity;
 
+import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
-import com.prgrms.ijuju.global.exception.CustomException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -56,7 +56,7 @@ public class Chat extends BaseTimeEntity {
 
     public void delete() {
         if (!isDeletable()) {
-            throw new CustomException(ChatException.MESSAGE_DELETION_TIMEOUT);
+            throw new ChatException(ChatErrorCode.MESSAGE_DELETION_TIMEOUT);
         }
         this.isDeleted = true;
         this.content = "삭제된 메시지입니다";

@@ -74,6 +74,13 @@ dependencies {
 
     // MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    //OAuth2.0
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // Spring Cache - caffeine
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {
