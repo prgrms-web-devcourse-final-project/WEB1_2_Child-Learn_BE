@@ -1,9 +1,5 @@
 package com.prgrms.ijuju.domain.chat.entity;
 
-import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
-
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,59 +10,119 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Entity
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
+@Document(collection = "chatroom")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChatRoom extends BaseTimeEntity {
+public class ChatRoom {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @Indexed
+    @Field(name = "member_id")
+    private Long memberId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "friend_id")
-    private Member friend;
+    @Indexed
+    @Field(name = "friend_id")
+    private Long friendId;
 
-    @Column(name = "deleted_at")
+    private boolean isDeleted = false;
+
+    @Field(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private List<Chat> chats = new ArrayList<>();
+    private String lastMessageContent;
 
+    private LocalDateTime lastMessageTime;
+
+    private int unreadCount;
+
+    @DBRef
+    private List<Chat> chat;
+
+    // 채팅 목록 조회
+    public List<Chat> getChat() {
+        if (chat == null) {
+            chat = new ArrayList<>();
+        }
+        return chat;
+    }
+
+    // 마지막 메시지 시간 조회
+    public LocalDateTime getLastMessageTime() {
+        return lastMessageTime != null ? lastMessageTime : LocalDateTime.now();
+    }
+
+    // 채팅방 생성
     @Builder
-    public ChatRoom(Member member, Member friend) {
-        this.member = member;
-        this.friend = friend;
+    public ChatRoom(Long memberId, Long friendId) {
+        this.memberId = memberId;
+        this.friendId = friendId;
+        this.chat = new ArrayList<>();
     }
 
-    public void markAsDeleted() {
-        this.deletedAt = LocalDateTime.now();
+    // 채팅 메시지 추가
+    public void addChat(Chat newChat) {
+        this.chat.add(newChat);
+        updateLastMessage(newChat);
     }
 
-    public void restore() {
-        this.deletedAt = null;
-    }
-
-    public boolean isDeleted() {
-        return deletedAt != null;
-    }
-
+    // 채팅방 마지막 메시지 조회
     public Chat getLastMessage() {
-        return chats.stream()
+        return chat.stream()
             .filter(chat -> !chat.isDeleted())
             .max(Comparator.comparing(Chat::getCreatedAt))
             .orElse(null);
     }
 
+    // 읽지 않은 메시지 수 계산
     public int getUnreadCount(Long userId) {
-        return (int) chats.stream()
+        return (int) chat.stream()
             .filter(chat -> !chat.isDeleted())
-            .filter(chat -> !chat.getSender().getId().equals(userId))
+            .filter(chat -> !chat.getSenderId().equals(userId))
             .filter(chat -> !chat.isRead())
             .count();
+    }
+
+    // 마지막 메시지 정보 업데이트
+    private void updateLastMessage(Chat chat) {
+        if (!chat.isDeleted()) {
+            this.lastMessageContent = chat.getContent();
+            this.lastMessageTime = chat.getCreatedAt();
+        }
+    }
+
+    // 메시지 읽음 처리
+    public void markMessagesAsRead(Long userId) {
+        chat.stream()
+            .filter(message -> !message.isDeleted())
+            .filter(message -> !message.getSenderId().equals(userId))
+            .filter(message -> !message.isRead())
+            .forEach(message -> message.markAsReadBy(userId));
+        
+        this.unreadCount = getUnreadCount(userId);
+    }
+
+    // 채팅방 삭제
+    public void markAsDeleted() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    // 채팅방 삭제 복구
+    public void restore() {
+        this.deletedAt = null;
+        this.isDeleted = false;
+    }
+
+    // 채팅방 삭제 여부 확인
+    public boolean isDeleted() {
+        return isDeleted;
     }
 }

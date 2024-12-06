@@ -9,23 +9,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface ChatMessageRepository extends MongoRepository<Chat, String> { // MongoDB를 이용한 채팅 메시지 저장소
+public interface ChatMessageRepository extends MongoRepository<Chat, String> { 
 
-    List<Chat> findByRoomIdOrderByCreatedAtDesc(Long roomId);
+    List<Chat> findByRoomIdOrderByCreatedAtDesc(String roomId);
     
-    List<Chat> findByRoomIdAndCreatedAtGreaterThan(Long roomId, LocalDateTime since);
+    List<Chat> findByRoomIdAndCreatedAtGreaterThan(String roomId, LocalDateTime since);
     
-    List<Chat> findByRoomIdAndIsReadFalseAndSenderIdNot(Long roomId, Long senderId);
+    List<Chat> findByRoomIdAndIsReadFalseAndSenderIdNot(String roomId, Long senderId);
     
-    List<Chat> findByRoomIdAndIsDeletedFalseOrderByCreatedAtDesc(Long roomId);
+    List<Chat> findByRoomIdAndIsDeletedFalseOrderByCreatedAtDesc(String roomId);
     
-    void deleteByRoomId(Long roomId);
+    void deleteByRoomId(String roomId);
     
     List<Chat> findByRoomIdAndCreatedAtBetween(
-        Long roomId, 
+        String roomId, 
         LocalDateTime start, 
         LocalDateTime end
     );
     
-    List<Chat> findByChatRoomIdAndCreatedAtGreaterThanEqual(Long roomId, LocalDateTime since);
+    List<Chat> findByRoomIdAndCreatedAtGreaterThanEqual(String roomId, LocalDateTime since);
+
+    Chat findFirstByRoomIdOrderByCreatedAtDesc(String roomId);
 }

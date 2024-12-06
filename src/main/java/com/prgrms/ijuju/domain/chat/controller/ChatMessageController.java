@@ -16,24 +16,36 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
-public class ChatMessageController { // STOMP를 사용한 채팅 메시지 컨트롤러
+public class ChatMessageController {
 
-    private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatService chatService;
 
     @MessageMapping("/chat/message")
-    public void message(@Payload ChatMessageRequestDTO message,
-                       @Header("simpUser") SecurityUser user) {
-        ChatMessageResponseDTO response = chatService.sendMessage(message, user.getId());
+    public void handleMessage(
+            @Payload ChatMessageRequestDTO request,
+            @Header("simpUser") SecurityUser user) {
         
-        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), response);
+        ChatMessageResponseDTO response = chatService.sendMessage(
+            request.getRoomId(),
+            user.getId(),
+            request.getContent(),
+            request.getImage()
+        );
+
+        messagingTemplate.convertAndSend("/topic/chat/room/" + request.getRoomId(), response);
     }
 
     @MessageMapping("/chat/read")
-    public void readMessage(@Payload ChatReadRequestDTO request,
-                          @Header("simpUser") SecurityUser user) {
-        ChatReadResponseDTO response = chatService.markAsRead(request.getRoomId(), user.getId());
+    public void handleReadMessage(
+            @Payload ChatReadRequestDTO request,
+            @Header("simpUser") SecurityUser user) {
         
-        messagingTemplate.convertAndSend("/sub/chat/room/" + request.getRoomId(), response);
+        ChatReadResponseDTO response = chatService.markMessagesAsRead(
+            request.getRoomId(), 
+            user.getId()
+        );
+        
+        messagingTemplate.convertAndSend("/topic/chat/room/" + request.getRoomId(), response);
     }
 }

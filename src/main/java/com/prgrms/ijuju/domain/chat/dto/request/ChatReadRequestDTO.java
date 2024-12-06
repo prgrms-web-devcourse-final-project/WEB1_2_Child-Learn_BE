@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ChatReadRequestDTO {
     
-    private Long roomId;
+    private String roomId;
 }

@@ -24,6 +24,7 @@ public enum ChatException {
     USER_ACCESS_DENIED("CH202", "접근 권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
     USER_SELF_CHAT("CH203", "자기 자신과는 채팅할 수 없습니다.", HttpStatus.BAD_REQUEST),
     USER_BLOCKED("CH204", "차단된 사용자와는 채팅할 수 없습니다.", HttpStatus.FORBIDDEN),
+    MEMBER_NOT_FOUND("CH201", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
     
     // 이미지 관련 예외
     IMAGE_UPLOAD_FAILED("CH301", "이미지 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

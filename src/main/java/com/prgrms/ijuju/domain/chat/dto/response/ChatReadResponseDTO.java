@@ -13,6 +13,6 @@ import java.time.LocalDateTime;
 public class ChatReadResponseDTO {
     
     private Long userId;
-    private Long roomId;
+    private String roomId;
     private LocalDateTime readAt;
 }
