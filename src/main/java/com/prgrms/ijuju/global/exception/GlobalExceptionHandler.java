@@ -6,7 +6,7 @@ import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardException;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.ErrorMidResponse;
 import com.prgrms.ijuju.domain.stock.mid.exception.MidStockErrorCode;
 import com.prgrms.ijuju.domain.stock.mid.exception.MidStockException;
-import com.prgrms.ijuju.global.common.dto.CommonErrorResponse;
+import com.prgrms.ijuju.global.common.dto.ErrorResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,10 +35,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<CommonErrorResponse> handleBusinessException(final BusinessException e) {
+    protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e) {
         log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
         final ErrorCode errorCode = e.getErrorCode();
-        final CommonErrorResponse response = CommonErrorResponse.of(errorCode);
+        final ErrorResponse response = ErrorResponse.of(errorCode);
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }
 }
