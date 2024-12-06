@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.global.config;
 
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
+import com.prgrms.ijuju.global.auth.JwtHandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -8,7 +9,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
-import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -16,9 +16,11 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSocketConfigurer {
 
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
+    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
-    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler) {
+    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler, JwtHandshakeInterceptor jwtHandshakeInterceptor) {
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
+        this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
     }
 
 
@@ -26,7 +28,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
-                .setAllowedOrigins("*"); // 핸들러 URL 등록
+                .setAllowedOrigins("*")
+                .addInterceptors(jwtHandshakeInterceptor); // 핸들러 URL 등록
     }
   
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
