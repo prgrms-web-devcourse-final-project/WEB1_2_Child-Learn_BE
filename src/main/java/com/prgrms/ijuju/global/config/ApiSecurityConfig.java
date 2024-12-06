@@ -53,7 +53,7 @@ public class ApiSecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/login", "/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
 
-                        .requestMatchers("/api/v1/advanced-invest/**").authenticated()
+                        .requestMatchers("/api/v1/advanced-invest/**").permitAll()
 
                         // API 엔드포인트 허용
                         .requestMatchers(
