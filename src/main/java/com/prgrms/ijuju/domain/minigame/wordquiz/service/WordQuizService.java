@@ -54,10 +54,6 @@ public class WordQuizService {
     }
 
     private boolean isPlayAvailable(List<LimitWordQuiz> playLimits, Difficulty difficulty, LocalDate today) {
-        if (playLimits == null) {
-            log.error("난이도 {}의 마지막 게임 날짜가 null 입니다.", difficulty);
-            throw new WordQuizException(WordQuizErrorCode.INVALID_PLAY_LIMITS);
-        }
         return playLimits.stream()
                 .filter(limit -> limit.getDifficulty() == difficulty)
                 .findFirst()
@@ -67,21 +63,23 @@ public class WordQuizService {
 
     @Transactional(readOnly = true)
     public WordQuizResponse startOrContinueWordQuiz(HttpSession session, Long memberId, Difficulty difficulty) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.MEMBER_NOT_FOUND));
+        Member member = getMemberOrThrowException(memberId);
 
         session.setAttribute("memberId", memberId);
 
-        if (!isPlayAvailable(limitWordQuizRepository.findByMember(member), difficulty, LocalDate.now())) {
-            throw new WordQuizException(WordQuizErrorCode.DAILY_PLAY_LIMIT_EXCEEDED);
-        }
-
         WordQuizResponse gameResponse = (WordQuizResponse) session.getAttribute("gameState");
         if (gameResponse == null) {
+            List<LimitWordQuiz> playLimits = limitWordQuizRepository.findByMember(member);
+            if (playLimits != null && !isPlayAvailable(limitWordQuizRepository.findByMember(member), difficulty, LocalDate.now())) {
+                throw new WordQuizException(WordQuizErrorCode.DAILY_PLAY_LIMIT_EXCEEDED);
+            }
+
+            updateLastPlayedDate(memberId, difficulty);
+            log.info("닉네임: {}, 낱말 게임 마지막 게임 날짜 갱신 완료", member.getUsername());
             WordQuiz quiz = wordQuizRepository.findRandomWord()
                     .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
 
-            gameResponse = new WordQuizResponse(quiz.getWord(), quiz.getExplanation(), quiz.getHint(), 1, 3, difficulty);
+            gameResponse = new WordQuizResponse(quiz.getWord(), quiz.getExplanation(), quiz.getHint(), 1, 3, difficulty, false);
             session.setAttribute("gameState", gameResponse);
         }
 
@@ -99,26 +97,34 @@ public class WordQuizService {
 
         if (isCorrect) {
             if (gameState.currentPhase() < 3) {
-                WordQuizResponse updatedGameState = gameState.withUpdatedPhase(gameState.currentPhase() + 1);
+                WordQuiz quiz = wordQuizRepository.findRandomWord()
+                        .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
+
+                WordQuizResponse updatedGameState = gameState.withNewQuiz(quiz)
+                        .withUpdatedPhase(gameState.currentPhase() + 1);
                 session.setAttribute("gameState", updatedGameState);
                 return updatedGameState;
             } else {
-                updateLastPlayedDate(memberId, gameState.difficulty());
-                return gameState;
+                session.removeAttribute("gameState");
+                return gameState.withGameOver(true);
             }
         } else {
             WordQuizResponse updatedGameState = gameState.withUpdatedLife(gameState.remainLife() - 1);
-            session.setAttribute("gameState", updatedGameState);
-            return updatedGameState;
+            if (updatedGameState.remainLife() <= 0) {
+                session.removeAttribute("gameState");
+                return updatedGameState.withGameOver(true);
+            } else {
+                session.setAttribute("gameState", updatedGameState);
+                return updatedGameState;
+            }
         }
     }
 
     private void updateLastPlayedDate(Long memberId, Difficulty difficulty) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.MEMBER_NOT_FOUND));
+        Member member = getMemberOrThrowException(memberId);
 
         LimitWordQuiz limitWordQuiz = limitWordQuizRepository.findByMemberAndDifficulty(member, difficulty)
-                .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.LIMIT_WORD_QUIZ_NOT_FOUND));
+                .orElseGet(() -> new LimitWordQuiz(member, difficulty, LocalDate.now()));
 
         limitWordQuiz.changeLastPlayedDate(LocalDate.now());
         limitWordQuizRepository.save(limitWordQuiz);
