@@ -55,7 +55,7 @@ public class ChatController {
     public ResponseEntity<List<ChatMessageResponseDTO>> getChatMessages(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable String roomId) {
-        List<ChatMessageResponseDTO> messages = chatService.getChatMessages(roomId, user.getId());
+        List<ChatMessageResponseDTO> messages = chatService.getMessages(roomId, null, 20);
         return ResponseEntity.ok(messages);
     }
 
@@ -84,5 +84,15 @@ public class ChatController {
             @AuthenticationPrincipal SecurityUser user) {
         int count = chatService.getUnreadCount(user.getId());
         return ResponseEntity.ok(new UnreadCountResponseDTO(count));
+    }
+
+    @GetMapping("/messages/{roomId}")
+    public ResponseEntity<List<ChatMessageResponseDTO>> getMessages(
+            @PathVariable String roomId,
+            @RequestParam(required = false) String lastMessageId,
+            @RequestParam(defaultValue = "20") int size) {
+            
+        List<ChatMessageResponseDTO> messages = chatService.getMessagesByScroll(roomId, lastMessageId, size);
+        return ResponseEntity.ok(messages);
     }
 }

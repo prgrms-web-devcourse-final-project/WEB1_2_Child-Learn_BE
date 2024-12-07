@@ -6,6 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
@@ -22,9 +27,7 @@ import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.Comparator;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -41,6 +44,8 @@ public class ChatService {
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRepository chatRepository;
+    private final ChatCacheService chatCacheService;
+    private static final int PAGE_SIZE = 20;
 
     // 채팅 저장
     public Chat saveChat(Chat chat) {
@@ -106,7 +111,7 @@ public class ChatService {
                 .collect(Collectors.toList());
 
         // 친구 정보 한 번에 조회
-        List<Member> friends = memberRepository.findByIdIn(friendIds);
+        List<Member> friends = memberRepository.findAllById(friendIds);
         Map<Long, Member> friendMap = friends.stream()
                 .collect(Collectors.toMap(Member::getId, f -> f));
 
@@ -125,27 +130,26 @@ public class ChatService {
     }
 
     // 채팅 메시지 조회
-    public List<ChatMessageResponseDTO> getChatMessages(String roomId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
-
-        if (!chatRoom.getMemberId().equals(userId) && !chatRoom.getFriendId().equals(userId)) {
-            throw new ChatException(ChatErrorCode.CHATROOM_ACCESS_DENIED);
+    public Page<ChatMessageResponseDTO> getChatMessages(String roomId, Long userId, int page) {
+        // 캐시된 메시지 확인
+        List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
+        if (cachedMessages != null && page == 0) {
+            return new PageImpl<>(cachedMessages);
         }
 
-        List<Chat> chats = chatRoom.getChat();
-        if (chats == null || chats.isEmpty()) {
-            return new ArrayList<>();
+        // DB에서 페이징 조회
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("createdAt").descending());
+        Page<Chat> messages = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        
+        // 첫 페이지인 경우 캐시 업데이트
+        if (page == 0) {
+            List<ChatMessageResponseDTO> messageDTOs = messages.getContent().stream()
+                .map(ChatMessageResponseDTO::from)
+                .collect(Collectors.toList());
+            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
         }
 
-        // 메시지 읽음 처리
-        chatRoom.markMessagesAsRead(userId);
-        chatRoomRepository.save(chatRoom);
-
-        return chats.stream()
-            .filter(chat -> !chat.isDeleted())
-            .map(chat -> ChatMessageResponseDTO.from(chat))
-            .collect(Collectors.toList());
+        return messages.map(ChatMessageResponseDTO::from);
     }
 
     // 메시지 전송
@@ -203,5 +207,71 @@ public class ChatService {
             .roomId(roomId)
             .readAt(LocalDateTime.now())
             .build();
+    }
+
+    // 스크롤 메시지 조회
+    public List<ChatMessageResponseDTO> getMessagesByScroll(String roomId, String lastMessageId, int size) {
+        // 첫 로드시 캐시 확인
+        if (lastMessageId == null) {
+            List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
+            if (cachedMessages != null && !cachedMessages.isEmpty()) {
+                return cachedMessages;
+            }
+        }
+
+        // 마지막 메시지 찾기
+        Chat lastMessage = lastMessageId != null ? 
+            chatMessageRepository.findById(lastMessageId).orElse(null) : null;
+
+        // 페이징 처리
+        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
+        List<Chat> messages;
+        
+        if (lastMessage != null) {
+            messages = chatMessageRepository.findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(
+                roomId, 
+                lastMessage.getCreatedAt(), 
+                pageable
+            );
+        } else {
+            Page<Chat> messagesPage = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+            messages = messagesPage.getContent();
+        }
+
+        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+            .map(ChatMessageResponseDTO::from)
+            .collect(Collectors.toList());
+
+        // 첫 페이지인 경우 캐시 저장
+        if (lastMessageId == null) {
+            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+        }
+
+        return messageDTOs;
+    }
+
+    // 초기 로딩시 캐시 저장
+    public List<ChatMessageResponseDTO> getMessages(String roomId, String lastMessageId, int size) {
+        // 캐시 확인 (초기 로딩시)
+        if (lastMessageId == null) {
+            List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
+            if (cachedMessages != null && !cachedMessages.isEmpty()) {
+                return cachedMessages;
+            }
+        }
+    
+        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
+        Page<Chat> messages = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        
+        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+            .map(ChatMessageResponseDTO::from)
+            .collect(Collectors.toList());
+    
+        // 초기 로딩시 캐시 저장
+        if (lastMessageId == null) {
+            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+        }
+    
+        return messageDTOs;
     }
 }
