@@ -16,11 +16,11 @@ public class MidStockPrice extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private long highPrice;
+    private Long highPrice;
 
-    private long lowPrice;
+    private Long lowPrice;
 
-    private long avgPrice;
+    private Long avgPrice;
 
     private LocalDateTime priceDate;
 
@@ -29,7 +29,7 @@ public class MidStockPrice extends BaseTimeEntity {
     private MidStock midStock;
 
     @Builder
-    public MidStockPrice(long highPrice, long lowPrice, long avgPrice, LocalDateTime priceDate, MidStock midStock) {
+    public MidStockPrice(Long highPrice, Long lowPrice, Long avgPrice, LocalDateTime priceDate, MidStock midStock) {
         this.highPrice = highPrice;
         this.lowPrice = lowPrice;
         this.avgPrice = avgPrice;
