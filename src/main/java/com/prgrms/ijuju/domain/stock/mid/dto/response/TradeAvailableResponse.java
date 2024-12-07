@@ -4,10 +4,10 @@ import lombok.Builder;
 
 @Builder
 public record TradeAvailableResponse(
-        boolean isPossibleBuy,
-        boolean isPossibleSell
+        Boolean isPossibleBuy,
+        Boolean isPossibleSell
 ) {
-    public static TradeAvailableResponse of(boolean isPossibleBuy, boolean isPossibleSell) {
+    public static TradeAvailableResponse of(Boolean isPossibleBuy, Boolean isPossibleSell) {
         return new TradeAvailableResponse(isPossibleBuy, isPossibleSell);
     }
 }

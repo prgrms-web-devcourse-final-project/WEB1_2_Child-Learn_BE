@@ -62,9 +62,6 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private int BeginStockPlayCount = 0;
 
-    @OneToOne(mappedBy = "member", orphanRemoval = true)
-    private Ranking ranking;
-
     @Builder
     public Member(Long id, String loginId, String pw, String username, String email, LocalDate birth, String profileImage, Avatar avatar, Role role){
         this.id = id;
@@ -103,10 +100,6 @@ public class Member extends BaseTimeEntity {
 
     public void increaseBeginStockPlayCount() {
         this.BeginStockPlayCount++;
-    }
-
-    public void changeRanking(Ranking ranking) {
-        this.ranking = ranking;
     }
 
     public void changeAvatar(Avatar avatar) {

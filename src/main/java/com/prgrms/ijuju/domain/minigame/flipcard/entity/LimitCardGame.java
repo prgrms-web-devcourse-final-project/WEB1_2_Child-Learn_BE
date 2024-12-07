@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
@@ -21,6 +23,7 @@ public class LimitCardGame {
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId // Member의 ID를 PK이자 FK로 사용
     @JoinColumn(name = "member_id")
+    @OnDelete(action = OnDeleteAction.CASCADE) // 추가: Member 삭제시 같이 삭제되도록 설정
     private Member member;
 
     // 마지막 플레이 시간, 초기값은 현재시간 1달 전으로 설정

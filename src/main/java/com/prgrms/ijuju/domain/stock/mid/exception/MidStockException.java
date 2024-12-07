@@ -1,21 +1,9 @@
 package com.prgrms.ijuju.domain.stock.mid.exception;
 
-public class MidStockException extends RuntimeException {
-    private final MidStockErrorCode errorCode;
+import com.prgrms.ijuju.global.exception.BusinessException;
 
-    public MidStockException(String message, MidStockErrorCode errorCode) {
-        super(message);
-        this.errorCode = errorCode;
-    }
-
+public class MidStockException extends BusinessException {
     public MidStockException(MidStockErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+        super(errorCode);
     }
-
-    public MidStockErrorCode getErrorCode() {
-        return errorCode;
-    }
-
-
 }

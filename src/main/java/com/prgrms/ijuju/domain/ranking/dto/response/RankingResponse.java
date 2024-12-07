@@ -5,18 +5,18 @@ import lombok.Getter;
 
 @Getter
 public class RankingResponse {
-    private final long rank;
+    private final Long rank;
     private final String username;
-    private final long weeklyPoints;
+    private final Long weeklyPoints;
 
     @Builder
-    public RankingResponse(long rank, String username, long weeklyPoints) {
+    public RankingResponse(Long rank, String username, Long weeklyPoints) {
         this.rank = rank;
         this.username = username;
         this.weeklyPoints = weeklyPoints;
     }
 
-    public static RankingResponse of(long rank, String username, long weeklyPoints) {
+    public static RankingResponse of(Long rank, String username, Long weeklyPoints) {
         return RankingResponse.builder()
                 .rank(rank)
                 .username(username)
