@@ -1,7 +1,6 @@
 package com.prgrms.ijuju.domain.notification.controller;
 
 import com.prgrms.ijuju.domain.notification.dto.response.NotificationResponseDto;
-import com.prgrms.ijuju.domain.notification.dto.response.SseNotificationResponseDto;
 import com.prgrms.ijuju.domain.notification.service.NotificationService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
