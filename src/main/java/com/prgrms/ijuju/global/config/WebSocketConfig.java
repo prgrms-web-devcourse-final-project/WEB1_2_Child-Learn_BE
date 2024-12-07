@@ -3,9 +3,6 @@ package com.prgrms.ijuju.global.config;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
 import com.prgrms.ijuju.global.auth.JwtHandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
@@ -23,7 +20,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
     }
 
-
     //핸들러 방식
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
@@ -39,9 +35,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
-                .setAllowedOrigins("*")
+        registry.addEndpoint("/ws", "/ws-stomp")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
-    
 }

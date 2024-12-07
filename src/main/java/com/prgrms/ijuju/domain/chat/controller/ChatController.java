@@ -7,57 +7,82 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.prgrms.ijuju.domain.chat.dto.request.CreateChatRoomRequestDTO;
+import com.prgrms.ijuju.domain.chat.dto.request.ChatRoomRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
-import com.prgrms.ijuju.domain.chat.entity.ChatRoom;
+import com.prgrms.ijuju.domain.chat.dto.response.UnreadCountResponseDTO;
 import com.prgrms.ijuju.domain.chat.service.ChatService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
-@RequestMapping("/api/v1/chats")
-@Slf4j
+@RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
 
     private final ChatService chatService;
 
-    // 채팅방 목록 조회
-    @GetMapping("/list")
-    public ResponseEntity<List<ChatRoomListResponseDTO>> getChatRoomList(
-        @AuthenticationPrincipal SecurityUser user
-    ) {
-        return ResponseEntity.ok(chatService.getChatRoomList(user.getId()));
-    }
-
-    // 채팅방(메시지) 조회
-    @GetMapping("/rooms/{roomId}")
-    public ResponseEntity<List<ChatMessageResponseDTO>> getMessagesByChatRoomId(
-        @PathVariable Long roomId,
-        @AuthenticationPrincipal SecurityUser user
-    ) {
-        return ResponseEntity.ok(chatService.getMessagesByChatRoomId(roomId, user.getId()));
-    }
-
-    // 채팅방 생성
     @PostMapping("/rooms")
-    public ResponseEntity<ChatRoom> createChatRoom(
-        @AuthenticationPrincipal SecurityUser user,
-        @RequestBody CreateChatRoomRequestDTO request
-    ) {
-        return ResponseEntity.ok(chatService.createChatRoom(user.getId(), request.getFriendId()));
+    public ResponseEntity<Map<String, Object>> createChatRoom(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody ChatRoomRequestDTO request) {
+        ChatRoomListResponseDTO room = chatService.createOrGetChatRoom(user.getId(), request.getFriendId());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "채팅방이 성공적으로 생성되었습니다.");
+        response.put("data", room);
+        
+        return ResponseEntity.ok(response);
     }
 
-    // 채팅방 삭제
+    @GetMapping("/rooms")
+    public ResponseEntity<Map<String, Object>> getChatRooms(
+            @AuthenticationPrincipal SecurityUser user) {
+        List<ChatRoomListResponseDTO> rooms = chatService.getChatRooms(user.getId());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "채팅방 목록을 성공적으로 조회했습니다.");
+        response.put("data", rooms);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/rooms/{roomId}/messages")
+    public ResponseEntity<List<ChatMessageResponseDTO>> getChatMessages(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable String roomId) {
+        List<ChatMessageResponseDTO> messages = chatService.getChatMessages(roomId, user.getId());
+        return ResponseEntity.ok(messages);
+    }
+
     @DeleteMapping("/rooms/{roomId}")
-    public ResponseEntity<String> deleteChatRoom(
-        @AuthenticationPrincipal SecurityUser user,
-        @PathVariable Long roomId
-    ) {
+    public ResponseEntity<Map<String, String>> deleteChatRoom(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable String roomId) {
         chatService.deleteChatRoom(roomId, user.getId());
-        return ResponseEntity.ok("채팅방이 삭제되었습니다.");
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "채팅방이 성공적으로 삭제되었습니다.");
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/messages/{messageId}")
+    public ResponseEntity<Void> deleteMessage(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable String messageId) {
+        chatService.deleteMessage(messageId, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread")
+    public ResponseEntity<UnreadCountResponseDTO> getUnreadCount(
+            @AuthenticationPrincipal SecurityUser user) {
+        int count = chatService.getUnreadCount(user.getId());
+        return ResponseEntity.ok(new UnreadCountResponseDTO(count));
     }
 }
-
