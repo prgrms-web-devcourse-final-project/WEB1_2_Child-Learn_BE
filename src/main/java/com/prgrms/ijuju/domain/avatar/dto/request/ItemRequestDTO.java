@@ -12,6 +12,7 @@ public class ItemRequestDTO {
     public static class ItemRegisterRequestDTO {
         private String name;
         private Long price;
+        private String imageUrl;
         private String description;
         private String category;
 
@@ -24,9 +25,9 @@ public class ItemRequestDTO {
             return Item.builder()
                     .name(name)
                     .description(description)
+                    .imageUrl(imageUrl)
                     .price(price)
                     .category(getCategoryEnum())
-                    //.purchases(new ArrayList<>())  // 소유자 추가
                     .build();
         }
 

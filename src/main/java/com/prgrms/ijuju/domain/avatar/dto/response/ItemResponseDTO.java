@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.avatar.dto.response;
 
 import com.prgrms.ijuju.domain.avatar.entity.Item;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 public class ItemResponseDTO {
@@ -10,12 +11,14 @@ public class ItemResponseDTO {
     public static class ItemRegisterResponseDTO {
         private Long id;
         private String name;
+        private String imageUrl;
         private Long price;
         private String category;
 
         public ItemRegisterResponseDTO(Item item) {
             this.id = item.getId();
             this.name = item.getName();
+            this.imageUrl = item.getImageUrl();
             this.price = item.getPrice();
             this.category = item.getCategory().getDisplayName();
         }
@@ -35,9 +38,11 @@ public class ItemResponseDTO {
     @Data
     public static class ItemEquipResponseDTO {
         private String message;
+        private String itemImageUrl;
 
-        public ItemEquipResponseDTO(String message) {
+        public ItemEquipResponseDTO(String message, String itemImageUrl) {
             this.message = message;
+            this.itemImageUrl=itemImageUrl;
         }
     }
 
@@ -45,10 +50,35 @@ public class ItemResponseDTO {
     @Data
     public static class ItemRemoveResponseDTO {
         private String message;
+        private String itemImageUrl;
 
-        public ItemRemoveResponseDTO(String message) {
+        public ItemRemoveResponseDTO(String message, String itemImageUrl) {
             this.message = message;
+            this.itemImageUrl = itemImageUrl;
         }
+    }
+
+    // 아이템 목록 조회
+    @Data
+    @AllArgsConstructor
+    public static class ItemReadResponseDTO {
+        private Long id;
+        private String name;
+        private Long price;
+        private String imageUrl;
+        private String description;
+        private String category;
+
+        public ItemReadResponseDTO(Item item) {
+            this.id = item.getId();
+            this.name = item.getName();
+            this.price = item.getPrice();
+            this.imageUrl = item.getImageUrl();
+            this.description = item.getDescription();
+            this.category = item.getCategory().toString();
+        }
+
+
     }
 
 }

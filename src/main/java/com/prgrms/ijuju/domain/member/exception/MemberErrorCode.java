@@ -18,6 +18,8 @@ public enum MemberErrorCode implements ErrorCode {
     MEMBER_LOGIN_DENIED("CH006", "로그인에 실패했습니다.", HttpStatus.BAD_REQUEST),
     MEMBER_ALREADY_LOGGED_IN("CH007","이미 다른 곳에서 로그인 중인 계정입니다.", HttpStatus.CONFLICT),
     MEMBER_ALREADY_LOGGED_OUT("CH008", "이미 로그아웃된 계정입니다.", HttpStatus.BAD_REQUEST),
+    LOGIN_ID_REQUIRED("CH016", "로그인 아이디는 필수입니다.", HttpStatus.BAD_REQUEST),
+    PASSWORD_REQUIRED("CH017", "비밀번호는 필수입니다.", HttpStatus.BAD_REQUEST),
 
     // 회원 수정
     MEMBER_NOT_REMOVED("CH009", "회원 탈퇴에 실패했습니다.", HttpStatus.BAD_REQUEST),
