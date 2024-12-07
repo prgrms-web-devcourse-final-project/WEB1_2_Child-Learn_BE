@@ -50,7 +50,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             attributes.put("userClaims", claims); // 검증된 클레임을 WebSocket 세션에 저장
             log.info("WebSocket 연결 성공: {}", claims);
             return true;
-            
+
         } catch (Exception e) {
             log.error("JWT 검증 실패: {}", e.getMessage());
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
