@@ -79,7 +79,7 @@ public class Member extends BaseTimeEntity {
     }
 
     // 회원의 아바타(착용한 아이템들을 포함)
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "member", orphanRemoval = true)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
