@@ -1,12 +1,21 @@
 package com.prgrms.ijuju.global.common.dto;
 
-import lombok.Builder;
+import com.prgrms.ijuju.global.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class ErrorResponse {
-    private String code;
-    private String message;
-    private int status;
-} 
+    private final String code;
+    private final String message;
+    private final int status;
+
+    private ErrorResponse(final ErrorCode errorCode) {
+        this.code = errorCode.getCode();
+        this.message = errorCode.getMessage();
+        this.status = errorCode.getHttpStatus().value();
+    }
+
+    public static ErrorResponse of(final ErrorCode errorCode) {
+        return new ErrorResponse(errorCode);
+    }
+}

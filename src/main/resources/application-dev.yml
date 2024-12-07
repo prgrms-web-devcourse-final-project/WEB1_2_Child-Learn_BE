@@ -1,4 +1,7 @@
 ##  http://localhost:8090/h2-console
+## VM 옵션 추가해주세요. --add-opens java.base/java.io=ALL-UNNAMED  
+## 아래처럼 넣으시면 됩니다.
+## -Dspring.profiles.active=dev --add-opens java.base/java.io=ALL-UNNAMED
 server:
   port: 8090
 spring:
@@ -11,3 +14,9 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ijuju
+    redis:
+      host: localhost
+      port: 6379

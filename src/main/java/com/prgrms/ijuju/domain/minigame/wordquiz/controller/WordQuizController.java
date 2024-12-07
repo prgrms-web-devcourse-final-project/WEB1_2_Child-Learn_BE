@@ -4,6 +4,8 @@ import com.prgrms.ijuju.domain.minigame.wordquiz.dto.request.WordQuizRequest;
 import com.prgrms.ijuju.domain.minigame.wordquiz.dto.response.WordQuizAvailabilityResponse;
 import com.prgrms.ijuju.domain.minigame.wordquiz.dto.response.WordQuizResponse;
 import com.prgrms.ijuju.domain.minigame.wordquiz.entity.Difficulty;
+import com.prgrms.ijuju.domain.minigame.wordquiz.exception.WordQuizErrorCode;
+import com.prgrms.ijuju.domain.minigame.wordquiz.exception.WordQuizException;
 import com.prgrms.ijuju.domain.minigame.wordquiz.service.WordQuizService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.servlet.http.HttpSession;
@@ -44,11 +46,6 @@ public class WordQuizController {
                                                          @RequestBody WordQuizRequest wordQuizRequest,
                                                          HttpSession session) {
         WordQuizResponse gameState = wordQuizService.handleAnswer(user.getId(), session, wordQuizRequest.isCorrect());
-
-        if (wordQuizRequest.isCorrect()) {
-            gameState = wordQuizService.startOrContinueWordQuiz(session, user.getId(), gameState.difficulty());
-        }
-
         return ResponseEntity.ok(gameState);
     }
 }

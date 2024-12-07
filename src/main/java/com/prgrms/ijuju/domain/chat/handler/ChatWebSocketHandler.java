@@ -1,7 +1,7 @@
 package com.prgrms.ijuju.domain.chat.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prgrms.ijuju.domain.chat.service.ChatService;
+import com.prgrms.ijuju.domain.chat.service.ChatSessionService;
+import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,82 +9,52 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
-import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.lang.NonNull;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
-    private final ObjectMapper objectMapper;
-    private final ChatService chatService;
-    
-    // 연결된 세션을 저장하는 맵 (세션ID, WebSocketSession)
-    private static final ConcurrentHashMap<String, WebSocketSession> SESSIONS = new ConcurrentHashMap<>();
+    private final ChatSessionService chatSessionService;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // 웹소켓 연결이 성공했을 때
-        String sessionId = session.getId();
-        SESSIONS.put(sessionId, session);
-        log.info("새로운 웹소켓 연결 성공: {}", sessionId);
-    }
-
-    @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // 클라이언트로부터 메시지를 받았을 때
-        String payload = message.getPayload();
-        log.info("받은 메시지: {}", payload);
-
-        try {
-            // 모든 연결된 세션에 메시지 브로드캐스트
-            for (WebSocketSession clientSession : SESSIONS.values()) {
-                if (clientSession.isOpen()) {
-                    clientSession.sendMessage(new TextMessage(payload));
-                }
-            }
-        } catch (Exception e) {
-            log.error("메시지 처리 중 오류 발생: ", e);
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
+        SecurityUser user = getSecurityUser(session);
+        if (user != null) {
+            log.info("WebSocket 연결 성공 - 사용자 ID: {}", user.getId());
+            chatSessionService.connectUser(user.getId(), session.getId());
         }
     }
 
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        // 웹소켓 통신 중 에러가 발생했을 때
-        log.error("웹소켓 통신 에러: {}", session.getId(), exception);
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        // 웹소켓 연결이 종료되었을 때
-        String sessionId = session.getId();
-        SESSIONS.remove(sessionId);
-        log.info("웹소켓 연결 종료: {}", sessionId);
-    }
-
-    // 특정 세션에 메시지 전송
-    public void sendMessageToSession(String sessionId, String message) {
-        WebSocketSession session = SESSIONS.get(sessionId);
-        if (session != null && session.isOpen()) {
-            try {
-                session.sendMessage(new TextMessage(message));
-            } catch (Exception e) {
-                log.error("메시지 전송 중 오류 발생: ", e);
-            }
+    protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) {
+        SecurityUser user = getSecurityUser(session);
+        if (user != null) {
+            log.debug("메시지 수신 - 사용자 ID: {}, 메시지: {}", user.getId(), message.getPayload());
+            chatSessionService.heartbeat(user.getId());
         }
     }
 
-    // 현재 연결된 모든 세션에 메시지 전송
-    public void broadcastMessage(String message) {
-        SESSIONS.values().forEach(session -> {
-            if (session.isOpen()) {
-                try {
-                    session.sendMessage(new TextMessage(message));
-                } catch (Exception e) {
-                    log.error("브로드캐스트 메시지 전송 중 오류 발생: ", e);
-                }
-            }
-        });
+    @Override
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
+        SecurityUser user = getSecurityUser(session);
+        if (user != null) {
+            log.info("WebSocket 연결 종료 - 사용자 ID: {}, 상태: {}", user.getId(), status);
+            chatSessionService.disconnectUser(user.getId());
+        }
+    }
+
+    @Override
+    public void handleTransportError(@NonNull WebSocketSession session, @NonNull Throwable exception) {
+        SecurityUser user = getSecurityUser(session);
+        if (user != null) {
+            log.error("WebSocket 전송 오류 - 사용자 ID: {}", user.getId(), exception);
+            chatSessionService.disconnectUser(user.getId());
+        }
+    }
+
+    private SecurityUser getSecurityUser(WebSocketSession session) {
+        return (SecurityUser) session.getAttributes().get("user");
     }
 } 

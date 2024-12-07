@@ -15,10 +15,10 @@ import com.prgrms.ijuju.domain.wallet.entity.PointType;
 import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.wallet.exception.WalletErrorCode;
 import com.prgrms.ijuju.domain.wallet.repository.PointTransactionRepository;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.repository.ExchangeTransactionRepository;
-import com.prgrms.ijuju.global.exception.CustomException;
 import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
 
 import jakarta.persistence.LockModeType;
@@ -42,29 +42,29 @@ public class WalletService {
     // 게임 포인트 유효성 검사
     private void validateGamePoints(GamePointRequestDTO request) {
         if (request == null) {
-            throw new CustomException(WalletException.INVALID_GAME_POINT);
+            throw new WalletException(WalletErrorCode.GAME_POINT_NOT_FOUND);
         }
         
         if (request.getMemberId() == null) {
-            throw new CustomException(WalletException.INVALID_MEMBER_ID);
+            throw new WalletException(WalletErrorCode.MEMBER_INVALID_ID);
         }
         
         if (request.getPoints() == null || request.getPoints() < 0) {
-            throw new CustomException(WalletException.INVALID_AMOUNT);
+            throw new WalletException(WalletErrorCode.TRANSACTION_AMOUNT_INVALID);
         }
         
         if (request.getGameType() == null) {
-            throw new CustomException(WalletException.INVALID_GAME_TYPE);
+            throw new WalletException(WalletErrorCode.GAME_TYPE_INVALID);
         }
     }
 
     // 환전 처리 유효성 검사
     private void validateExchange(Wallet wallet, Long points) {
         if (points < 100 || points % 100 != 0) {
-            throw new CustomException(WalletException.EXCHANGE_UNIT);
+            throw new WalletException(WalletErrorCode.EXCHANGE_MINIMUM_AMOUNT);
         }
         if (wallet.getCurrentPoints() < points) {
-            throw new CustomException(WalletException.INSUFFICIENT_POINTS);
+            throw new WalletException(WalletErrorCode.POINT_INSUFFICIENT);
         }
     }
 
@@ -72,14 +72,14 @@ public class WalletService {
     private void validateStockTransaction(Wallet wallet, StockPointRequestDTO request) {
         if (request.getTransactionType() == TransactionType.USED 
                 && wallet.getCurrentPoints() < request.getPoints()) {
-            throw new CustomException(WalletException.INSUFFICIENT_POINTS);
+            throw new WalletException(WalletErrorCode.POINT_INSUFFICIENT);
         }
     }
 
     // 현재 포인트 및 코인 조회
     public WalletResponseDTO showCurrentBalance(Long memberId) {
         Wallet wallet = walletRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
         return new WalletResponseDTO(memberId, wallet.getCurrentPoints(), wallet.getCurrentCoins());
     }
 
@@ -89,11 +89,11 @@ public class WalletService {
     public WalletResponseDTO exchangePointsToCoin(ExchangeRequestDTO request) {
         // 최소 환전 포인트 검증
         if (request.getPointsExchanged() < 100) {
-            throw new CustomException(WalletException.EXCHANGE_UNIT);
+            throw new WalletException(WalletErrorCode.EXCHANGE_MINIMUM_AMOUNT);
         }
 
         Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
         
         validateExchange(wallet, request.getPointsExchanged());
         
@@ -127,7 +127,7 @@ public class WalletService {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     public WalletResponseDTO processAttendancePoints(AttendanceRequestDTO request) {
         Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
         
         // 오늘 날짜의 시작(00:00:00)과 끝(23:59:59) 설정
         LocalDateTime now = LocalDateTime.now();
@@ -143,7 +143,7 @@ public class WalletService {
         );
 
         if (alreadyCheckedIn) {
-            throw new CustomException(WalletException.ATTENDANCE_ALREADY_CHECKED);
+            throw new WalletException(WalletErrorCode.ATTENDANCE_ALREADY_CHECKED);
         }
 
         Long attendancePoints = 100L;
@@ -163,16 +163,20 @@ public class WalletService {
     public WalletResponseDTO processMiniGamePoints(GamePointRequestDTO request) {
         validateGamePoints(request);
 
+        // 패배한 경우 현재 지갑 상태만 반환
+        if (!request.isWin()) {
+            Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                    .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+            return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+        }
+
         Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
 
-        // isWin이 true일 때만 EARNED로 설정, 아니면 MAINTAINED
-        TransactionType transactionType = request.isWin() ? TransactionType.EARNED : TransactionType.MAINTAINED;
-
-        // 포인트 업데이트 및 거래 내역 저장
-        wallet.updatePointsAndCoins(request.getPoints(), transactionType);
-        String description = request.getGameType().toString() + ":" + (request.isWin() ? "승리" : "패배");
-        savePointTransaction(wallet.getMember(), transactionType, request.getPoints(), PointType.GAME, description);
+        // 승리한 경우에만 포인트 업데이트 및 거래 내역 저장
+        wallet.updatePointsAndCoins(request.getPoints(), TransactionType.EARNED);
+        String description = request.getGameType().toString();
+        savePointTransaction(wallet.getMember(), TransactionType.EARNED, request.getPoints(), PointType.GAME, description);
 
         // 실시간 업데이트
         notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
@@ -185,7 +189,7 @@ public class WalletService {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     public WalletResponseDTO simulateStockInvestment(StockPointRequestDTO request) {
         Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
-                .orElseThrow(() -> new CustomException(WalletException.WALLET_NOT_FOUND));
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
 
         validateStockTransaction(wallet, request);
 

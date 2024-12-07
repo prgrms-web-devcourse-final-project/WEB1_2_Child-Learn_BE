@@ -43,3 +43,4 @@ out/
 
 #secret yml#
 application-secret.yml
+/src/main/resources/firebase/firebase_service_key.json
