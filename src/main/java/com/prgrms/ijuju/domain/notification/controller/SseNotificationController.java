@@ -48,18 +48,18 @@ public class SseNotificationController {
     }
 
     // 메시지 알림 생성
-    @PostMapping("/message")
-    public ResponseEntity<Void> createMessageNotification(
-            @AuthenticationPrincipal SecurityUser securityUser,
-            @RequestBody MessageNotificationRequest request
-    ) {
-        notificationService.createMessageNotification(
-                securityUser.getUsername(),
-                request.getReceiverLoginId(),
-                request.getMessageContent()
-        );
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/message")
+//    public ResponseEntity<Void> createMessageNotification(
+//            @AuthenticationPrincipal SecurityUser securityUser,
+//            @RequestBody MessageNotificationRequest request
+//    ) {
+//        notificationService.createMessageNotification(
+//                securityUser.getUsername(),
+//                request.getReceiverLoginId(),
+//                request.getMessageContent()
+//        );
+//        return ResponseEntity.ok().build();
+//    }
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal SecurityUser securityUser,
@@ -68,5 +68,11 @@ public class SseNotificationController {
         SseEmitter ssemitter = sseNotificationService.subscribe(loginId, lastEventId);
 
         return ResponseEntity.ok(ssemitter);
+    }
+
+    @DeleteMapping("/disconnect")
+    public ResponseEntity<String> disconnect(@AuthenticationPrincipal SecurityUser securityUser) {
+        sseNotificationService.disconnect(securityUser.getUsername());
+        return ResponseEntity.ok("SSE 연결 해제 완료");
     }
 }
