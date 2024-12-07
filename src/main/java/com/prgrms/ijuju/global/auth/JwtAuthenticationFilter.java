@@ -80,4 +80,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // WebSocket 요청은 Security 필터를 통과하지 않도록 처리
+        String upgradeHeader = request.getHeader("Upgrade");
+        return upgradeHeader != null && "websocket".equalsIgnoreCase(upgradeHeader);
+    }
 }
