@@ -46,6 +46,9 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
     private static final int PAGE_SIZE = 20;
+    private static final String CHAT_CACHE_KEY = "chat:messages:";
+    private static final int CACHE_EXPIRATION = 24; // 시간
+    private static final long CACHE_TTL = 24L;
 
     // 채팅 저장
     public Chat saveChat(Chat chat) {
@@ -154,21 +157,30 @@ public class ChatService {
 
     // 메시지 전송
     public ChatMessageResponseDTO sendMessage(String roomId, Long senderId, String content, MultipartFile image) {
+        validateMessage(content, image);
+        
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+        validateChatRoomAccess(chatRoom, senderId);
 
         Member sender = memberRepository.findById(senderId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-
-        Chat chat = Chat.createChatMessage(chatRoom, sender, content, image);
-        chat = chatMessageRepository.save(chat);
-        chatRoom.addChat(chat);
-        chatRoomRepository.save(chatRoom);
-
-        // Redis를 통한 실시간 메시지 발행
-        redisTemplate.convertAndSend("chat." + roomId, ChatMessageResponseDTO.from(chat));
-
+        Chat chat = Chat.createChatMessage(chatRoom, sender, content, image);   
+        
+        chatMessageRepository.save(chat);
+        
+        chatCacheService.invalidateCache(roomId);
+        
         return ChatMessageResponseDTO.from(chat);
+    }
+
+    private void validateMessage(String content, MultipartFile image) {
+        if ((content == null || content.trim().isEmpty()) && image == null) {
+            throw new ChatException(ChatErrorCode.MESSAGE_CONTENT_EMPTY);
+        }
+        if (content != null && content.length() > 1000) {
+            throw new ChatException(ChatErrorCode.MESSAGE_TOO_LONG);
+        }
     }
 
     // 메시지 삭제
@@ -210,44 +222,35 @@ public class ChatService {
     }
 
     // 스크롤 메시지 조회
-    public List<ChatMessageResponseDTO> getMessagesByScroll(String roomId, String lastMessageId, int size) {
-        // 첫 로드시 캐시 확인
-        if (lastMessageId == null) {
-            List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
-            if (cachedMessages != null && !cachedMessages.isEmpty()) {
-                return cachedMessages;
-            }
-        }
-
-        // 마지막 메시지 찾기
-        Chat lastMessage = lastMessageId != null ? 
-            chatMessageRepository.findById(lastMessageId).orElse(null) : null;
-
-        // 페이징 처리
-        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
-        List<Chat> messages;
+    public Page<ChatMessageResponseDTO> getMessagesByScroll(String roomId, String lastMessageId, int size, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+        validateChatRoomAccess(chatRoom, userId);
         
-        if (lastMessage != null) {
-            messages = chatMessageRepository.findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(
-                roomId, 
-                lastMessage.getCreatedAt(), 
-                pageable
-            );
-        } else {
-            Page<Chat> messagesPage = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
-            messages = messagesPage.getContent();
+        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
+        
+        // 캐시 우선 조회
+        List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
+        if (cachedMessages != null) {
+            return new PageImpl<>(cachedMessages, pageable, cachedMessages.size());
         }
 
-        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+        // DB 조회
+        Page<Chat> messages;
+        if (lastMessageId != null) {
+            Chat lastMessage = chatMessageRepository.findById(lastMessageId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.MESSAGE_NOT_FOUND));
+            messages = chatMessageRepository
+                .findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(roomId, lastMessage.getCreatedAt(), pageable);
+        } else {
+            messages = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        }
+
+        List<ChatMessageResponseDTO> messageDTOs = messages.getContent().stream()
             .map(ChatMessageResponseDTO::from)
             .collect(Collectors.toList());
 
-        // 첫 페이지인 경우 캐시 저장
-        if (lastMessageId == null) {
-            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
-        }
-
-        return messageDTOs;
+        return new PageImpl<>(messageDTOs, pageable, messages.getTotalElements());
     }
 
     // 초기 로딩시 캐시 저장
@@ -273,5 +276,15 @@ public class ChatService {
         }
     
         return messageDTOs;
+    }
+
+    // 채팅방 접근 검증
+    private void validateChatRoomAccess(ChatRoom chatRoom, Long userId) {
+        if (!chatRoom.getMemberId().equals(userId) && !chatRoom.getFriendId().equals(userId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_ACCESS_DENIED);
+        }
+        if (chatRoom.isDeleted()) {
+            throw new ChatException(ChatErrorCode.CHATROOM_DELETED);
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.prgrms.ijuju.domain.chat.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -87,12 +88,13 @@ public class ChatController {
     }
 
     @GetMapping("/messages/{roomId}")
-    public ResponseEntity<List<ChatMessageResponseDTO>> getMessages(
+    public ResponseEntity<Page<ChatMessageResponseDTO>> getMessages(
             @PathVariable String roomId,
             @RequestParam(required = false) String lastMessageId,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal SecurityUser user) {
             
-        List<ChatMessageResponseDTO> messages = chatService.getMessagesByScroll(roomId, lastMessageId, size);
+        Page<ChatMessageResponseDTO> messages = chatService.getMessagesByScroll(roomId, lastMessageId, size, user.getId());
         return ResponseEntity.ok(messages);
     }
 }
