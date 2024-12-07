@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Comparator;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,23 +88,40 @@ public class ChatService {
     }
 
     // 채팅방 목록 조회
+    @Transactional(readOnly = true)
     public List<ChatRoomListResponseDTO> getChatRooms(Long userId) {
+        log.info("사용자 {}의 채팅방 목록 조회 시작", userId);
+        
         List<ChatRoom> rooms = chatRoomRepository.findByMemberIdOrFriendId(userId, userId);
         
-        return rooms.stream()
-            .filter(room -> !room.isDeleted())
-            .map(room -> {
-                Member friend = memberRepository.findById(
-                    room.getMemberId().equals(userId) ? room.getFriendId() : room.getMemberId()
-                    ).orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-                
-                room.getChat();
-                
-                return ChatRoomListResponseDTO.from(room, friend, userId);
-            })
-            .sorted(Comparator.comparing(ChatRoomListResponseDTO::getLastMessageTime, 
-                Comparator.nullsLast(Comparator.reverseOrder())))
-            .collect(Collectors.toList());
+        if (rooms.isEmpty()) {
+            log.info("사용자 {}의 채팅방이 없습니다.", userId);
+            return Collections.emptyList();
+        }
+
+        // 친구 ID 목록 추출
+        List<Long> friendIds = rooms.stream()
+                .map(room -> room.getMemberId().equals(userId) ? 
+                     room.getFriendId() : room.getMemberId())
+                .collect(Collectors.toList());
+
+        // 친구 정보 한 번에 조회
+        List<Member> friends = memberRepository.findByIdIn(friendIds);
+        Map<Long, Member> friendMap = friends.stream()
+                .collect(Collectors.toMap(Member::getId, f -> f));
+
+        // DTO 변환
+        List<ChatRoomListResponseDTO> result = rooms.stream()
+                .map(room -> {
+                    Long friendId = room.getMemberId().equals(userId) ? 
+                                  room.getFriendId() : room.getMemberId();
+                    Member friend = friendMap.get(friendId);
+                    return ChatRoomListResponseDTO.from(room, friend, userId);
+                })
+                .collect(Collectors.toList());
+
+        log.info("사용자 {}의 채팅방 {}개 조회 완료", userId, result.size());
+        return result;
     }
 
     // 채팅 메시지 조회
