@@ -2,6 +2,7 @@ package com.prgrms.ijuju.domain.friend.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.friend.exception.FriendException;
+import com.prgrms.ijuju.domain.friend.exception.FriendErrorCode;
 import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
@@ -77,7 +78,7 @@ public class FriendRequest extends BaseTimeEntity {
 
     private void validatePendingStatus() {
         if (this.requestStatus != RequestStatus.PENDING) {
-            throw FriendException.REQUEST_ALREADY_PROCESSED.toException();
+            throw new FriendException(FriendErrorCode.REQUEST_ALREADY_PROCESSED);
         }
     }
 }

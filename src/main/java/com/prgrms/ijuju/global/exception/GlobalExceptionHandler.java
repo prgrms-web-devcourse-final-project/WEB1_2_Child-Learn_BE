@@ -1,16 +1,15 @@
 package com.prgrms.ijuju.global.exception;
 
-import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.ErrorFlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardErrorCode;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardException;
 import com.prgrms.ijuju.domain.stock.mid.dto.response.ErrorMidResponse;
 import com.prgrms.ijuju.domain.stock.mid.exception.MidStockErrorCode;
 import com.prgrms.ijuju.domain.stock.mid.exception.MidStockException;
-import com.prgrms.ijuju.global.common.dto.CommonErrorResponse;
 import com.prgrms.ijuju.global.common.dto.ErrorResponse;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,20 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("Unexpected error: {}", e.getMessage());
-
-        ErrorResponse response = ErrorResponse.builder()
-                .code("SERVER_ERROR")
-                .message("서버 오류가 발생했습니다.")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+    
     @ExceptionHandler(MidStockException.class)
     protected ResponseEntity<ErrorMidResponse> handleMidStockException(final MidStockException e) {
         log.error("MidStockException: {}", e.getMessage());
@@ -49,11 +35,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<CommonErrorResponse> handleBusinessException(final BusinessException e) {
+    protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e) {
         log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
         final ErrorCode errorCode = e.getErrorCode();
-        final CommonErrorResponse response = CommonErrorResponse.of(errorCode);
+        final ErrorResponse response = ErrorResponse.of(errorCode);
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }
 
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ErrorResponse> handleException(final Exception e) {
+        log.error("서버 에러: {}", e.getMessage(), e);
+        final ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
+        final ErrorResponse response = ErrorResponse.of(errorCode);
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
+    }
 }

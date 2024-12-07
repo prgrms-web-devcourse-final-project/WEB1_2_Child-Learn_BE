@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.prgrms.ijuju.domain.wallet.dto.request.PointRequestDTO;
 import com.prgrms.ijuju.domain.wallet.dto.request.StockPointRequestDTO;
 import com.prgrms.ijuju.domain.wallet.entity.PointType;
 import com.prgrms.ijuju.domain.wallet.entity.StockType;
@@ -24,6 +23,7 @@ import com.prgrms.ijuju.domain.wallet.service.WalletService;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
 import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.wallet.exception.WalletErrorCode;
 
 import java.util.List;
 import java.util.Optional;
@@ -149,7 +149,7 @@ public class MidStockTradeService {
     // 거래 가능 여부 확인
     private boolean isTradeAvailable(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
         return wallet.getCurrentPoints() >= tradePoint;
     }
 
@@ -163,7 +163,7 @@ public class MidStockTradeService {
     // 올인하였을때 경고 판단 - 남은돈을 다 투자했을때 경고로
     private boolean isAllInWarning(Member member, long tradePoint) {
         Wallet wallet = walletRepository.findByMemberId(member.getId())
-                .orElseThrow(() -> WalletException.WALLET_NOT_FOUND.toException());
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
         return wallet.getCurrentPoints() == tradePoint;
     }
 }

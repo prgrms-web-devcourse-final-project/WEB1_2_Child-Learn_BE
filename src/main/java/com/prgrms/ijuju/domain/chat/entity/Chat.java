@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.validation.ValidImage;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -90,7 +91,7 @@ public class Chat {
     // 메시지 삭제
     public void delete() {
         if (!canDelete(this.senderId)) {
-            throw ChatException.MESSAGE_DELETION_TIMEOUT.toException();
+            throw new ChatException(ChatErrorCode.MESSAGE_DELETION_TIMEOUT);
         }
         this.isDeleted = true;
         this.content = "삭제된 메시지입니다";
