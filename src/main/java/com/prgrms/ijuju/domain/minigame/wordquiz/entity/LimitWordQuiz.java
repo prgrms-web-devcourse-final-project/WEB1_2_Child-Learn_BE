@@ -38,8 +38,8 @@ public class LimitWordQuiz {
         this.lastPlayedDate = lastPlayedDate != null ? lastPlayedDate : LocalDate.now().minusDays(1);
     }
 
-    public boolean isPlayedToday() {
-        return this.lastPlayedDate.equals(LocalDate.now());
+    public boolean isPlayedToday(LocalDate today) {
+        return this.lastPlayedDate.equals(today);
     }
 
     public void changeLastPlayedDate(LocalDate newLastPlayedDate) {
