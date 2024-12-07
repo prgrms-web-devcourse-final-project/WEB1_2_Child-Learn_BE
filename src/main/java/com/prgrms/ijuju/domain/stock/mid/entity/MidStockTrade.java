@@ -15,9 +15,9 @@ public class MidStockTrade extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private long tradePoint;
+    private Long tradePoint;
 
-    private long pricePerStock;
+    private Long pricePerStock;
 
     @Enumerated(EnumType.STRING)
     private TradeType tradeType;
@@ -32,7 +32,7 @@ public class MidStockTrade extends BaseTimeEntity {
     private Member member;
 
     @Builder
-    public MidStockTrade(Long id, long tradePoint, long pricePerStock, TradeType tradeType,
+    public MidStockTrade(Long id, Long tradePoint, Long pricePerStock, TradeType tradeType,
                          MidStock midStock, Member member) {
         this.id = id;
         this.tradePoint = tradePoint;

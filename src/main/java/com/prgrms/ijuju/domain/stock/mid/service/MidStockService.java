@@ -9,6 +9,7 @@ import com.prgrms.ijuju.domain.stock.mid.dto.response.MidStockWithTradesResponse
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStock;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockPrice;
 import com.prgrms.ijuju.domain.stock.mid.entity.MidStockTrade;
+import com.prgrms.ijuju.domain.stock.mid.exception.MidStockNotFoundException;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockPriceRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import com.prgrms.ijuju.domain.stock.mid.repository.MidStockTradeRepository;
@@ -42,6 +43,8 @@ public class MidStockService {
     @Transactional(readOnly = true)
     public List<MidStockTradeInfo> findStockTrades(Long memberId, Long midStockId) {
         log.info("중급 특정 종목 보유 주식 조회");
+        midStockRepository.findById(midStockId)
+                .orElseThrow(MidStockNotFoundException::new);
         List<MidStockTrade> trades = midStockTradeRepository.findBuyMidStock(memberId, midStockId);
         return trades.stream()
                 .map(MidStockTradeInfo::of)
@@ -71,11 +74,11 @@ public class MidStockService {
     @Transactional(readOnly = true)
     public List<MidStockPriceResponse> findStockChartInfo(Long midStockId) {
         log.info("중급 종목 차트 정보 2주치");
+        midStockRepository.findById(midStockId)
+                .orElseThrow(MidStockNotFoundException::new);
         List<MidStockPrice> priceResponses = midStockPriceRepository.find2WeeksPriceInfo(midStockId);
         return priceResponses.stream()
                 .map(MidStockPriceResponse::of)
                 .collect(Collectors.toList());
     }
-
-
 }

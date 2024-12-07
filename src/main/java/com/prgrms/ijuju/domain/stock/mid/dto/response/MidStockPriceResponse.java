@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 
 @Builder
 public record MidStockPriceResponse(
-        long highPrice,
-        long lowPrice,
-        long avgPrice,
+        Long highPrice,
+        Long lowPrice,
+        Long avgPrice,
         LocalDateTime priceDate
 ) {
     public static MidStockPriceResponse of(MidStockPrice midStockPrice) {

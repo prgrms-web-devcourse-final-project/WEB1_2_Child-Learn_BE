@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 
 @Builder
 public record MidStockTradeInfo(
-        long tradePoint,
-        long pricePerStock,
+        Long tradePoint,
+        Long pricePerStock,
         LocalDateTime tradeDate,
         TradeType tradeType
 ) {

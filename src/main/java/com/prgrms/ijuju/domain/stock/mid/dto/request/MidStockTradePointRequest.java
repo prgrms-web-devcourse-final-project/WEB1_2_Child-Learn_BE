@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 public class MidStockTradePointRequest {
     @Positive
-    private long tradePoint;
+    private Long tradePoint;
 }
