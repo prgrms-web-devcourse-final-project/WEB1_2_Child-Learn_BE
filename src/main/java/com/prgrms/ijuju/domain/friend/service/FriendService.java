@@ -113,7 +113,7 @@ public class FriendService {
     public String acceptFriendRequest(Long requestId, Long receiverId) {
         try {
             FriendRequest request = friendRequestRepository.findById(requestId)
-                    .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
+                .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
             
             // 수신자 검증
             if (!request.getReceiver().getId().equals(receiverId)) {
