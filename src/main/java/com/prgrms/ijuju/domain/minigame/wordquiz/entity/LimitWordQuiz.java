@@ -5,16 +5,18 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "limit_word_quiz",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        columnNames = {"member_id", "difficulty"})})
+@Table(
+        name = "limit_word_quiz",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"member_id", "difficulty"})}
+)
 public class LimitWordQuiz {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +28,7 @@ public class LimitWordQuiz {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @Column(nullable = false)
