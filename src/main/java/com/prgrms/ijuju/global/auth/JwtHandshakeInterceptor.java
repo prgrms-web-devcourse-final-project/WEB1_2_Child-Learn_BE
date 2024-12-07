@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,9 +31,10 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 // 모든 쿼리 파라미터를 Map으로 변환
                 query = query.replace("+", " ");
 
+                query = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
                 Map<String, String> queryParams = Arrays.stream(query.split("&"))
-                        .map(param -> param.split("=", 2)) // '='로 나누되, 최대 2개만 분리
-                        .filter(pair -> pair.length == 2) // 유효한 key-value 쌍만 유지
+                        .map(param -> param.split("=", 2))
+                        .filter(pair -> pair.length == 2)
                         .collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
 
                 jwtToken = queryParams.get("authorization");
