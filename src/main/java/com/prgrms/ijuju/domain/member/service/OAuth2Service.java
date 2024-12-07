@@ -50,7 +50,7 @@ public class OAuth2Service extends DefaultOAuth2UserService {
         if (opMember.isEmpty()) {
             Member member = Member.builder()
                     .email(oAuth2Response.getEmail())
-                    .username(oAuth2Response.getNickName() + new Random().nextInt(1000))
+                    .username(oAuth2Response.getUserName() + new Random().nextInt(1000))
                     .role(Role.USER)
                     .pw(oAuth2Response.getProviderId() + " " + oAuth2Response.getProvider())
                     .build();
