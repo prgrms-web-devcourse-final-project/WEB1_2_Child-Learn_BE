@@ -8,6 +8,7 @@ import com.prgrms.ijuju.domain.avatar.exception.ItemErrorCode;
 import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
+import com.prgrms.ijuju.domain.member.dto.request.MemberRequestDTO;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
 import com.prgrms.ijuju.domain.member.exception.MemberException;
@@ -15,13 +16,13 @@ import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,21 +65,11 @@ public class ItemService {
 
         purchaseRepository.save(newPurchase);
 
-//        // 구매한 아이템 이벤토리에 추가
-//        Inventory newInventory = Inventory.builder()
-//                .member(member)
-//                .item(item)
-//                .isEquipped(false)
-//                .purchasedAt(LocalDateTime.now())
-//                .build();
-//
-//        inventoryRepository.save(newInventory);
-
         return new ItemResponseDTO.ItemPurchaseResponseDTO("아이템을 구매했습니다");
 
     }
 
-    // 아바타 이미지 조회
+    // 아이템 이미지 조회
     public ItemResponseDTO.ItemReadResponseDTO readItem(Long id, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -87,4 +78,16 @@ public class ItemService {
 
         return new ItemResponseDTO.ItemReadResponseDTO(items);
     }
+
+    // 아이템 목록 조희
+    public Page<ItemResponseDTO.ItemReadResponseDTO> readItemAll(
+            MemberRequestDTO.PageRequestDTO dto,
+            Long memberId) {
+        Pageable pageable = dto.getPageable();
+
+        Page<Item> itemPage = itemRepository.findAll(pageable);
+
+        return itemPage.map(ItemResponseDTO.ItemReadResponseDTO::new);
+    }
+
 }
