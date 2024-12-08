@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -78,18 +79,24 @@ public class MemberRequestDTO {
         private String refreshToken;
     }
 
-    // 회원 정보 업데이트
+    // 유저네임 업데이트
     @Data
     @AllArgsConstructor
-    public static class UpdateMyInfoRequestDTO {
-        private Long id;
+    @NoArgsConstructor
+    public static class UpdateUsernameRequestDTO {
+        private String username;
+    }
 
+    // 비밀번호 업데이트
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdatePwRequestDTO {
         @Pattern(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,30}$",
                 message = "비밀번호는 최소 8자 이상 30자 이하여야 하고, 적어도 하나의 영문자, 숫자, 특수문자를 포함해야 합니다."
         )
         private String pw;
-        private String username;
     }
 
     // 아이디 찾기
