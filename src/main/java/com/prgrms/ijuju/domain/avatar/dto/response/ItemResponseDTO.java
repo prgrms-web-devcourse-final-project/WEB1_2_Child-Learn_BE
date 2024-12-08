@@ -58,7 +58,7 @@ public class ItemResponseDTO {
         }
     }
 
-    // 아이템 목록 조회
+    // 아이템 조회
     @Data
     @AllArgsConstructor
     public static class ItemReadResponseDTO {
@@ -76,6 +76,34 @@ public class ItemResponseDTO {
             this.imageUrl = item.getImageUrl();
             this.description = item.getDescription();
             this.category = item.getCategory().toString();
+        }
+
+
+    }
+
+    // 아이템 목록 조회
+    @Data
+    @AllArgsConstructor
+    public static class ItemReadAllResponseDTO {
+        private Long id;
+        private String name;
+        private Long price;
+        private String imageUrl;
+        private String description;
+        private String category;
+        private boolean isEquipped; // 착용 여부
+        private boolean isPurchased;
+
+
+        public ItemReadAllResponseDTO(Item item, boolean isEquipped, boolean isPurchased) {
+            this.id = item.getId();
+            this.name = item.getName();
+            this.price = item.getPrice();
+            this.imageUrl = item.getImageUrl();
+            this.description = item.getDescription();
+            this.category = item.getCategory().toString();
+            this.isEquipped = isEquipped;
+            this.isPurchased = isPurchased;
         }
 
 

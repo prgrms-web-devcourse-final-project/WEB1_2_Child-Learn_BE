@@ -80,14 +80,14 @@ public class ItemService {
     }
 
     // 아이템 목록 조희
-    public Page<ItemResponseDTO.ItemReadResponseDTO> readItemAll(
+    public Page<ItemResponseDTO.ItemReadAllResponseDTO> readItemAll(
             MemberRequestDTO.PageRequestDTO dto,
             Long memberId) {
         Pageable pageable = dto.getPageable();
 
         Page<Item> itemPage = itemRepository.findAll(pageable);
 
-        return itemPage.map(ItemResponseDTO.ItemReadResponseDTO::new);
+        return itemPage.map(ItemResponseDTO.ItemReadAllResponseDTO::new);
     }
 
 }
