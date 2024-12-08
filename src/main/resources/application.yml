@@ -16,9 +16,6 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
-  main:
-    allow-bean-definition-overriding: true
-
   
 logging:
   level:
