@@ -47,27 +47,13 @@ public class SseNotificationController {
         return ResponseEntity.ok("친구 수락 알림 생성 완료");
     }
 
-    // 메시지 알림 생성
-//    @PostMapping("/message")
-//    public ResponseEntity<Void> createMessageNotification(
-//            @AuthenticationPrincipal SecurityUser securityUser,
-//            @RequestBody MessageNotificationRequest request
-//    ) {
-//        notificationService.createMessageNotification(
-//                securityUser.getUsername(),
-//                request.getReceiverLoginId(),
-//                request.getMessageContent()
-//        );
-//        return ResponseEntity.ok().build();
-//    }
-
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal SecurityUser securityUser,
+    public SseEmitter subscribe(@AuthenticationPrincipal SecurityUser securityUser,
                                                 @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
         String loginId = securityUser.getUsername();
         SseEmitter ssemitter = sseNotificationService.subscribe(loginId, lastEventId);
 
-        return ResponseEntity.ok(ssemitter);
+        return ssemitter;
     }
 
     @DeleteMapping("/disconnect")

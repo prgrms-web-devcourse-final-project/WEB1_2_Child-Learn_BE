@@ -273,35 +273,38 @@ public class MemberService {
         return opMember.get();
     }
 
-    // username으로 회원 검색
-    public Page<MemberResponseDTO.ReadAllResponseDTO> searchByUsername(String username, MemberRequestDTO.PageRequestDTO dto, Long memberId) {
-        // 검색어 유효성 검사
-        if (username == null || username.trim().isEmpty()) {
-            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_EMPTY);
+    // 회원 검색
+    @Transactional(readOnly = true)
+    public Page<MemberResponseDTO.ReadAllResponseDTO> searchMembers(Long memberId, String username, MemberRequestDTO.PageRequestDTO dto) {
+        // 검색어가 있는 경우 유효성 검사
+        if (username != null && !username.trim().isEmpty()) {
+            String trimmedUsername = username.trim();
+            if (trimmedUsername.length() < 2) {
+                throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_TOO_SHORT);
+            }
+            // 검색 시 본인 제외하고 username으로 검색
+            Page<Member> memberPage = memberRepository.findByUsernameContainingIgnoreCaseAndIdNot(trimmedUsername, memberId, dto.getPageable());
+            if (memberPage.isEmpty()) {
+                throw new MemberException(MemberErrorCode.SEARCH_RESULT_NOT_FOUND);
+            }
+            return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
+                    member,
+                    friendService.getFriendshipStatus(memberId, member.getId())
+            ));
         }
-
-        // 검색어 공백 제거 및 정리
-        String trimmedUsername = username.trim();
-
-        // 최소 검색어 길이 체크
-        if (trimmedUsername.length() < 2) {
-            throw new MemberException(MemberErrorCode.SEARCH_KEYWORD_TOO_SHORT);
-        }
-
-        Pageable pageable = dto.getPageable();
-        Page<Member> memberPage = memberRepository.findByUsernameContainingIgnoreCase(trimmedUsername, pageable);
-
+        
+        // 검색어가 없는 경우 전체 회원 목록 조회 (본인 제외)
+        Page<Member> memberPage = memberRepository.findAllByIdNot(memberId, dto.getPageable());
         if (memberPage.isEmpty()) {
-            log.info("검색 결과가 없습니다. 검색어: {}", trimmedUsername);
             throw new MemberException(MemberErrorCode.SEARCH_RESULT_NOT_FOUND);
         }
-
+        
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
                 member,
                 friendService.getFriendshipStatus(memberId, member.getId())
         ));
     }
-
+    
     // 회원 탈퇴
     @Transactional
     public void delete(Long id, String pw) {
@@ -438,6 +441,7 @@ public class MemberService {
         log.info("회원 ID: {}가 로그아웃 되었습니다.", id);
     }
 
+    // 리프레시 토큰 쿠키 제거
     public void removeRefreshTokenToCookie(String refreshToken, HttpServletResponse response) {
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
@@ -474,6 +478,4 @@ public class MemberService {
 
         return profileImageUrl;
     }
-
-
 }

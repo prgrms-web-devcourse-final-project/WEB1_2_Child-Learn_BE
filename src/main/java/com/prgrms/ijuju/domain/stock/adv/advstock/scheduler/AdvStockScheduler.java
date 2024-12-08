@@ -30,7 +30,7 @@ public class AdvStockScheduler {
     private final AdvStockService advStockService;
     private final AdvStockRepository advStockRepository;
 
-    @Scheduled(cron = "0 30 16 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 20 * * ?", zone = "Asia/Seoul")
     public void fetchAndUpdateStockDataDaily() {
 
         //괴거 데이터 삭제용. 7시 리셋시 모든 데이터를 날린다

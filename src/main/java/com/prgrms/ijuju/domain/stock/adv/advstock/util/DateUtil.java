@@ -1,33 +1,39 @@
 package com.prgrms.ijuju.domain.stock.adv.advstock.util;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DateUtil {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // Reference 데이터의 시작일 (4주 전 수요일)
     public static String getReferenceStartDate() {
-        return LocalDate.now().minusWeeks(4).format(FORMATTER); // 4주 전 수요일
+        return adjustToWeekday(LocalDate.now().minusWeeks(4)).format(FORMATTER);
     }
 
-    // Reference 데이터의 종료일 (3주 전 화요일)
     public static String getReferenceEndDate() {
-        return LocalDate.now().minusWeeks(3).minusDays(1).format(FORMATTER); // 3주 전 화요일
+        return adjustToWeekday(LocalDate.now().minusWeeks(3).minusDays(1)).format(FORMATTER);
     }
 
-    // Live 데이터의 하루 (3주 전 수요일)
     public static String getLiveDate() {
-        return LocalDate.now().minusWeeks(3).format(FORMATTER); // 3주 전 수요일
+        return adjustToWeekday(LocalDate.now().minusWeeks(3)).format(FORMATTER);
     }
 
-    // Forecast 데이터 시작일 (3주 전 목요일)
     public static String getForecastStartDate() {
-        return LocalDate.now().minusWeeks(3).plusDays(1).format(FORMATTER); // 3주 전 목요일
+        return adjustToWeekday(LocalDate.now().minusWeeks(3).plusDays(1)).format(FORMATTER);
     }
 
-    // Forecast 데이터 종료일 (하루 전 화요일)
     public static String getForecastEndDate() {
-        return LocalDate.now().minusDays(1).format(FORMATTER); // 하루 전 화요일
+        return adjustToWeekday(LocalDate.now().minusDays(1)).format(FORMATTER);
+    }
+
+    private static LocalDate adjustToWeekday(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY) {
+            return date.minusDays(1); // 금요일로 이동
+        } else if (dayOfWeek == DayOfWeek.SUNDAY) {
+            return date.minusDays(2); // 금요일로 이동
+        }
+        return date; // 평일이면 그대로 반환
     }
 }

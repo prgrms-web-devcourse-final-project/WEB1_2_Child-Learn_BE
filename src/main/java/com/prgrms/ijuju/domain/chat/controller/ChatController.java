@@ -3,17 +3,17 @@ package com.prgrms.ijuju.domain.chat.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.prgrms.ijuju.domain.chat.dto.request.ChatRoomRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
-import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
-import com.prgrms.ijuju.domain.chat.dto.response.UnreadCountResponseDTO;
 import com.prgrms.ijuju.domain.chat.service.ChatService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
+
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +26,7 @@ import java.util.HashMap;
 public class ChatController {
 
     private final ChatService chatService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 채팅방 생성
     @PostMapping("/rooms")
@@ -65,5 +66,21 @@ public class ChatController {
         response.put("message", "채팅방이 성공적으로 삭제되었습니다.");
         
         return ResponseEntity.ok(response);
+    }
+
+    // Redis 연결 테스트
+    @GetMapping("/redis-test")
+    public ResponseEntity<String> testRedisConnection() {
+        try {
+            String testKey = "test:connection";
+            redisTemplate.opsForValue().set(testKey, "테스트 성공");
+            String result = (String) redisTemplate.opsForValue().get(testKey);
+            redisTemplate.delete(testKey);
+            
+            return ResponseEntity.ok("Redis 연결 성공: " + result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Redis 연결 실패: " + e.getMessage());
+        }
     }
 }

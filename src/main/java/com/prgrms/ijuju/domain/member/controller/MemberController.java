@@ -125,7 +125,7 @@ public class MemberController {
             MemberRequestDTO.PageRequestDTO dto,
             @AuthenticationPrincipal SecurityUser user) {
         Page<MemberResponseDTO.ReadAllResponseDTO> searchResults = 
-            memberService.searchByUsername(username, dto, user.getId());
+            memberService.searchMembers(user.getId(), username, dto);
         return ResponseEntity.ok(searchResults);
     }
 
