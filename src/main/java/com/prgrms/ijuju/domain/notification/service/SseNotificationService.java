@@ -1,6 +1,8 @@
 package com.prgrms.ijuju.domain.notification.service;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.notification.repository.EmitterRepository;
 import com.prgrms.ijuju.domain.notification.repository.NotificationRepository;
@@ -27,13 +29,13 @@ public class SseNotificationService {
 
     public SseEmitter subscribe(String memberId, String lastEventId) {
         Member member = memberRepository.findByLoginId(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         String username = member.getUsername();
         String emitterId = username + "_" + System.currentTimeMillis(); //고유 아이디 생성
         SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT); // 현재 클라이언트를 위한 SSeEmitter 객체 생성
 
         emitterRepository.save(emitterId, sseEmitter);
-        log.info("new emitter added : {}", sseEmitter);
+        log.info(" 멤버아이디{} - 새로운 SSE emitter added :  {}", memberId, sseEmitter);
         log.info("lastEventId : {}", lastEventId);
 
         // 시간 초과나 비동기 요청이 안되면 자동으로 삭제
@@ -68,8 +70,9 @@ public class SseNotificationService {
     }
 
     public void disconnect(String memberId) {
+        log.info("멤버아이디{} - SSE 연결 종료", memberId);
         Member member = memberRepository.findByLoginId(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         String username = member.getUsername();
         // 해당 회원의 모든 emitter 제거
         emitterRepository.deleteAllEmitterStartWithId(username);
@@ -80,7 +83,7 @@ public class SseNotificationService {
     // 회원 탈퇴시
     public void deleteMemberNotifications(String memberId) {
         Member member = memberRepository.findByLoginId(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         String username = member.getUsername();
         // DB에서 알림 삭제
         notificationRepository.deleteAllByReceiverId(username);
@@ -93,7 +96,7 @@ public class SseNotificationService {
     // 알림 설정 변경시
     public void updateNotificationSettings(String memberId) {
         Member member = memberRepository.findByLoginId(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         String username = member.getUsername();
         // 기존 연결 종료 및 캐시 초기화
         emitterRepository.deleteAllEmitterStartWithId(username);

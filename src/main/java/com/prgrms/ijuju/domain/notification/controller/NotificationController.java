@@ -38,7 +38,6 @@ public class NotificationController {
             @PathVariable Long notificationId,
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
-        log.info(("알림 읽음 처리"));
         notificationService.markAsRead(notificationId, securityUser.getId());
         return ResponseEntity.ok("알림 읽음 처리 완료.");
     }
@@ -48,7 +47,6 @@ public class NotificationController {
     public ResponseEntity<String> markAllAsRead(
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
-        log.info("모든 알림 읽음 처리");
         notificationService.markAllAsRead(securityUser.getId());
         return ResponseEntity.ok("모든 알림 읽음 처리 완료.");
     }
@@ -59,7 +57,6 @@ public class NotificationController {
             @PathVariable Long notificationId,
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
-        log.info("알림 삭제 처리");
         notificationService.markAsDeleted(notificationId, securityUser.getId());
         return ResponseEntity.ok("알림 삭제 완료");
     }
