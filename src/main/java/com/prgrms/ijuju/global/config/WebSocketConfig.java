@@ -2,7 +2,9 @@ package com.prgrms.ijuju.global.config;
 
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
 import com.prgrms.ijuju.global.auth.JwtHandshakeInterceptor;
+import com.prgrms.ijuju.global.auth.WebsocketChannelInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
@@ -15,17 +17,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
-    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler, JwtHandshakeInterceptor jwtHandshakeInterceptor) {
+    private final WebsocketChannelInterceptor webSocketChannelInterceptor;
+
+    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler, JwtHandshakeInterceptor jwtHandshakeInterceptor, WebsocketChannelInterceptor webSocketChannelInterceptor) {
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
         this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
+        this.webSocketChannelInterceptor = webSocketChannelInterceptor;
     }
 
     //핸들러 방식
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
-                .setAllowedOrigins("*")
-                .addInterceptors(jwtHandshakeInterceptor); // 핸들러 URL 등록
+                .setAllowedOrigins("*");
+                //.addInterceptors(jwtHandshakeInterceptor); // 핸들러 URL 등록
     }
   
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
@@ -38,5 +43,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         registry.addEndpoint("/ws", "/ws-stomp")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(webSocketChannelInterceptor);
     }
 }
