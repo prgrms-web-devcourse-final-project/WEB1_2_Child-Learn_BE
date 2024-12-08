@@ -46,7 +46,6 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
     private final FileStorageService fileStorageService;
@@ -87,8 +86,18 @@ public class ChatService {
     // 채팅방 삭제 (논리적 삭제)
     @Transactional
     public void deleteChatRoom(String roomId, Long userId) {
+        // 채팅방이 존재하는지 먼저 확인
+        if (!chatRoomRepository.existsById(roomId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND);
+        }
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+
+        // 이미 삭제된 채팅방인지 확인
+        if (chatRoom.isDeleted() && chatRoom.getDeletedByUsers().contains(userId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_DELETED);
+        }
 
         if (!chatRoom.getMemberId().equals(userId) && !chatRoom.getFriendId().equals(userId)) {
             throw new ChatException(ChatErrorCode.CHATROOM_ACCESS_DENIED);
@@ -118,7 +127,7 @@ public class ChatService {
         return rooms.stream()
             .filter(room -> {
                 return !room.isDeleted() || 
-                       (room.isDeleted() && !userId.equals(room.getDeletedByUserId()));
+                       (room.isDeleted() && !room.getDeletedByUsers().contains(userId));
             })
             .map(room -> {
                 Member friend = memberRepository.findById(

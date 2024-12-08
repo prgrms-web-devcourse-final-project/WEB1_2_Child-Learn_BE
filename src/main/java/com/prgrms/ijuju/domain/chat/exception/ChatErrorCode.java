@@ -15,7 +15,8 @@ public enum ChatErrorCode implements ErrorCode {
     CHATROOM_DELETED("CHAT_104", "삭제된 채팅방입니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_MEMBER_LIMIT("CHAT_105", "채팅방 인원 제한을 초과했습니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_CREATION_FAILED("CHAT_106", "채팅방 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    
+    CHATROOM_ALREADY_DELETED("CHAT_107", "이미 삭제된 채팅방입니다.", HttpStatus.BAD_REQUEST),
+
     // 메시지 관련 예외
     MESSAGE_NOT_FOUND("CHAT_201", "존재하지 않는 메시지입니다.", HttpStatus.NOT_FOUND),
     MESSAGE_DELETION_TIMEOUT("CHAT_202", "메시지 삭제는 작성 후 5분 이내에만 가능합니다.", HttpStatus.BAD_REQUEST),
