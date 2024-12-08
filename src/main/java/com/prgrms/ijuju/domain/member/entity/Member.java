@@ -76,7 +76,7 @@ public class Member extends BaseTimeEntity {
     }
 
     // 회원의 아바타(착용한 아이템들을 포함)
-    @OneToOne(mappedBy = "member", orphanRemoval = true)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
