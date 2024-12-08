@@ -18,6 +18,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -26,63 +29,85 @@ import java.util.Map;
 public class SseNotificationService {
     private static final Long DEFAULT_TIMEOUT = 5L * 1000 * 60; // 지속 시간 5분
     private static final Long RECONNECTION_TIMEOUT = 3L * 1000; // 재연결 타임아웃 3초
+    private static final Long HEARTBEAT_INTERVAL = 30L * 1000; // 30초마다 하트비트
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final EmitterRepository emitterRepository;
 
     public SseEmitter subscribe(String memberId, String lastEventId) {
-        Member member = memberRepository.findByLoginId(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-        String username = member.getUsername();
-        String emitterId = username + "_" + System.currentTimeMillis(); //고유 아이디 생성
+        try {
+            Member member = memberRepository.findByLoginId(memberId)
+                    .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+            String username = member.getUsername();
+            String emitterId = username + "_" + System.currentTimeMillis(); //고유 아이디 생성
 
-        // 이전 연결이 있다면 제거
-        emitterRepository.deleteAllEmitterStartWithId(username);
+            // 이전 연결이 있다면 제거
+            emitterRepository.deleteAllEmitterStartWithId(username);
 
-        SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT); // 현재 클라이언트를 위한 SSeEmitter 객체 생성
+            SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT); // 현재 클라이언트를 위한 SSeEmitter 객체 생성
 
-        // 연결 직후 재연결 타임아웃 설정
-        sseEmitter.onTimeout(() -> {
-            emitterRepository.deleteById(emitterId);
-            // 재연결 요청
-            try {
-                sseEmitter.send(SseEmitter.event()
-                        .name("retry")
-                        .data("reconnected")); // 빈 데이터 대신 의미있는 데이터 전송
-            } catch (IOException e) {
-                log.error("Failed to send retry event", e);
+            // 하트비트 전송을 위한 스케줄러 설정
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.scheduleAtFixedRate(() -> {
+                try {
+                    sseEmitter.send(SseEmitter.event()
+                            .name("heartbeat")
+                            .data("ping")
+                            .reconnectTime(RECONNECTION_TIMEOUT));
+                } catch (IOException ex) {
+                    scheduler.shutdown();
+                    emitterRepository.deleteById(emitterId);
+                    log.error("하트비트 전송 실패: {}", ex.getMessage());
+                }
+            }, 0, HEARTBEAT_INTERVAL, TimeUnit.MILLISECONDS);
+
+            // 연결 종료시 스케줄러 정리
+            sseEmitter.onCompletion(() -> {
+                log.info("SSE 연결종료 emitterId: {}", emitterId);
+                scheduler.shutdown();
+                emitterRepository.deleteById(emitterId);
+            });
+
+            // 연결 직후 재연결 타임아웃 설정
+            sseEmitter.onTimeout(() -> {
+                emitterRepository.deleteById(emitterId);
+                // 재연결 요청
+                try {
+                    sseEmitter.send(SseEmitter.event()
+                            .name("retry")
+                            .data("reconnected")); // 빈 데이터 대신 의미있는 데이터 전송
+                } catch (IOException e) {
+                    log.error("Failed to send retry event", e);
+                }
+            });
+
+            // 에러 발생시 즉시 제거
+            sseEmitter.onError((e) -> {
+                log.error("SSE Error!", e);
+                emitterRepository.deleteById(emitterId);
+            });
+
+
+            emitterRepository.save(emitterId, sseEmitter);
+
+            // 503 에러 방지용 더미 이벤트
+            sendNotification(sseEmitter, emitterId, "connected");
+
+            // 미수신한 이벤트 재전송 (최근 10개만)
+            if (!lastEventId.isEmpty()) {
+                Map<String, Object> events = emitterRepository.findAllEventCacheStartWithByMemberId(username);
+                events.entrySet().stream()
+                        .filter(entry -> entry.getKey().compareTo(lastEventId) > 0)
+                        .sorted(Map.Entry.comparingByKey())
+                        .limit(10)
+                        .forEach(entry -> sendNotification(sseEmitter, entry.getKey(), entry.getValue()));
             }
-        });
 
-        // 에러 발생시 즉시 제거
-        sseEmitter.onError((e) -> {
-            log.error("SSE Error!", e);
-            emitterRepository.deleteById(emitterId);
-        });
-
-        // 연결 완료시 제거
-        sseEmitter.onCompletion(() -> {
-            log.info("SSE completed for emitterId: {}", emitterId);
-            emitterRepository.deleteById(emitterId);
-        });
-
-        emitterRepository.save(emitterId, sseEmitter);
-
-        // 503 에러 방지용 더미 이벤트
-        sendNotification(sseEmitter, emitterId, "connected");
-
-        // 미수신한 이벤트 재전송 (최근 10개만)
-        if (!lastEventId.isEmpty()) {
-            Map<String, Object> events = emitterRepository.findAllEventCacheStartWithByMemberId(username);
-            events.entrySet().stream()
-                    .filter(entry -> entry.getKey().compareTo(lastEventId) > 0)
-                    .sorted(Map.Entry.comparingByKey())
-                    .limit(10)
-                    .forEach(entry -> sendNotification(sseEmitter, entry.getKey(), entry.getValue()));
+            return sseEmitter;
+        } catch (EntityNotFoundException e) {
+            throw new NotificationException(NotificationErrorCode.SSE_SEND_ERROR);
         }
-
-        return sseEmitter;
     }
 
     public void sendNotification(SseEmitter emitter, String emitterId, Object data) {
