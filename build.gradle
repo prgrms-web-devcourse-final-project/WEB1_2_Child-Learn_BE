@@ -86,3 +86,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.withType(JavaExec) {
+    jvmArgs += ['--add-opens', 'java.base/java.io=ALL-UNNAMED']
+}
+
+test {
+    jvmArgs += ['--add-opens', 'java.base/java.io=ALL-UNNAMED']
+}

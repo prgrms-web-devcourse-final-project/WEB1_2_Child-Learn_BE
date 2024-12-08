@@ -123,6 +123,16 @@ public class MemberService {
 
     // 로그인
     public MemberResponseDTO.LoginResponseDTO loginIdAndPw(String loginId, String pw, HttpServletResponse response) {
+        // 아이디 입력 검증
+        if (loginId == null || loginId.trim().isEmpty()) {
+            throw new MemberException(MemberErrorCode.LOGIN_ID_REQUIRED);
+        }
+
+        // 비밀번호 입력 검증
+        if (pw == null || pw.trim().isEmpty()) {
+            throw new MemberException(MemberErrorCode.PASSWORD_REQUIRED);
+        }
+
         // 동시 로그인 검증
         validateActiveStatus(loginId);
 
@@ -450,19 +460,19 @@ public class MemberService {
 
     // profileImage 저장
     @Transactional
-    public MemberResponseDTO.updateProfileImageDTO updateProfileImage(Long id, MultipartFile file) throws IOException {
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-
+    public String updateProfileImage(Long id, MultipartFile file) throws IOException {
         // 이미지 파일을 로컬에 저장하고 URl 경로로 반환받음
         String profileImageUrl = fileStorageService.storeFile(file);
 
-        // 파일 경로(URl)
+        // 멤버 프로필 이미지 업데이트
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         member.changeProfileImage(profileImageUrl);
 
+        // member 저장
         memberRepository.save(member);
 
-        return new MemberResponseDTO.updateProfileImageDTO("프로필 이미지가 업데이트되었습니다.");
+        return profileImageUrl;
     }
 
 

@@ -36,21 +36,23 @@ public class BeginStockPriceService {
 
         int lastPrice = latestStock.getPrice();
         long recordCount = beginStockPriceRepository.count();
-        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate today = LocalDate.now();
 
-        if (isGenerationDate(recordCount, latestStock)) {
+        if (isGenerationDate(recordCount, latestStock, today)) {
             log.info("모의 투자 초급 주식 가격 일주일 데이터 생성");
+            LocalDate startDate = today.plusDays(3);
+
             List<BeginStockPrice> newWeeklyStocks = generateWeeklyBeginStockData(startDate, lastPrice);
             beginStockPriceRepository.saveAll(newWeeklyStocks);
+        } else {
+            log.info("모의 투자 초급 데이터가 필요하지 않습니다.");
         }
     }
 
-    private boolean isGenerationDate(long recordCount, BeginStockPrice latestStock) {
+    private boolean isGenerationDate(long recordCount, BeginStockPrice latestStock, LocalDate today) {
         LocalDate lastCreatedDate = latestStock.getStockDate();
-        LocalDate today = LocalDate.now();
 
-        return (recordCount == 7 && today.equals(lastCreatedDate.plusDays(3))) ||
-                (recordCount > 7 && today.equals(lastCreatedDate.plusDays(7)));
+        return recordCount >= 7 && today.equals(lastCreatedDate.minusDays(2));
     }
 
     public List<BeginStockPrice> generateWeeklyBeginStockData(LocalDate startDate, int lastPrice) {

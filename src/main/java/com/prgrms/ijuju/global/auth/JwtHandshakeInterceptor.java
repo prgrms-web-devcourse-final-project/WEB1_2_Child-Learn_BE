@@ -24,23 +24,33 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         try {
-                // Query Parameter에서 토큰 확인
+
             String jwtToken = null;
             String query = request.getURI().getQuery();
             if (query != null) {
-                // 모든 쿼리 파라미터를 Map으로 변환
+
                 query = query.replace("+", " ");
+                log.info("Query after '+' replacement: {}", query);
 
                 query = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
+                log.info("Decoded query: {}", query);
+
                 Map<String, String> queryParams = Arrays.stream(query.split("&"))
                         .map(param -> param.split("=", 2))
                         .filter(pair -> pair.length == 2)
                         .collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
+                log.info("Query parameters map: {}", queryParams);
 
-                jwtToken = queryParams.get("authorization");
+
+                jwtToken = queryParams.getOrDefault("authorization", queryParams.get("Authorization"));
+                if (jwtToken == null) {
+                    jwtToken = queryParams.get("access_token");
+                }
+                log.info("Extracted token (before Bearer check): {}", jwtToken);
             }
-            if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
+            if (jwtToken != null && jwtToken.startsWith("Bearer")) {
                 jwtToken = jwtToken.substring("Bearer ".length());
+                log.info("JWT Token after 'Bearer' prefix removal: {}", jwtToken);
             }
 
             if (jwtToken == null) {

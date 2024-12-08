@@ -7,14 +7,15 @@ import com.prgrms.ijuju.domain.avatar.service.ItemService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,11 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class ItemController {
 
-    @Autowired
-    private ItemService itemService;
-
-    @Autowired
-    private AvatarService avatarService;
+    private final ItemService itemService;
+    private final AvatarService avatarService;
 
     // 아이템 구매
     @PostMapping("/purchase")
@@ -63,5 +61,17 @@ public class ItemController {
 
         return ResponseEntity.ok(responseDTO);
     }
+
+    // 아이템 목록 조회
+    @PostMapping("/read")
+    public ResponseEntity<ItemResponseDTO.ItemReadResponseDTO> readItem(@RequestBody Long id,
+                                                                        @AuthenticationPrincipal SecurityUser user) {
+
+        Long memberId = user.getId();
+        ItemResponseDTO.ItemReadResponseDTO response = itemService.readItem(id, memberId);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }

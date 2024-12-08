@@ -10,7 +10,7 @@ public enum ChatErrorCode implements ErrorCode {
     
     // 채팅방 관련 예외
     CHATROOM_NOT_FOUND("CHAT_101", "존재하지 않는 채팅방입니다.", HttpStatus.NOT_FOUND),
-    CHATROOM_ALREADY_EXISTS("CHAT_102", "이미 존재하는 채팅방입니다.", HttpStatus.BAD_REQUEST),
+    CHATROOM_ALREADY_EXISTS("CHAT_102", "채팅방이 이미 존재합니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_ACCESS_DENIED("CHAT_103", "채팅방 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     CHATROOM_DELETED("CHAT_104", "삭제된 채팅방입니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_MEMBER_LIMIT("CHAT_105", "채팅방 인원 제한을 초과했습니다.", HttpStatus.BAD_REQUEST),
@@ -25,7 +25,8 @@ public enum ChatErrorCode implements ErrorCode {
     MESSAGE_SEND_FAILED("CHAT_206", "메시지 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     MESSAGE_INVALID_FORMAT("CHAT_207", "잘못된 메시지 형식입니다.", HttpStatus.BAD_REQUEST),
     MESSAGE_RATE_LIMIT("CHAT_208", "메시지 전송 횟수가 제한을 초과했습니다.", HttpStatus.TOO_MANY_REQUESTS),
-    
+    MESSAGE_CONTENT_EMPTY("CHAT_209", "메시지 내용이 비어있습니다.", HttpStatus.BAD_REQUEST),
+
     // 사용자 관련 예외
     MEMBER_NOT_FOUND("CHAT_301", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),  
     USER_ACCESS_DENIED("CHAT_302", "접근 권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
