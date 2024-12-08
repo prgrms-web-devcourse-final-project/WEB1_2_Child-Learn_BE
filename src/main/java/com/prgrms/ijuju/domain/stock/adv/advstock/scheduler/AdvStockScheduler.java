@@ -9,6 +9,7 @@ import com.prgrms.ijuju.domain.stock.adv.advstock.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Stock 엔티티의 알파이자 오메가 입니다
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
+
 @RequiredArgsConstructor
 public class AdvStockScheduler {
 
@@ -30,7 +32,8 @@ public class AdvStockScheduler {
     private final AdvStockService advStockService;
     private final AdvStockRepository advStockRepository;
 
-    @Scheduled(cron = "0 0 20 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 40 8 * * ?", zone = "Asia/Seoul")
+    @Transactional
     public void fetchAndUpdateStockDataDaily() {
 
         //괴거 데이터 삭제용. 7시 리셋시 모든 데이터를 날린다

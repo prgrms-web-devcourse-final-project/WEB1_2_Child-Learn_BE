@@ -10,6 +10,7 @@ import com.prgrms.ijuju.domain.stock.mid.repository.MidStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,8 @@ public class ArticleScheduler {
     private final MidStockRepository midStockRepository;
 
 
-    @Scheduled(cron = "0 30 7 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 45 8 * * ?", zone = "Asia/Seoul")
+    @Transactional
     public void manageArticles() {
 
         decrementDurationAndDeleteExpiredArticles();
