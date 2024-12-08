@@ -28,14 +28,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         this.chatWebSocketHandler = chatWebSocketHandler;
     }
 
+
+  
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
-        registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
-                .setAllowedOrigins("*");
-              //.addInterceptors(jwtHandshakeInterceptor);
-
         registry.addHandler(chatWebSocketHandler, "/ws")
                 .setAllowedOrigins("*");
+        registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
+                .setAllowedOrigins("*").addInterceptors(jwtHandshakeInterceptor);
     }
 
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {

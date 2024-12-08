@@ -30,17 +30,27 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             if (query != null) {
 
                 query = query.replace("+", " ");
+                log.info("Query after '+' replacement: {}", query);
+
                 query = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
+                log.info("Decoded query: {}", query);
 
                 Map<String, String> queryParams = Arrays.stream(query.split("&"))
                         .map(param -> param.split("=", 2))
                         .filter(pair -> pair.length == 2)
                         .collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
+                log.info("Query parameters map: {}", queryParams);
+
 
                 jwtToken = queryParams.getOrDefault("authorization", queryParams.get("Authorization"));
+                if (jwtToken == null) {
+                    jwtToken = queryParams.get("access_token");
+                }
+                log.info("Extracted token (before Bearer check): {}", jwtToken);
             }
-            if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
+            if (jwtToken != null && jwtToken.startsWith("Bearer")) {
                 jwtToken = jwtToken.substring("Bearer ".length());
+                log.info("JWT Token after 'Bearer' prefix removal: {}", jwtToken);
             }
 
             if (jwtToken == null) {

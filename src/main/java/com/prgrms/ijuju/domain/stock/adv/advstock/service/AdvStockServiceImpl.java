@@ -4,6 +4,7 @@ import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.domain.stock.adv.advstock.dto.PolygonCandleResult;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
+import com.prgrms.ijuju.domain.stock.adv.advstock.exception.stockexception.*;;
 import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
 import org.springframework.stereotype.Service;
 
@@ -38,10 +39,10 @@ public class AdvStockServiceImpl implements AdvStockService {
     public AdvStock getLiveData(String symbol, int hour) {
 
         if (hour < 14 || hour > 21) {
-            throw new IllegalArgumentException(("유효하지 않은 거래 시간. NYSE 거래 시간을 따라가기에 오후 2시 ~ 오후 9시 기준으로 잡혀야 합니다"));
+            throw new InvalidTradeHourException();
         }
         AdvStock liveData = advStockRepository.findBySymbolAndDataType(symbol, DataType.LIVE)
-                .orElseThrow(() -> new IllegalArgumentException("해당 심볼의 라이브 데이터를 찾을 수 없습니다 : " + symbol));
+                .orElseThrow(LiveDataNotFoundException::new);
 
         int index = hour - 14; // 9시 ~ 15시 기준 >> 해외 기준이라 시간 변동 가능성 있음.
         return AdvStock.builder()
@@ -61,7 +62,7 @@ public class AdvStockServiceImpl implements AdvStockService {
     public AdvStock saveStockData(String symbol, String name, PolygonCandleResponse response, DataType dataType) {
 
         if (response.getResults() == null || response.getResults().isEmpty()) {
-            throw new IllegalArgumentException("해당 주식에 어떠한 값도 없습니다: " + symbol);
+            throw new EmptyStockDataException();
         }
 
         List<Double> openPrices = response.getResults().stream().map(PolygonCandleResult::getO).toList();
@@ -74,7 +75,7 @@ public class AdvStockServiceImpl implements AdvStockService {
         int size = response.getResults().size();
         if (openPrices.size() != size || highPrices.size() != size || lowPrices.size() != size ||
                 closePrices.size() != size || volumes.size() != size || timestamps.size() != size) {
-            throw new IllegalStateException("해당 심볼의 값들이 mismatch 났습니다. > 모든 수치가 전달되지 않았습니다: " + symbol);
+            throw new StockDataMismatchException();
         }
 
         AdvStock advStock = AdvStock.builder()
@@ -92,7 +93,7 @@ public class AdvStockServiceImpl implements AdvStockService {
         try {
             return advStockRepository.save(advStock);
         } catch (Exception e) {
-            throw new RuntimeException("저장 실패: " + symbol, e);
+            throw new StockSaveFailedException();
         }
     }
 
