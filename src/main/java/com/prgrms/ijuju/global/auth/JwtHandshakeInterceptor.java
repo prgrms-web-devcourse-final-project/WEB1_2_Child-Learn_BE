@@ -24,20 +24,20 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         try {
-                // Query Parameter에서 토큰 확인
+
             String jwtToken = null;
             String query = request.getURI().getQuery();
             if (query != null) {
-                // 모든 쿼리 파라미터를 Map으로 변환
-                query = query.replace("+", " ");
 
+                query = query.replace("+", " ");
                 query = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
+
                 Map<String, String> queryParams = Arrays.stream(query.split("&"))
                         .map(param -> param.split("=", 2))
                         .filter(pair -> pair.length == 2)
                         .collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
 
-                jwtToken = queryParams.get("authorization");
+                jwtToken = queryParams.getOrDefault("authorization", queryParams.get("Authorization"));
             }
             if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
                 jwtToken = jwtToken.substring("Bearer ".length());

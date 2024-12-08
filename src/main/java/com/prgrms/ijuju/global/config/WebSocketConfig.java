@@ -3,7 +3,10 @@ package com.prgrms.ijuju.global.config;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.handler.AdvancedInvestWebSocketHandler;
 import com.prgrms.ijuju.domain.chat.handler.ChatWebSocketHandler;
 import com.prgrms.ijuju.global.auth.JwtHandshakeInterceptor;
+import com.prgrms.ijuju.global.auth.WebsocketChannelInterceptor;
+
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.lang.NonNull;
@@ -14,39 +17,41 @@ import org.springframework.lang.NonNull;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSocketConfigurer {
 
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
-    private final ChatWebSocketHandler chatWebSocketHandler;
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    private final WebsocketChannelInterceptor webSocketChannelInterceptor;
+    private final ChatWebSocketHandler chatWebSocketHandler;
 
-    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler, ChatWebSocketHandler chatWebSocketHandler, JwtHandshakeInterceptor jwtHandshakeInterceptor) {
+    public WebSocketConfig(AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler, JwtHandshakeInterceptor jwtHandshakeInterceptor, WebsocketChannelInterceptor webSocketChannelInterceptor, ChatWebSocketHandler chatWebSocketHandler) {
         this.advancedInvestWebSocketHandler = advancedInvestWebSocketHandler;
-        this.chatWebSocketHandler = chatWebSocketHandler;
         this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
+        this.webSocketChannelInterceptor = webSocketChannelInterceptor;
+        this.chatWebSocketHandler = chatWebSocketHandler;
     }
 
-    // WebSocket 엔드포인트: 상태 관리용
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
-                .setAllowedOrigins("*")
-                .addInterceptors(jwtHandshakeInterceptor);
-                
+                .setAllowedOrigins("*");
+              //.addInterceptors(jwtHandshakeInterceptor);
+
         registry.addHandler(chatWebSocketHandler, "/ws")
                 .setAllowedOrigins("*");
     }
 
-    // STOMP 엔드포인트: 채팅 메시지용
+    public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-       
         registry.addEndpoint("/ws-stomp")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 
-    // 메시지 브로커 설정
     @Override
-    public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+    public void configureClientInboundChannel(@NonNull ChannelRegistration registration) {
+        registration.interceptors(webSocketChannelInterceptor);
     }
 }
