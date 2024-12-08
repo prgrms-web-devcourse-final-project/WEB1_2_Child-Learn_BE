@@ -35,6 +35,11 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
             requestDto = objectMapper.readValue(message.getPayload(), WebSocketRequestDto.class);
             log.info("파싱된 요청 DTO: {}", requestDto);
 
+            if (requestDto.getAction() == null) {
+                log.error("잘못된 요청: action 필드가 누락되었습니다. 요청 DTO: {}", requestDto);
+                return;
+            }
+
 
             switch (requestDto.getAction()) {
                 case "START_GAME":
@@ -112,6 +117,7 @@ public class AdvancedInvestWebSocketHandler extends TextWebSocketHandler {
             WebSocketUtil.send(session, "서버에서 에러가 발생했습니다. 다시 시도해주세요.");
         }
     }
+
 
     // 유효성 검사 메서드들
     private void validateStartGameRequest(WebSocketRequestDto requestDto) {
