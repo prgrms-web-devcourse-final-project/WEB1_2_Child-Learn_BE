@@ -5,11 +5,15 @@ import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizdata.repository.OXQuizDataR
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.constant.Answer;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizAnswerResponseDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizResponseDto;
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.entity.OXQuizProgression;
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.repository.OXQuizProgressionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -17,7 +21,29 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OXQuizProgressionService  {
 
+    private final OXQuizProgressionRepository oxQuizProgressionRepository;
     private final OXQuizDataRepository oxQuizDataRepository;
+
+    public boolean checkDailyLimit(Long memberId) {
+        Optional<OXQuizProgression> progression = oxQuizProgressionRepository.findByMemberId(memberId);
+
+        if (progression.isPresent()) {
+            LocalDate lastPlayedDate = progression.get().getLastPlayedDate();
+            return !LocalDate.now().equals(lastPlayedDate); // 오늘 날짜와 비교
+        }
+
+        return true; // 진행 상태가 없으면 제한 없음
+    }
+
+    public void updateLastPlayedDate(Long memberId) {
+        OXQuizProgression progression = oxQuizProgressionRepository.findByMemberId(memberId)
+                .orElse(new OXQuizProgression());
+
+        progression.setMemberId(memberId);
+        progression.setLastPlayedDate(LocalDate.now());
+        oxQuizProgressionRepository.save(progression);
+    }
+
 
     public List<QuizResponseDto> getQuizzesForUser(Long memberId, String difficulty) {
 
