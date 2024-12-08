@@ -16,7 +16,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/friends")
@@ -28,10 +30,28 @@ public class FriendController {
 
     // 친구 요청 보내기
     @PostMapping("/request")
-    public ResponseEntity<String> sendFriendRequest(
+    public ResponseEntity<Map<String, String>> sendFriendRequest(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody FriendRequestDTO requestDTO) {
-        return ResponseEntity.ok(friendService.sendFriendRequest(user.getId(), requestDTO.getReceiverId()));
+        friendService.sendFriendRequest(user.getId(), requestDTO.getReceiverId());
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "친구 요청이 성공적으로 전송되었습니다.");
+        
+        return ResponseEntity.ok(response);
+    }
+
+    // 친구 요청 취소
+    @DeleteMapping("/request/sent/{requestId}")
+    public ResponseEntity<Map<String, String>> cancelFriendRequest(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long requestId) {
+        friendService.cancelFriendRequest(user.getId(), requestId);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "친구 요청이 취소되었습니다.");
+        
+        return ResponseEntity.ok(response);
     }
 
     // 친구 요청 처리 (수락/거절)
@@ -42,9 +62,11 @@ public class FriendController {
             @RequestBody FriendRequestStatusDTO statusDTO) {
         String response;
         if (statusDTO.getStatus() == RequestStatus.ACCEPTED) {
-            response = friendService.acceptFriendRequest(requestId, user.getId());
+            friendService.acceptFriendRequest(requestId, user.getId());
+            response = "친구 요청이 수락되었습니다.";
         } else {
-            response = friendService.rejectFriendRequest(requestId, user.getId());
+            friendService.rejectFriendRequest(requestId, user.getId());
+            response = "친구 요청이 거절되었습니다.";
         }
         return ResponseEntity.ok(response);
     }
@@ -54,15 +76,6 @@ public class FriendController {
     public ResponseEntity<List<FriendResponseDTO>> showSentFriendRequests(
             @AuthenticationPrincipal SecurityUser user) {
         return ResponseEntity.ok(friendService.showSentFriendRequests(user.getId()));
-    }
-
-    // 보낸 친구 요청 취소
-    @DeleteMapping("/request/sent/{requestId}")
-    public ResponseEntity<String> cancelFriendRequest(
-            @AuthenticationPrincipal SecurityUser user,
-            @PathVariable Long requestId) {
-        String response = friendService.cancelFriendRequest(user.getId(), requestId);
-        return ResponseEntity.ok(response);
     }
 
     // 받은 친구 요청 목록 조회
@@ -83,9 +96,14 @@ public class FriendController {
 
     // 친구 삭제
     @DeleteMapping("/remove/{friendId}")
-    public ResponseEntity<String> removeFriend(
+    public ResponseEntity<Map<String, String>> removeFriend(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long friendId) {
-        return ResponseEntity.ok(friendService.removeFriend(user.getId(), friendId));
+        friendService.removeFriend(user.getId(), friendId);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "친구 관계가 해제되었습니다.");
+        
+        return ResponseEntity.ok(response);
     }
 }
