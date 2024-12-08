@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,24 +63,18 @@ public class ChatService {
     // 채팅방 생성 또는 조회
     @Transactional
     public ChatRoomListResponseDTO createChatRoom(Long memberId, Long friendId) {
-        // 자기 자신과의 채팅 방지
-        if (memberId.equals(friendId)) {
-            throw new ChatException(ChatErrorCode.USER_SELF_CHAT);
-        }
-
-        // 사용자 존재 여부 확인
-        memberRepository.findById(memberId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-        Member friend = memberRepository.findById(friendId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-
-        // 중복 채팅방 검사 (양방향 체크)
-        if (chatRoomRepository.existsByMemberIdAndFriendId(memberId, friendId) ||
-            chatRoomRepository.existsByMemberIdAndFriendId(friendId, memberId)) {
+        // 이미 존재하는 채팅방 확인 (삭제된 채팅방 포함)
+        Optional<ChatRoom> existingRoom = chatRoomRepository
+            .findByMemberIdAndFriendId(memberId, friendId);
+            
+        // 삭제되지 않은 채팅방이 있다면 예외 발생
+        if (existingRoom.isPresent() && !existingRoom.get().isDeleted()) {
             throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_EXISTS);
         }
 
-        // 새로운 채팅방 생성
+        Member friend = memberRepository.findById(friendId)
+            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
+
         ChatRoom chatRoom = ChatRoom.builder()
             .memberId(memberId)
             .friendId(friendId)
@@ -90,6 +85,7 @@ public class ChatService {
     }
 
     // 채팅방 삭제 (논리적 삭제)
+    @Transactional
     public void deleteChatRoom(String roomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
@@ -98,8 +94,18 @@ public class ChatService {
             throw new ChatException(ChatErrorCode.CHATROOM_ACCESS_DENIED);
         }
 
-        chatRoom.markAsDeleted();
-        chatRoomRepository.save(chatRoom);
+        chatRoom.markAsDeleted(userId);
+        
+        if (chatRoom.shouldBeCompletelyDeleted()) {
+            // 채팅방과 관련된 모든 메시지 삭제
+            chatMessageRepository.deleteByRoomId(roomId);
+            // 채팅방 삭제
+            chatRoomRepository.delete(chatRoom);
+            // 캐시 삭제
+            chatCacheService.invalidateCache(roomId);
+        } else {
+            chatRoomRepository.save(chatRoom);
+        }
     }
 
     // 채팅방 목록 조회
@@ -109,34 +115,18 @@ public class ChatService {
         
         List<ChatRoom> rooms = chatRoomRepository.findByMemberIdOrFriendId(userId, userId);
         
-        if (rooms.isEmpty()) {
-            log.info("사용자 {}의 채팅방이 없습니다.", userId);
-            return Collections.emptyList();
-        }
-
-        // 친구 ID 목록 추출
-        List<Long> friendIds = rooms.stream()
-                .map(room -> room.getMemberId().equals(userId) ? 
-                     room.getFriendId() : room.getMemberId())
-                .collect(Collectors.toList());
-
-        // 친구 정보 한 번에 조회
-        List<Member> friends = memberRepository.findAllById(friendIds);
-        Map<Long, Member> friendMap = friends.stream()
-                .collect(Collectors.toMap(Member::getId, f -> f));
-
-        // DTO 변환
-        List<ChatRoomListResponseDTO> result = rooms.stream()
-                .map(room -> {
-                    Long friendId = room.getMemberId().equals(userId) ? 
-                                  room.getFriendId() : room.getMemberId();
-                    Member friend = friendMap.get(friendId);
-                    return ChatRoomListResponseDTO.from(room, friend, userId);
-                })
-                .collect(Collectors.toList());
-
-        log.info("사용자 {}의 채팅방 {}개 조회 완료", userId, result.size());
-        return result;
+        return rooms.stream()
+            .filter(room -> {
+                return !room.isDeleted() || 
+                       (room.isDeleted() && !userId.equals(room.getDeletedByUserId()));
+            })
+            .map(room -> {
+                Member friend = memberRepository.findById(
+                    room.getMemberId().equals(userId) ? room.getFriendId() : room.getMemberId()
+                ).orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
+                return ChatRoomListResponseDTO.from(room, friend, userId);
+            })
+            .collect(Collectors.toList());
     }
 
     // 채팅 메시지 조회
