@@ -59,7 +59,6 @@ public class ItemService {
                 .member(member)
                 .item(item)
                 .purchaseDate(LocalDateTime.now())
-                .isEquipped(false)
                 .build();
         log.info("아이템 구매 완료");
 
@@ -80,14 +79,30 @@ public class ItemService {
     }
 
     // 아이템 목록 조희
-    public Page<ItemResponseDTO.ItemReadResponseDTO> readItemAll(
+    public Page<ItemResponseDTO.ItemReadAllResponseDTO> readItemAll(
             MemberRequestDTO.PageRequestDTO dto,
             Long memberId) {
         Pageable pageable = dto.getPageable();
 
         Page<Item> itemPage = itemRepository.findAll(pageable);
 
-        return itemPage.map(ItemResponseDTO.ItemReadResponseDTO::new);
+        // Member ID를 기반으로 Member 조회 (필요 시 추가)
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // Page<Item>을 Page<ItemReadAllResponseDTO>로 매핑
+        return itemPage.map(item -> {
+            // 구매 여부 확인
+            boolean isPurchased = purchaseRepository.existsByMemberAndItem(member, item);
+
+            // 착용 여부 확인
+            boolean isEquipped = isPurchased &&
+                    purchaseRepository.findByMemberAndItem(member, item)
+                            .map(Purchase::isEquipped)
+                            .orElse(false);
+
+            return new ItemResponseDTO.ItemReadAllResponseDTO(item, isEquipped, isPurchased);
+        });
     }
 
 }

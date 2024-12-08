@@ -76,10 +76,10 @@ public class ItemController {
 
     // 아이템 목록 조희
     @PostMapping("/read-all")
-    public ResponseEntity<Page<ItemResponseDTO.ItemReadResponseDTO>> readItemAll(
+    public ResponseEntity<Page<ItemResponseDTO.ItemReadAllResponseDTO>> readItemAll(
             @AuthenticationPrincipal SecurityUser user,
             MemberRequestDTO.PageRequestDTO dto) {
-        Page<ItemResponseDTO.ItemReadResponseDTO> items =
+        Page<ItemResponseDTO.ItemReadAllResponseDTO> items =
                 itemService.readItemAll(dto, user.getId());
         return ResponseEntity.ok(items);
     }
