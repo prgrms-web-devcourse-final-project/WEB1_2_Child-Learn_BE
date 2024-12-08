@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 public class SseNotificationService {
     private static final Long DEFAULT_TIMEOUT = 5L * 1000 * 60; // 지속 시간 5분
-    private static final Long RECONNECTION_TIMEOUT = 1L * 1000; // 재연결 타임아웃 1초
+    private static final Long RECONNECTION_TIMEOUT = 3L * 1000; // 재연결 타임아웃 3초
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
