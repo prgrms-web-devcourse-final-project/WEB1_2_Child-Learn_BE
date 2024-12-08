@@ -58,4 +58,17 @@ public class ChatSessionService { // Redis를 이용한 세션 관리 서비스
         redisTemplate.opsForValue().set(key, System.currentTimeMillis());
         redisTemplate.expire(key, 1, TimeUnit.MINUTES);
     }
+
+    public boolean testConnection() {
+        try {
+            String testKey = "test:connection:" + System.currentTimeMillis();
+            redisTemplate.opsForValue().set(testKey, "test");
+            redisTemplate.delete(testKey);
+            log.info("Redis 연결 테스트 성공");
+            return true;
+        } catch (Exception e) {
+            log.error("Redis 연결 테스트 실패: {}", e.getMessage());
+            return false;
+        }
+    }
 }
