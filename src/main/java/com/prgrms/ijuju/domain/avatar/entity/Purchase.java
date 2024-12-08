@@ -37,10 +37,14 @@ public class Purchase {
     private boolean isEquipped; // 구매 시 장착여부
 
     @Builder
-    public Purchase(Member member, Item item, LocalDateTime purchaseDate, boolean isEquipped) {
+    public Purchase(Member member, Item item, LocalDateTime purchaseDate) {
         this.member = member;
         this.item = item;
+        this.isEquipped = false;
         this.purchaseDate = purchaseDate;
+    }
+
+    public void changeIsEquipped(boolean isEquipped) {
         this.isEquipped = isEquipped;
     }
 }
