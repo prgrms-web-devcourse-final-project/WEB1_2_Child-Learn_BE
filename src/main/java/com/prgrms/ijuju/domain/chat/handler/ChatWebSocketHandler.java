@@ -32,7 +32,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             chatSessionService.connectUser(user.getId(), session.getId());
             log.info("WebSocket 연결 성공 - 사용자 ID: {}", user.getId());
         } catch (Exception e) {
-            log.error("WebSocket 연결 실� - 사용자 ID: {}", user.getId(), e);
+            log.error("WebSocket 연결 실패 - 사용자 ID: {}", user.getId(), e);
             closeSession(session);
         }
     }

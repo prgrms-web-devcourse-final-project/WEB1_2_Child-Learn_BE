@@ -44,7 +44,7 @@ public class ChatRoom {
     private int unreadCount;
 
     @DBRef
-    private List<Chat> chat;
+    private List<Chat> chat = new ArrayList<>();
 
     // 채팅 목록 조회
     public List<Chat> getChat() {
@@ -75,10 +75,13 @@ public class ChatRoom {
 
     // 채팅방 마지막 메시지 조회
     public Chat getLastMessage() {
+        if (chat == null || chat.isEmpty()) {
+            return null;
+        }
+        
         return chat.stream()
-            .filter(chat -> !chat.isDeleted())
-            .max(Comparator.comparing(Chat::getCreatedAt))
-            .orElse(null);
+                .max(Comparator.comparing(Chat::getCreatedAt))
+                .orElse(null);
     }
 
     // 읽지 않은 메시지 수 계산

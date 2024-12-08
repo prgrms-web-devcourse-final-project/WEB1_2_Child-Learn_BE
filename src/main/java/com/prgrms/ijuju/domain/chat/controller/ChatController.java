@@ -27,11 +27,12 @@ public class ChatController {
 
     private final ChatService chatService;
 
+    // 채팅방 생성
     @PostMapping("/rooms")
     public ResponseEntity<Map<String, Object>> createChatRoom(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody ChatRoomRequestDTO request) {
-        ChatRoomListResponseDTO room = chatService.createOrGetChatRoom(user.getId(), request.getFriendId());
+        ChatRoomListResponseDTO room = chatService.createChatRoom(user.getId(), request.getFriendId());
         
         Map<String, Object> response = new HashMap<>();
         response.put("message", "채팅방이 성공적으로 생성되었습니다.");
@@ -40,10 +41,11 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    // 채팅방 목록 조회
     @GetMapping("/rooms")
-    public ResponseEntity<Map<String, Object>> getChatRooms(
+    public ResponseEntity<Map<String, Object>> showChatRooms(
             @AuthenticationPrincipal SecurityUser user) {
-        List<ChatRoomListResponseDTO> rooms = chatService.getChatRooms(user.getId());
+        List<ChatRoomListResponseDTO> rooms = chatService.showChatRooms(user.getId());
         
         Map<String, Object> response = new HashMap<>();
         response.put("message", "채팅방 목록을 성공적으로 조회했습니다.");
@@ -51,15 +53,8 @@ public class ChatController {
         
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<List<ChatMessageResponseDTO>> getChatMessages(
-            @AuthenticationPrincipal SecurityUser user,
-            @PathVariable String roomId) {
-        List<ChatMessageResponseDTO> messages = chatService.getMessages(roomId, null, 20);
-        return ResponseEntity.ok(messages);
-    }
-
+    
+    // 채팅방 삭제
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<Map<String, String>> deleteChatRoom(
             @AuthenticationPrincipal SecurityUser user,
@@ -70,31 +65,5 @@ public class ChatController {
         response.put("message", "채팅방이 성공적으로 삭제되었습니다.");
         
         return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/messages/{messageId}")
-    public ResponseEntity<Void> deleteMessage(
-            @AuthenticationPrincipal SecurityUser user,
-            @PathVariable String messageId) {
-        chatService.deleteMessage(messageId, user.getId());
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/unread")
-    public ResponseEntity<UnreadCountResponseDTO> getUnreadCount(
-            @AuthenticationPrincipal SecurityUser user) {
-        int count = chatService.getUnreadCount(user.getId());
-        return ResponseEntity.ok(new UnreadCountResponseDTO(count));
-    }
-
-    @GetMapping("/messages/{roomId}")
-    public ResponseEntity<Page<ChatMessageResponseDTO>> getMessages(
-            @PathVariable String roomId,
-            @RequestParam(required = false) String lastMessageId,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal SecurityUser user) {
-            
-        Page<ChatMessageResponseDTO> messages = chatService.getMessagesByScroll(roomId, lastMessageId, size, user.getId());
-        return ResponseEntity.ok(messages);
     }
 }

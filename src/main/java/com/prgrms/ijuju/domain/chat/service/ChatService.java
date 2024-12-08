@@ -30,6 +30,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
+import java.util.HashMap;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,9 +47,6 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
     private static final int PAGE_SIZE = 20;
-    private static final String CHAT_CACHE_KEY = "chat:messages:";
-    private static final int CACHE_EXPIRATION = 24; // 시간
-    private static final long CACHE_TTL = 24L;
 
     // 채팅 저장
     public Chat saveChat(Chat chat) {
@@ -57,29 +55,35 @@ public class ChatService {
         log.info("Saved chat: {}", savedChat);
         return savedChat;
     }
-
+    
     // 채팅방 생성 또는 조회
-    public ChatRoomListResponseDTO createOrGetChatRoom(Long memberId, Long friendId) {
+    @Transactional
+    public ChatRoomListResponseDTO createChatRoom(Long memberId, Long friendId) {
+        // 자기 자신과의 채팅 방지
         if (memberId.equals(friendId)) {
             throw new ChatException(ChatErrorCode.USER_SELF_CHAT);
         }
 
+        // 사용자 존재 여부 확인
         memberRepository.findById(memberId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
         Member friend = memberRepository.findById(friendId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
 
-        ChatRoom chatRoom = chatRoomRepository
-            .findByMemberIdAndFriendIdAndIsDeletedFalse(memberId, friendId)
-            .orElseGet(() -> {
-                ChatRoom newRoom = ChatRoom.builder()
-                    .memberId(memberId)
-                    .friendId(friendId)
-                    .build();
-                return chatRoomRepository.save(newRoom);
-            });
+        // 중복 채팅방 검사 (양방향 체크)
+        if (chatRoomRepository.existsByMemberIdAndFriendId(memberId, friendId) ||
+            chatRoomRepository.existsByMemberIdAndFriendId(friendId, memberId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_EXISTS);
+        }
 
-        return ChatRoomListResponseDTO.from(chatRoom, friend, memberId);
+        // 새로운 채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+            .memberId(memberId)
+            .friendId(friendId)
+            .build();
+        
+        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
+        return ChatRoomListResponseDTO.from(savedChatRoom, friend, memberId);
     }
 
     // 채팅방 삭제 (논리적 삭제)
@@ -97,7 +101,7 @@ public class ChatService {
 
     // 채팅방 목록 조회
     @Transactional(readOnly = true)
-    public List<ChatRoomListResponseDTO> getChatRooms(Long userId) {
+    public List<ChatRoomListResponseDTO> showChatRooms(Long userId) {
         log.info("사용자 {}의 채팅방 목록 조회 시작", userId);
         
         List<ChatRoom> rooms = chatRoomRepository.findByMemberIdOrFriendId(userId, userId);
@@ -133,7 +137,7 @@ public class ChatService {
     }
 
     // 채팅 메시지 조회
-    public Page<ChatMessageResponseDTO> getChatMessages(String roomId, Long userId, int page) {
+    public Page<ChatMessageResponseDTO> showChatMessages(String roomId, Long userId, int page) {
         // 캐시된 메시지 확인
         List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
         if (cachedMessages != null && page == 0) {
@@ -174,6 +178,7 @@ public class ChatService {
         return ChatMessageResponseDTO.from(chat);
     }
 
+    // 메시지 유효성 검사
     private void validateMessage(String content, MultipartFile image) {
         if ((content == null || content.trim().isEmpty()) && image == null) {
             throw new ChatException(ChatErrorCode.MESSAGE_CONTENT_EMPTY);
@@ -197,7 +202,7 @@ public class ChatService {
     }
 
     // 읽지 않은 메시지 수 조회
-    public int getUnreadCount(Long userId) {
+    public int showUnreadCount(Long userId) {
         List<ChatRoom> rooms = chatRoomRepository.findByMemberIdOrFriendId(userId, userId);
         
         return rooms.stream()
@@ -222,7 +227,7 @@ public class ChatService {
     }
 
     // 스크롤 메시지 조회
-    public Page<ChatMessageResponseDTO> getMessagesByScroll(String roomId, String lastMessageId, int size, Long userId) {
+    public Page<ChatMessageResponseDTO> showMessagesByScroll(String roomId, String lastMessageId, int size, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
         validateChatRoomAccess(chatRoom, userId);
@@ -254,7 +259,7 @@ public class ChatService {
     }
 
     // 초기 로딩시 캐시 저장
-    public List<ChatMessageResponseDTO> getMessages(String roomId, String lastMessageId, int size) {
+    public List<ChatMessageResponseDTO> showMessages(String roomId, String lastMessageId, int size) {
         // 캐시 확인 (초기 로딩시)
         if (lastMessageId == null) {
             List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
