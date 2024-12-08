@@ -10,6 +10,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.lang.NonNull;
+import java.io.IOException;
 
 @Slf4j
 @Component
@@ -21,9 +22,18 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         SecurityUser user = getSecurityUser(session);
-        if (user != null) {
-            log.info("WebSocket 연결 성공 - 사용자 ID: {}", user.getId());
+        if (user == null) {
+            log.error("인증되지 않은 WebSocket 연결 시도");
+            closeSession(session);
+            return;
+        }
+
+        try {
             chatSessionService.connectUser(user.getId(), session.getId());
+            log.info("WebSocket 연결 성공 - 사용자 ID: {}", user.getId());
+        } catch (Exception e) {
+            log.error("WebSocket 연결 실패 - 사용자 ID: {}", user.getId(), e);
+            closeSession(session);
         }
     }
 
@@ -56,5 +66,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private SecurityUser getSecurityUser(WebSocketSession session) {
         return (SecurityUser) session.getAttributes().get("user");
+    }
+
+    private void closeSession(WebSocketSession session) {
+        try {
+            session.close();
+        } catch (IOException e) {
+            log.error("세션 종료 실패", e);
+        }
     }
 } 
