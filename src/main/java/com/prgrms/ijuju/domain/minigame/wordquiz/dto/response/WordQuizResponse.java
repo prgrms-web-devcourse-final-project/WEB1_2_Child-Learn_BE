@@ -12,6 +12,21 @@ public record WordQuizResponse(
         Difficulty difficulty,
         boolean isGameOver
 ) {
+    private static final int INITIAL_PHASE = 1;
+    private static final int INITIAL_LIFE = 3;
+
+    public static WordQuizResponse startNewGame(WordQuiz quiz, Difficulty difficulty) {
+        return new WordQuizResponse(
+            quiz.getWord(),
+            quiz.getExplanation(),
+            quiz.getHint(),
+            INITIAL_PHASE,
+            INITIAL_LIFE,
+            difficulty,
+            false
+        );
+    }
+
     public WordQuizResponse withUpdatedPhase(int newPhase) {
         return new WordQuizResponse(word, explanation, hint, newPhase, remainLife, difficulty, isGameOver);
     }

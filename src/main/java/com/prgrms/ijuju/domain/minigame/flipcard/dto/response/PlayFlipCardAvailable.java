@@ -4,11 +4,11 @@ import lombok.Builder;
 
 @Builder
 public record PlayFlipCardAvailable(
-        boolean isBegin,
-        boolean isMid,
-        boolean isAdv
+        Boolean isBegin,
+        Boolean isMid,
+        Boolean isAdv
 ) {
-    public static PlayFlipCardAvailable of(boolean isBegin, boolean isMid, boolean isAdv) {
+    public static PlayFlipCardAvailable of(Boolean isBegin, Boolean isMid, Boolean isAdv) {
         return new PlayFlipCardAvailable(isBegin, isMid, isAdv);
     }
 }

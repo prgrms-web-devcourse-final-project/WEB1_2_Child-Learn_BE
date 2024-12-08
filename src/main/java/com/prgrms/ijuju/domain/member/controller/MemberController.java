@@ -90,8 +90,6 @@ public class MemberController {
     @PostMapping("/logout")
     public ResponseEntity<MemberResponseDTO.LogoutResponseDTO> logout(@AuthenticationPrincipal SecurityUser user, HttpServletResponse response) {
 
-        // memberService.setRefreshToken(user.getId(), "null", LocalDateTime.now());
-
         memberService.logout(user.getId(), response);
 
         return ResponseEntity.ok(new MemberResponseDTO.LogoutResponseDTO("로그아웃 되었습니다"));
@@ -223,16 +221,10 @@ public class MemberController {
 
     // ProfileImage 저장
     @PostMapping("/update-profile-image")
-    public ResponseEntity<MemberResponseDTO.updateProfileImageDTO> updateProfileImage(@RequestParam("profileImage") MultipartFile file,
-                                                                                      @AuthenticationPrincipal SecurityUser user) {
+    public ResponseEntity<String> updateProfileImage(@RequestParam("profileImage") MultipartFile file,
+                                                                                      @AuthenticationPrincipal SecurityUser user) throws IOException {
         Long id = user.getId();
-        try {
-            return ResponseEntity.ok(memberService.updateProfileImage(id, file));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MemberResponseDTO.updateProfileImageDTO("파일 업로드 실패" + e.getMessage()));
-        }
+        String profileImageUrl = memberService.updateProfileImage(id, file);
+        return ResponseEntity.ok(profileImageUrl);
     }
-
-
 }

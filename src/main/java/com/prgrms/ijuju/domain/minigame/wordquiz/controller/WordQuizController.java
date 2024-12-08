@@ -4,8 +4,6 @@ import com.prgrms.ijuju.domain.minigame.wordquiz.dto.request.WordQuizRequest;
 import com.prgrms.ijuju.domain.minigame.wordquiz.dto.response.WordQuizAvailabilityResponse;
 import com.prgrms.ijuju.domain.minigame.wordquiz.dto.response.WordQuizResponse;
 import com.prgrms.ijuju.domain.minigame.wordquiz.entity.Difficulty;
-import com.prgrms.ijuju.domain.minigame.wordquiz.exception.WordQuizErrorCode;
-import com.prgrms.ijuju.domain.minigame.wordquiz.exception.WordQuizException;
 import com.prgrms.ijuju.domain.minigame.wordquiz.service.WordQuizService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import jakarta.servlet.http.HttpSession;
@@ -36,7 +34,7 @@ public class WordQuizController {
                                                           @PathVariable Difficulty difficulty,
                                                           HttpSession session) {
         log.info("낱말 게임 시작 요청: 닉네임 = {}, 난이도 = {}", user.getUsername(), difficulty);
-        WordQuizResponse wordQuiz = wordQuizService.startOrContinueWordQuiz(session, user.getId(), difficulty);
+        WordQuizResponse wordQuiz = wordQuizService.startWordQuiz(session, user.getId(), difficulty);
 
         return ResponseEntity.ok(wordQuiz);
     }

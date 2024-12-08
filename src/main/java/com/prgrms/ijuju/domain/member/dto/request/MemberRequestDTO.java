@@ -55,7 +55,7 @@ public class MemberRequestDTO {
         }
     }
 
-    // 회원가입 시 아이디 중복체크 : 현재 작동 x 추후 유효성 검사 추가 예정
+    // 회원가입 시 아이디 중복체크
     @Data
     public static class CheckLoginIdRequestDTO {
 
@@ -67,10 +67,8 @@ public class MemberRequestDTO {
     @Data
     public static class LoginRequestDTO {
 
-        @NotBlank(message = "로그인 ID를 입력해주세요.")
         private String loginId;
 
-        @NotBlank(message = "비밀번호를 입력해주세요.")
         private String pw;
     }
 

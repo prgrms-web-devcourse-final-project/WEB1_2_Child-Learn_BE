@@ -9,6 +9,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -28,28 +30,22 @@ public class Ranking extends BaseTimeEntity {
     @NotNull
     private LocalDateTime weekEnd;
 
-    private long weeklyPoints;
+    private Long weeklyPoints;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
+    @OnDelete(action = OnDeleteAction.CASCADE) // 추가: Member 삭제시 같이 삭제되도록 설정
     private Member member;
 
     @Builder
-    public Ranking(LocalDateTime weekStart, LocalDateTime weekEnd, long weeklyPoints, Member member) {
+    public Ranking(LocalDateTime weekStart, LocalDateTime weekEnd, Long weeklyPoints, Member member) {
         this.weekStart = weekStart;
         this.weekEnd = weekEnd;
         this.weeklyPoints = weeklyPoints;
-        changeMember(member);
+        this.member = member;
     }
 
     public void changeWeeklyPoints(long weeklyPoints) {
         this.weeklyPoints = weeklyPoints;
-    }
-
-    public void changeMember(Member member) {
-        this.member = member;
-        if (member != null && member.getRanking() != this) {
-            member.changeRanking(this);
-        }
     }
 }

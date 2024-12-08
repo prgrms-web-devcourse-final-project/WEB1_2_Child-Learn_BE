@@ -4,7 +4,6 @@ import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.FlipCardResponse;
 import com.prgrms.ijuju.domain.minigame.flipcard.dto.response.PlayFlipCardAvailable;
-import com.prgrms.ijuju.domain.minigame.flipcard.entity.FlipCard;
 import com.prgrms.ijuju.domain.minigame.flipcard.entity.LimitCardGame;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardDfficultyNotFoundException;
 import com.prgrms.ijuju.domain.minigame.flipcard.exception.FlipCardMemberNotFoundException;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,11 +30,10 @@ public class FlipCardService {
     @Transactional(readOnly = true)
     public List<FlipCardResponse> findRandomCards(String difficulty) {
         log.info("랜덤 카드 찾기");
-        List<FlipCard> allCards = flipCardRepository.findAll();
         int count = calculateCardNumber(difficulty);
 
-        Collections.shuffle(allCards);
-        return allCards.subList(0, count).stream()
+        return flipCardRepository.findRandomCards(count)
+                .stream()
                 .map(FlipCardResponse::of)
                 .collect(Collectors.toList());
     }

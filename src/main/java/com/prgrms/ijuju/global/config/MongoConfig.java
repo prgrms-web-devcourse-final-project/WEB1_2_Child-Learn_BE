@@ -1,5 +1,6 @@
 package com.prgrms.ijuju.global.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.lang.NonNull;
@@ -13,6 +14,9 @@ import com.mongodb.client.MongoClients;
 
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
+
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
     
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;

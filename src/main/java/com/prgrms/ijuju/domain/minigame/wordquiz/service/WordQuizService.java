@@ -30,6 +30,10 @@ public class WordQuizService {
     private final WordQuizRepository wordQuizRepository;
     private final MemberRepository memberRepository;
 
+    private static final String SESSION_MEMBER_ID = "memberId";
+    private static final String SESSION_GAME_STATE = "gameState";
+    private static final int MAX_PHASE = 3;
+
     @Transactional(readOnly = true)
     public WordQuizAvailabilityResponse checkPlayAvailability(Long memberId) {
         Member member = getMemberOrThrowException(memberId);
@@ -57,75 +61,88 @@ public class WordQuizService {
         return playLimits.stream()
                 .filter(limit -> limit.getDifficulty() == difficulty)
                 .findFirst()
-                .map(limit -> !limit.isPlayedToday())
+                .map(limit -> !limit.isPlayedToday(today))
                 .orElse(true);
     }
 
-    public WordQuizResponse startOrContinueWordQuiz(HttpSession session, Long memberId, Difficulty difficulty) {
+    public WordQuizResponse startWordQuiz(HttpSession session, Long memberId, Difficulty difficulty) {
         Member member = getMemberOrThrowException(memberId);
 
-        session.setAttribute("memberId", memberId);
+        List<LimitWordQuiz> playLimits = limitWordQuizRepository.findByMember(member);
+        LocalDate today = LocalDate.now();
 
-        WordQuizResponse gameResponse = (WordQuizResponse) session.getAttribute("gameState");
-        if (gameResponse == null) {
-            List<LimitWordQuiz> playLimits = limitWordQuizRepository.findByMember(member);
-            if (playLimits != null && !isPlayAvailable(limitWordQuizRepository.findByMember(member), difficulty, LocalDate.now())) {
-                throw new WordQuizException(WordQuizErrorCode.DAILY_PLAY_LIMIT_EXCEEDED);
-            }
-
-            updateLastPlayedDate(memberId, difficulty);
-            log.info("닉네임: {}, 낱말 게임 마지막 게임 날짜 갱신 완료", member.getUsername());
-            WordQuiz quiz = wordQuizRepository.findRandomWord()
-                    .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
-
-            gameResponse = new WordQuizResponse(quiz.getWord(), quiz.getExplanation(), quiz.getHint(), 1, 3, difficulty, false);
-            session.setAttribute("gameState", gameResponse);
+        if (!isPlayAvailable(playLimits, difficulty, today)) {
+            throw new WordQuizException(WordQuizErrorCode.DAILY_PLAY_LIMIT_EXCEEDED);
         }
+
+        clearGameSession(session);
+
+        WordQuiz quiz = wordQuizRepository.findRandomWord()
+                .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
+
+        updateLastPlayedDate(member, difficulty, today);
+        log.info("닉네임: {}, 난이도: {}, 낱말 게임 마지막 게임 날짜 갱신 완료", member.getUsername(), difficulty);
+
+        WordQuizResponse gameResponse = WordQuizResponse.startNewGame(quiz, difficulty);
+        session.setAttribute(SESSION_MEMBER_ID, memberId);
+        session.setAttribute(SESSION_GAME_STATE, gameResponse);
 
         return gameResponse;
     }
 
+    private void updateLastPlayedDate(Member member, Difficulty difficulty, LocalDate today) {
+        LimitWordQuiz limitWordQuiz = limitWordQuizRepository.findByMemberAndDifficulty(member, difficulty)
+                .orElseGet(() -> new LimitWordQuiz(member, difficulty, today));
+
+        limitWordQuiz.changeLastPlayedDate(today);
+        limitWordQuizRepository.save(limitWordQuiz);
+    }
+
     public WordQuizResponse handleAnswer(Long memberId, HttpSession session, Boolean isCorrect) {
-        Long sessionMemberId = (Long) session.getAttribute("memberId");
+        Long sessionMemberId = (Long) session.getAttribute(SESSION_MEMBER_ID);
         if (sessionMemberId == null || !sessionMemberId.equals(memberId)) {
             throw new WordQuizException(WordQuizErrorCode.INVALID_USER);
         }
 
-        WordQuizResponse gameState = (WordQuizResponse) session.getAttribute("gameState");
-
-        if (isCorrect) {
-            if (gameState.currentPhase() < 3) {
-                WordQuiz quiz = wordQuizRepository.findRandomWord()
-                        .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
-
-                WordQuizResponse updatedGameState = gameState.withNewQuiz(quiz)
-                        .withUpdatedPhase(gameState.currentPhase() + 1);
-                session.setAttribute("gameState", updatedGameState);
-                return updatedGameState;
-            } else {
-                session.removeAttribute("gameState");
-                return gameState.withGameOver(true);
-            }
-        } else {
-            WordQuizResponse updatedGameState = gameState.withUpdatedLife(gameState.remainLife() - 1);
-            if (updatedGameState.remainLife() <= 0) {
-                session.removeAttribute("gameState");
-                return updatedGameState.withGameOver(true);
-            } else {
-                session.setAttribute("gameState", updatedGameState);
-                return updatedGameState;
-            }
+        WordQuizResponse gameState = (WordQuizResponse) session.getAttribute(SESSION_GAME_STATE);
+        if (gameState == null) {
+            throw new WordQuizException(WordQuizErrorCode.GAME_NOT_STARTED);
         }
+
+        return isCorrect
+                ? handleCorrectAnswer(session, gameState)
+                : handleWrongAnswer(session, gameState);
     }
 
-    private void updateLastPlayedDate(Long memberId, Difficulty difficulty) {
-        Member member = getMemberOrThrowException(memberId);
+    private WordQuizResponse handleCorrectAnswer(HttpSession session, WordQuizResponse gameState) {
+        if (gameState.currentPhase() < MAX_PHASE) {
+            WordQuiz nextQuiz = wordQuizRepository.findRandomWord()
+                    .orElseThrow(() -> new WordQuizException(WordQuizErrorCode.WORD_RETRIEVAL_FAILED));
 
-        LimitWordQuiz limitWordQuiz = limitWordQuizRepository.findByMemberAndDifficulty(member, difficulty)
-                .orElseGet(() -> new LimitWordQuiz(member, difficulty, LocalDate.now()));
+            WordQuizResponse updatedGameState = gameState.withNewQuiz(nextQuiz)
+                    .withUpdatedPhase(gameState.currentPhase() + 1);
+            session.setAttribute(SESSION_GAME_STATE, updatedGameState);
+            return updatedGameState;
+        }
 
-        limitWordQuiz.changeLastPlayedDate(LocalDate.now());
-        limitWordQuizRepository.save(limitWordQuiz);
+        session.removeAttribute(SESSION_GAME_STATE);
+        return gameState.withGameOver(true);
+    }
+
+    private WordQuizResponse handleWrongAnswer(HttpSession session, WordQuizResponse gameState) {
+        WordQuizResponse updatedGameState = gameState.withUpdatedLife(gameState.remainLife() - 1);
+        if (updatedGameState.remainLife() <= 0) {
+            session.removeAttribute(SESSION_GAME_STATE);
+            return updatedGameState.withGameOver(true);
+        }
+
+        session.setAttribute(SESSION_GAME_STATE, updatedGameState);
+        return updatedGameState;
+    }
+
+    private void clearGameSession(HttpSession session) {
+        session.removeAttribute(SESSION_GAME_STATE);
+        session.removeAttribute(SESSION_MEMBER_ID);
     }
 
 }
