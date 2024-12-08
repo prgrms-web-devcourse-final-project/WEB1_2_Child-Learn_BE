@@ -4,7 +4,7 @@ import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.dto.PolygonCandleResponse;
 import com.prgrms.ijuju.domain.stock.adv.advstock.dto.PolygonCandleResult;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
-import com.prgrms.ijuju.domain.stock.adv.advstock.exception.stockexception.*;;
+import com.prgrms.ijuju.domain.stock.adv.advstock.exception.stockexception.*;
 import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
 import org.springframework.stereotype.Service;
 
