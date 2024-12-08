@@ -103,26 +103,6 @@ public class NotificationService {
         });
     }
 
-//    public void createMessageNotification(String senderLoginId, String receiverLoginId, String messageContent) {
-//        Member sender = memberRepository.findByLoginId(senderLoginId)
-//                .orElseThrow(() -> new NotificationException(NotificationErrorCode.SENDER_NOT_FOUND));
-//        Member receiver = memberRepository.findByLoginId(receiverLoginId)
-//                .orElseThrow(() -> new NotificationException(NotificationErrorCode.RECEIVER_NOT_FOUND));
-//
-//        Notification notification = Notification.builder()
-//                .receiver(receiver)
-//                .senderLoginId(sender.getId())
-//                .senderUsername(sender.getUsername())
-//                .title(sender.getUsername() + "님이 메시지를 보냈습니다.")
-//                .content(messageContent)
-//                .type(NotificationType.MESSAGE)
-//                .isRead(false)
-//                .isDeleted(false)
-//                .build();
-//
-//        notificationRepository.save(notification);
-//    }
-
     public void markAsRead(Long notificationId, Long userId) {
         log.info("알림 읽음 처리");
         Notification notification = notificationRepository.findById(notificationId)
