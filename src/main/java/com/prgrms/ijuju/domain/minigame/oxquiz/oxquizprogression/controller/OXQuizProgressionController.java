@@ -6,9 +6,11 @@ import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.Qu
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizResponseDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.service.OXQuizProgressionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,16 @@ public class OXQuizProgressionController {
     // 퀴즈 시작 API
     @PostMapping("/start")
     public ResponseEntity<List<QuizResponseDto>> getQuizzesForUser(@RequestBody QuizRequestDto requestDTO) {
+        Long memberId = requestDTO.getMemberId();
+
+        if (!progressionService.checkDailyLimit(memberId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonList(
+                            new QuizResponseDto(null, "하루에 한 번만 플레이할 수 있습니다.", null)
+                    ));
+        }
+
+
         List<QuizResponseDto> quizzes = progressionService.getQuizzesForUser(requestDTO.getMemberId(), requestDTO.getDifficulty());
         return ResponseEntity.ok(quizzes);
     }
