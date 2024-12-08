@@ -87,7 +87,23 @@ public class ItemService {
 
         Page<Item> itemPage = itemRepository.findAll(pageable);
 
-        return itemPage.map(ItemResponseDTO.ItemReadAllResponseDTO::new);
+        // Member ID를 기반으로 Member 조회 (필요 시 추가)
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // Page<Item>을 Page<ItemReadAllResponseDTO>로 매핑
+        return itemPage.map(item -> {
+            // 구매 여부 확인
+            boolean isPurchased = purchaseRepository.existsByMemberAndItem(member, item);
+
+            // 착용 여부 확인
+            boolean isEquipped = isPurchased &&
+                    purchaseRepository.findByMemberAndItem(member, item)
+                            .map(Purchase::isEquipped)
+                            .orElse(false);
+
+            return new ItemResponseDTO.ItemReadAllResponseDTO(item, isEquipped, isPurchased);
+        });
     }
 
 }
