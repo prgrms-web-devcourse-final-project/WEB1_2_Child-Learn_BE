@@ -18,6 +18,7 @@ public class ChatMessageResponseDTO {
     
     private String id;
     private Long senderId;
+    private String senderUsername;
     private String senderProfileImage;
     private String content;
     private String imageUrl;
@@ -30,9 +31,10 @@ public class ChatMessageResponseDTO {
         return ChatMessageResponseDTO.builder()
                 .id(chat.getId())
                 .senderId(chat.getSenderId())
+                .senderUsername(chat.getSenderUsername())
                 .senderProfileImage(chat.getSenderProfileImage())
                 .content(chat.getContent())
-                .imageUrl(chat.getImageUrl() != null ? chat.getImageUrl().getOriginalFilename() : null)
+                .imageUrl(chat.getImageUrl())
                 .createdAt(chat.getCreatedAt())
                 .isRead(chat.isRead())
                 .isDeleted(chat.isDeleted())

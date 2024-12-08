@@ -56,7 +56,8 @@ public enum ChatErrorCode implements ErrorCode {
     DATABASE_ERROR("CHAT_903", "데이터베이스 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     EXTERNAL_API_ERROR("CHAT_904", "외부 API 호출에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     SERVICE_UNAVAILABLE("CHAT_905", "서비스를 일시적으로 사용할 수 없습니다.", HttpStatus.SERVICE_UNAVAILABLE),
-    RATE_LIMIT_EXCEEDED("CHAT_906", "요청 횟수가 제한을 초과했습니다.", HttpStatus.TOO_MANY_REQUESTS);
+    RATE_LIMIT_EXCEEDED("CHAT_906", "요청 횟수가 제한을 초과했습니다.", HttpStatus.TOO_MANY_REQUESTS),
+    FILE_UPLOAD_ERROR("CHAT_907", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

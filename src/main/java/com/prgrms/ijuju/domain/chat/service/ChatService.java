@@ -24,6 +24,7 @@ import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatMessageRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.avatar.service.FileStorageService;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +48,7 @@ public class ChatService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
+    private final FileStorageService fileStorageService;
     private static final int PAGE_SIZE = 20;
 
     // 채팅 저장
@@ -169,7 +172,28 @@ public class ChatService {
 
         Member sender = memberRepository.findById(senderId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-        Chat chat = Chat.createChatMessage(chatRoom, sender, content, image);   
+
+        String imageUrl = null;
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = fileStorageService.storeFile(image);
+            } catch (IOException e) {
+                throw new ChatException(ChatErrorCode.FILE_UPLOAD_ERROR);
+            }
+        }
+
+        Chat chat = Chat.builder()
+            .roomId(chatRoom.getId())
+            .senderId(sender.getId())
+            .senderUsername(sender.getUsername())
+            .senderProfileImage(sender.getProfileImage())
+            .content(content)
+            .imageUrl(imageUrl)
+            .createdAt(LocalDateTime.now())
+            .isRead(false)
+            .isDeleted(false)
+            .build();
         
         chatMessageRepository.save(chat);
         
