@@ -59,7 +59,6 @@ public class ItemService {
                 .member(member)
                 .item(item)
                 .purchaseDate(LocalDateTime.now())
-                .isEquipped(false)
                 .build();
         log.info("아이템 구매 완료");
 

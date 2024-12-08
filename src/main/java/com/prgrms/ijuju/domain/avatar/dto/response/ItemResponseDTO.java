@@ -105,8 +105,6 @@ public class ItemResponseDTO {
             this.isEquipped = isEquipped;
             this.isPurchased = isPurchased;
         }
-
-
     }
 
 }
