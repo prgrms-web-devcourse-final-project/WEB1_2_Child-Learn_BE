@@ -17,7 +17,6 @@ import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 @AllArgsConstructor
 @Builder
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 public class Wallet extends BaseTimeEntity {
 
     @Id
@@ -29,10 +28,10 @@ public class Wallet extends BaseTimeEntity {
     private Member member;
 
     @Column(nullable = false)
-    private Long currentPoints = 0L;
+    private Long currentPoints;
 
     @Column(nullable = false)
-    private Long currentCoins = 0L;
+    private Long currentCoins;
 
     @Builder
     public Wallet(Member member) {
