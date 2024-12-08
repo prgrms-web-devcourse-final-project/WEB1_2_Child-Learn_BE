@@ -49,7 +49,7 @@ public class SseNotificationService {
             try {
                 sseEmitter.send(SseEmitter.event()
                         .name("retry")
-                        .data(""));
+                        .data("reconnected")); // 빈 데이터 대신 의미있는 데이터 전송
             } catch (IOException e) {
                 log.error("Failed to send retry event", e);
             }
