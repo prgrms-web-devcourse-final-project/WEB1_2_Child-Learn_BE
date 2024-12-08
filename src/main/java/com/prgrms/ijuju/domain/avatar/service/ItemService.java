@@ -10,6 +10,8 @@ import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
+import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import com.prgrms.ijuju.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +19,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ItemService {
+    private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final PurchaseRepository purchaseRepository;
     private final MemberService memberService;
@@ -73,4 +78,13 @@ public class ItemService {
 
     }
 
+    // 아바타 이미지 조회
+    public ItemResponseDTO.ItemReadResponseDTO readItem(Long id, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        Item items = itemRepository.findById(id)
+                .orElseThrow(() -> new ItemException(ItemErrorCode.ITEM_NOT_FOUND));
+
+        return new ItemResponseDTO.ItemReadResponseDTO(items);
+    }
 }

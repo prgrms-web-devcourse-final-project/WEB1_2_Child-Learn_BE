@@ -18,7 +18,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Map<String, Object> getAttributes() {
-        return Map.of("mid",oauth2Response.getNickName(), "role", role);
+        return Map.of("mid",oauth2Response.getUserName(), "role", role);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return oauth2Response.getNickName();
+        return oauth2Response.getUserName();
     }
 
     public Long getMemberId() {
