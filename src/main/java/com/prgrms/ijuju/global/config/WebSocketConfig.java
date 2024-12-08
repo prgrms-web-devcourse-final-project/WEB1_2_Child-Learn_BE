@@ -14,7 +14,7 @@ import org.springframework.lang.NonNull;
 @Configuration
 @EnableWebSocketMessageBroker
 @EnableWebSocket
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSocketConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final AdvancedInvestWebSocketHandler advancedInvestWebSocketHandler;
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
@@ -28,12 +28,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         this.chatWebSocketHandler = chatWebSocketHandler;
     }
 
-    @Override
+
+    //핸들러 방식
+    /*@Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(advancedInvestWebSocketHandler, "/api/v1/advanced-invest")
                 .setAllowedOrigins("*");
-              //.addInterceptors(jwtHandshakeInterceptor);
-
+                //.addInterceptors(jwtHandshakeInterceptor); // 핸들러 URL 등록
+    }*/
+  
+    @Override
+    public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(chatWebSocketHandler, "/ws")
                 .setAllowedOrigins("*");
     }
@@ -45,7 +50,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-stomp")
+        registry.addEndpoint("/ws-stomp", "/api/v1/advanced-invest")
+
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
