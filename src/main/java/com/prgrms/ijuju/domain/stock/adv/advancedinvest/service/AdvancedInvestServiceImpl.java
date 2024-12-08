@@ -1,5 +1,13 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.service;
 
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.GameAlreadyPlayedException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.GameNotFoundException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.InvalidGameTimeException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.otherexception.MemberNotFoundException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.stockexception.DataNotFoundException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.stockexception.InvalidQuantityException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.stockexception.StockNotFoundException;
+import com.prgrms.ijuju.domain.stock.mid.exception.MidMemberNotFoundException;
 import com.prgrms.ijuju.global.util.WebSocketUtil;
 import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
@@ -122,6 +130,9 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     public void sendReferenceData(WebSocketSession session) {
         List<AdvStock> referenceData = advStockRepository.findByDataType(DataType.REFERENCE);
 
+        if (referenceData.isEmpty()) {
+            throw new DataNotFoundException();
+        }
 
         List<AdvStockResponseDto> responseDto = referenceData.stream()
                 .flatMap(stock -> AdvStockResponseDto.fromEntityForReference(stock).stream())
@@ -135,6 +146,9 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     public void sendLiveData(WebSocketSession session, int livePhase) {
         List<AdvStock> liveData = advStockRepository.findByDataType(DataType.LIVE);
 
+        if (liveData.isEmpty() || livePhase >= liveData.size()) {
+            throw new DataNotFoundException();
+        }
 
         if (livePhase < liveData.size()) {
             List<AdvStockResponseDto> responseDto = liveData.stream()
@@ -153,7 +167,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Override
     public void getRecentVolumes(WebSocketSession session, String stockSymbol, Long gameId) {
         if (!countDown.containsKey(gameId)) {
-            throw new IllegalStateException("카운터 객체가 생성되지 않았습니다");
+            throw new GameNotFoundException();
         }
 
         int liveSentCounterValue = liveSentCounter.getOrDefault(gameId, 0); // LiveData 전송 횟수
@@ -201,19 +215,18 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
         LocalTime startRestrictedTime = LocalTime.of(6, 0); // 오전 6시
         LocalTime endRestrictedTime = LocalTime.of(8, 0);   // 오전 8시
 
-
         if (!now.isBefore(startRestrictedTime) && !now.isAfter(endRestrictedTime)) {
-            throw new IllegalStateException("오전 6시부터 8시까지는 게임을 실행할 수 없습니다");
+            throw new InvalidGameTimeException();
         }
 
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버 찾지 못함 (memberId 조회 불가)"));
+                .orElseThrow(MemberNotFoundException::new);
 
         // 오늘 이미 게임을 시작했는지 확인
         Optional<AdvancedInvest> existingInvest = advancedInvestRepository.findByMemberIdAndPlayedTodayTrue(memberId);
         if (existingInvest.isPresent()) {
-            throw new IllegalStateException("게임이 오늘 이미 실행 되었습니다");
+            throw new GameAlreadyPlayedException();
         }
 
         AdvancedInvest advancedInvest = advancedInvestRepository.save(
@@ -240,11 +253,11 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
         Integer currentSecond = countDown.get(gameId); // 현재 초수 가져오기
         if (currentSecond == null) {
-            throw new IllegalStateException("게임이 진행 중이지 않습니다.");
+            throw new GameNotFoundException();
         }
 
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvestId 조회 불가)"));
+                .orElseThrow(GameNotFoundException::new);
 
         advancedInvest.setPaused(true); // 게임은 일시정지 상태로 표시
         advancedInvest.setCurrentSecond(currentSecond);
@@ -256,9 +269,9 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Transactional
     public void resumeGame(WebSocketSession session, Long gameId) {
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvest Id 조회 불가)"));
+                .orElseThrow(GameNotFoundException::new);
         if (!advancedInvest.isPaused()) {
-            throw new IllegalStateException("게임이 이미 진행 중");
+            throw new GameAlreadyPlayedException();
         }
 
         int currentSecond = advancedInvest.getCurrentSecond(); // 저장된 초 가져오기
@@ -273,7 +286,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Transactional
     public void endGame(Long gameId) {
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvest Id 조회 불가)"));
+                .orElseThrow(GameNotFoundException::new);
 
 
         activeGames.remove(gameId);
@@ -287,7 +300,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
             try {
                 session.close();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("WebSocket 세션 종료 즁 오류 발생");
             }
         }
     }
@@ -297,7 +310,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     public int getRemainingTime(Long gameId) {
         Integer currentSecond = countDown.get(gameId);
         if (currentSecond == null) {
-            throw new IllegalArgumentException("게임이 진행 중이 아닙니다.");
+            throw new GameNotFoundException();
         }
         return 420 - currentSecond; // 전체 시간에서 현재 초수 뺀 값 반환
     }
@@ -329,20 +342,20 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Override
     public void buyStock(Long gameId, StockTransactionRequestDto request) {
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvest Id 조회 불가)"));
+                .orElseThrow(GameNotFoundException::new);
 
         List<Double> closePrices = advStockRepository.findBySymbol(request.getStockSymbol())
                 .map(AdvStock::getClosePrices)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주식이 존재하지 않음"));
+                .orElseThrow(StockNotFoundException::new);
 
         if (closePrices.isEmpty()) {
-            throw new IllegalArgumentException("종가 데이터가 존재하지 않음");
+            throw new DataNotFoundException();
         }
 
         Double latestClosePrice = closePrices.get(closePrices.size() - 1); // 가장 최신 종가
 
         if (request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("구매 수량은 0 보다 커야 한다");
+            throw new InvalidQuantityException();
         }
 
         // 주식 구매에 필요한 포인트 계산
@@ -376,20 +389,20 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
     @Override
     public void sellStock(Long gameId, StockTransactionRequestDto request) {
         AdvancedInvest advancedInvest = advancedInvestRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임 찾지 못함 (AdvancedInvest Id 조회 불가)"));
+                .orElseThrow(GameNotFoundException::new);
 
         List<Double> closePrices = advStockRepository.findBySymbol(request.getStockSymbol())
                 .map(AdvStock::getClosePrices)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주식을 찾을 수 없습니다."));
+                .orElseThrow(StockNotFoundException::new);
 
         if (closePrices.isEmpty()) {
-            throw new IllegalArgumentException("해당 주식의 종가 데이터를 찾을 수 없습니다.");
+            throw new DataNotFoundException();
         }
 
         Double latestClosePrice = closePrices.get(closePrices.size() - 1); // 가장 최신 종가
 
         if (request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("판매 수량은 0보다 커야 합니다.");
+            throw new InvalidQuantityException();
         }
 
         // 보유 주식 수량 확인

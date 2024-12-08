@@ -4,6 +4,7 @@ import com.prgrms.ijuju.domain.member.entity.Member;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.constant.TradeType;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.dto.request.StockRecordRequestDto;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.entity.StockRecord;
+import com.prgrms.ijuju.domain.stock.adv.stockrecord.exception.stockrecordexception.RecordNotFoundException;
 import com.prgrms.ijuju.domain.stock.adv.stockrecord.repository.StockRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,19 +33,30 @@ public class StockRecordServiceImpl implements StockRecordService {
     // 특정 AdvancedInvest의 모든 거래 내역 조회
     @Transactional(readOnly = true)
     public List<StockRecord> getRecordsByAdvId(Long memberId) {
-        return stockRecordRepository.findByMemberId(memberId);
+        List<StockRecord> records = stockRecordRepository.findByMemberId(memberId);
+        if (records.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
+        return records;
     }
 
     // 특정 주식의 거래 내역 조회
     @Transactional(readOnly = true)
     public List<StockRecord> getRecordsByStock(Long memberId, String symbol) {
-        return stockRecordRepository.findByMemberIdAndSymbol(memberId, symbol);
+        List<StockRecord> records = stockRecordRepository.findByMemberIdAndSymbol(memberId, symbol);
+        if (records.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
+        return records;
     }
 
     // 보유 주식 계산
     @Transactional(readOnly = true)
     public double calculateOwnedStock(Long memberId, String symbol) {
         List<StockRecord> records = stockRecordRepository.findByMemberIdAndSymbol(memberId, symbol);
+        if (records.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
 
         double totalBought = records.stream()
                 .filter(record -> record.getTradeType() == TradeType.BUY)
@@ -63,6 +75,9 @@ public class StockRecordServiceImpl implements StockRecordService {
     @Transactional(readOnly = true)
     public Map<String, Double> calculateAllOwnedStocks(Long memberId) {
         List<StockRecord> records = stockRecordRepository.findByMemberId(memberId);
+        if (records.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
 
         // 주식별 보유량 계산
         Map<String, Double> ownedStocks = new HashMap<>();
