@@ -7,9 +7,11 @@ import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockDataFetcher;
 import com.prgrms.ijuju.domain.stock.adv.advstock.service.AdvStockService;
 import com.prgrms.ijuju.domain.stock.adv.advstock.util.DateUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * Stock 엔티티의 알파이자 오메가 입니다
@@ -24,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 
 @Component
-
+@Slf4j
 @RequiredArgsConstructor
 public class AdvStockScheduler {
 
@@ -32,15 +34,16 @@ public class AdvStockScheduler {
     private final AdvStockService advStockService;
     private final AdvStockRepository advStockRepository;
 
-    @Scheduled(cron = "0 40 8 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 55 8 * * ?")
     @Transactional
     public void fetchAndUpdateStockDataDaily() {
+        log.info("스케줄러 시작: fetchAndUpdateStockDataDaily");
 
         //괴거 데이터 삭제용. 7시 리셋시 모든 데이터를 날린다
         advStockRepository.deleteByDataType(DataType.REFERENCE);
         advStockRepository.deleteByDataType(DataType.LIVE);
         advStockRepository.deleteByDataType(DataType.FORECAST);
-
+        log.info("기존 데이터 삭제 완료");
 
 
         //테스트 용으로 일단 5개만 넣어뒀습니다.
@@ -53,18 +56,24 @@ public class AdvStockScheduler {
         String articleEndDate = DateUtil.getForecastEndDate();
 
         for (String symbol : symbols) {
-            // Reference 데이터 저장
-            PolygonCandleResponse referenceData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", referenceStartDate, referenceEndDate);
-            advStockService.saveStockData(symbol, symbol + " Name", referenceData, DataType.REFERENCE);
+            try {
+                // Reference 데이터 저장
+                PolygonCandleResponse referenceData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", referenceStartDate, referenceEndDate);
+                advStockService.saveStockData(symbol, symbol + " Name", referenceData, DataType.REFERENCE);
 
-            // Live 데이터 저장
-            PolygonCandleResponse liveData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", liveDate, liveDate);
-            advStockService.saveStockData(symbol, symbol + " Name", liveData, DataType.LIVE);
+                // Live 데이터 저장
+                PolygonCandleResponse liveData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", liveDate, liveDate);
+                advStockService.saveStockData(symbol, symbol + " Name", liveData, DataType.LIVE);
 
-            // Forecast 데이터 저장
-            PolygonCandleResponse articleData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", articleStartDate, articleEndDate);
-            advStockService.saveStockData(symbol, symbol + " Name", articleData, DataType.FORECAST);
+                // Forecast 데이터 저장
+                PolygonCandleResponse articleData = advStockDataFetcher.fetchStockData(symbol, 1, "hour", articleStartDate, articleEndDate);
+                advStockService.saveStockData(symbol, symbol + " Name", articleData, DataType.FORECAST);
+                log.info("데이터 저장 완료: " + symbol);
+            } catch (Exception e) {
+                log.error("데이터 처리 중 오류 발생: {}", symbol, e);
+            }
         }
-
+        log.info("스케줄러 완료: fetchAndUpdateStockDataDaily");
     }
+
 }

@@ -28,7 +28,7 @@ public class ArticleScheduler {
     private final MidStockRepository midStockRepository;
 
 
-    @Scheduled(cron = "0 45 8 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 9 * * ?")
     @Transactional
     public void manageArticles() {
 
