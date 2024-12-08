@@ -43,6 +43,9 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
 
                 jwtToken = queryParams.getOrDefault("authorization", queryParams.get("Authorization"));
+                if (jwtToken == null) {
+                    jwtToken = queryParams.get("access_token");
+                }
                 log.info("Extracted token (before Bearer check): {}", jwtToken);
             }
             if (jwtToken != null && jwtToken.startsWith("Bearer")) {
