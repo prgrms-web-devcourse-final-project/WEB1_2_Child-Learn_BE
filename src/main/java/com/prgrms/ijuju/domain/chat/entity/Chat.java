@@ -47,6 +47,11 @@ public class Chat {
     private Long senderId;
 
     @NotNull
+    @Indexed
+    @Field(name = "sender_login_id")
+    private String senderLoginId;
+
+    @NotNull
     @Field(name = "sender_username")
     private String senderUsername;
     
@@ -82,7 +87,7 @@ public class Chat {
         
         return Chat.builder()
                 .roomId(chatRoom.getId())
-                .senderId(sender.getId())
+                .senderLoginId(sender.getLoginId())
                 .senderUsername(sender.getUsername())
                 .senderProfileImage(sender.getProfileImage())
                 .content(content)

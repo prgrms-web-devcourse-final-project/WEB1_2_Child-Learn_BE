@@ -17,7 +17,7 @@ import lombok.Getter;
 public class ChatMessageResponseDTO {
     
     private String id;
-    private Long senderId;
+    private String senderLoginId;
     private String senderUsername;
     private String senderProfileImage;
     private String content;
@@ -30,7 +30,7 @@ public class ChatMessageResponseDTO {
     public static ChatMessageResponseDTO from(Chat chat) {
         return ChatMessageResponseDTO.builder()
                 .id(chat.getId())
-                .senderId(chat.getSenderId())
+                .senderLoginId(chat.getSenderLoginId())
                 .senderUsername(chat.getSenderUsername())
                 .senderProfileImage(chat.getSenderProfileImage())
                 .content(chat.getContent())

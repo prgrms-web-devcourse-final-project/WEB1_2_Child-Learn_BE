@@ -184,7 +184,7 @@ public class ChatService {
 
         Chat chat = Chat.builder()
             .roomId(chatRoom.getId())
-            .senderId(sender.getId())
+            .senderLoginId(sender.getLoginId())
             .senderUsername(sender.getUsername())
             .senderProfileImage(sender.getProfileImage())
             .content(content)

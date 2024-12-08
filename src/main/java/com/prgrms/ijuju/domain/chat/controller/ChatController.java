@@ -33,11 +33,10 @@ public class ChatController {
     public ResponseEntity<Map<String, Object>> createChatRoom(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody ChatRoomRequestDTO request) {
-        ChatRoomListResponseDTO room = chatService.createChatRoom(user.getId(), request.getFriendId());
+        chatService.createChatRoom(request.getFriendId(), user.getId());
         
         Map<String, Object> response = new HashMap<>();
         response.put("message", "채팅방이 성공적으로 생성되었습니다.");
-        response.put("data", room);
         
         return ResponseEntity.ok(response);
     }
@@ -63,7 +62,7 @@ public class ChatController {
         chatService.deleteChatRoom(roomId, user.getId());
         
         Map<String, String> response = new HashMap<>();
-        response.put("message", "채팅방이 성공적으로 삭제되었습니다.");
+        response.put("message", "채팅방이 삭제되었습니다.");
         
         return ResponseEntity.ok(response);
     }
