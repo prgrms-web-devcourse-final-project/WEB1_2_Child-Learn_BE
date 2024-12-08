@@ -12,17 +12,12 @@ import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
-import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
-import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @Service
