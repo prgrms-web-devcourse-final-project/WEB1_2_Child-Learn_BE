@@ -8,12 +8,6 @@ import com.prgrms.ijuju.global.exception.ErrorCode;
 @Getter
 public enum FriendErrorCode implements ErrorCode {
 
-    // 성공 응답
-    FRIEND_REQUEST_SENT("FRIEND_001", "친구 요청이 성공적으로 전송되었습니다.", HttpStatus.OK),
-    FRIEND_REQUEST_CANCELLED("FRIEND_002", "친구 요청이 취소되었습니다.", HttpStatus.OK), 
-    FRIEND_REQUEST_ACCEPTED("FRIEND_003", "친구 요청이 수락되었습니다.", HttpStatus.OK),
-    FRIEND_REMOVED("FRIEND_004", "친구 관계가 해제되었습니다.", HttpStatus.OK),
-
     // 클라이언트 오류
     // - 인증/권한 관련
     FRIEND_REQUEST_NOT_AUTHORIZED("FRIEND_101", "해당 친구 요청에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN),

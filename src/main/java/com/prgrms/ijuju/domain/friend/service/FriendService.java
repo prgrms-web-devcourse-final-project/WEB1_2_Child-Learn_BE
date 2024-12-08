@@ -39,7 +39,7 @@ public class FriendService {
 
     // 친구 요청 보내기
     @Transactional
-    public String sendFriendRequest(Long senderId, Long receiverId) {
+    public void sendFriendRequest(Long senderId, Long receiverId) {
         Member sender = memberRepository.findById(senderId)
                 .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
                 
@@ -60,8 +60,6 @@ public class FriendService {
 
         simpMessagingTemplate.convertAndSend("/topic/friend-requests/" + receiverId, 
             "친구 요청이 도착했습니다: " + sender.getUsername());
-        
-        return FriendErrorCode.FRIEND_REQUEST_SENT.getMessage();
     }
     
     // 보낸 친구 요청 목록 조회
@@ -75,7 +73,7 @@ public class FriendService {
 
     // 보낸 친구 요청 취소
     @Transactional
-    public String cancelFriendRequest(Long senderId, Long requestId) {
+    public void cancelFriendRequest(Long senderId, Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
                 
@@ -83,13 +81,11 @@ public class FriendService {
             throw new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_AUTHORIZED);
         }
         
-        // 이미 처리된 요청인지 확인
         if (request.getRequestStatus() != RequestStatus.PENDING) {
             throw new FriendException(FriendErrorCode.REQUEST_ALREADY_PROCESSED);
         }
         
         friendRequestRepository.delete(request);
-        return FriendErrorCode.FRIEND_REQUEST_CANCELLED.getMessage();
     }
 
     // 받은 친구 요청 목록 조회
@@ -110,7 +106,7 @@ public class FriendService {
 
     // 친구 요청 수락 (친구 등록)
     @Transactional
-    public String acceptFriendRequest(Long requestId, Long receiverId) {
+    public void acceptFriendRequest(Long requestId, Long receiverId) {
         try {
             FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_REQUEST_NOT_FOUND));
@@ -133,8 +129,6 @@ public class FriendService {
                 "/topic/friend-requests/" + request.getSender().getId(), 
                 request.getReceiver().getUsername() + "님이 친구 요청을 수락했습니다."
             );
-            
-            return FriendErrorCode.FRIEND_REQUEST_ACCEPTED.getMessage();
         } catch (Exception e) {
             log.error("친구 요청 수락 중 시스템 오류 발생: {}", e.getMessage());
             throw new FriendException(FriendErrorCode.SYSTEM_ERROR);
@@ -177,7 +171,7 @@ public class FriendService {
 
     // 친구 삭제
     @Transactional
-    public String removeFriend(Long memberId, Long friendId) {
+    public void removeFriend(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new FriendException(FriendErrorCode.FRIEND_NOT_FOUND));
         Member friend = memberRepository.findById(friendId)
@@ -189,8 +183,6 @@ public class FriendService {
         
         friendListRepository.deleteByMemberAndFriend(member, friend);
         friendListRepository.deleteByMemberAndFriend(friend, member);
-        
-        return FriendErrorCode.FRIEND_REMOVED.getMessage();
     }
 
     // 친구 요청 유효성 검사
