@@ -1,6 +1,8 @@
 package com.prgrms.ijuju.domain.article.service;
 
 import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.exception.ArticleErrorCode;
+import com.prgrms.ijuju.domain.article.exception.ArticleNotFoundException;
 import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
 import com.prgrms.ijuju.domain.article.contant.DataType;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ public class ArticleService {
 
     public Article findArticleById(Long id) {
         return articleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found with ID: " + id));
+                .orElseThrow(() -> new ArticleNotFoundException(ArticleErrorCode.ARTICLE_NOT_FOUND));
     }
 
     public List<Article> findAllArticles() {

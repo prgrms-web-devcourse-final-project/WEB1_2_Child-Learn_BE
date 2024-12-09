@@ -3,6 +3,8 @@ package com.prgrms.ijuju.domain.article.service;
 import com.prgrms.ijuju.domain.article.component.AdvTrendAnalyzer;
 import com.prgrms.ijuju.domain.article.component.MidTrendAnalyzer;
 import com.prgrms.ijuju.domain.article.data.Trend;
+import com.prgrms.ijuju.domain.article.exception.ArticleErrorCode;
+import com.prgrms.ijuju.domain.article.exception.ArticleNotFoundException;
 import com.prgrms.ijuju.domain.stock.adv.advstock.constant.DataType;
 import com.prgrms.ijuju.domain.stock.adv.advstock.entity.AdvStock;
 import com.prgrms.ijuju.domain.stock.adv.advstock.repository.AdvStockRepository;
@@ -48,7 +50,7 @@ public class StockTrendService {
     public List<Trend> analyzeTrendsForMidStock(Long midStockId) {
 
         MidStock midStock = midStockRepository.findById(midStockId)
-                .orElseThrow(() -> new IllegalArgumentException("MidStock not found with ID: " + midStockId));
+                .orElseThrow(() -> new ArticleNotFoundException(ArticleErrorCode.NO_TRENDS_FOUND));
 
         MidStockResponse midStockResponse = MidStockResponse.of(midStock);
 
