@@ -16,6 +16,7 @@ public enum AdvancedInvestErrorCode implements ErrorCode {
     DATA_NOT_INITIALIZED("ADV_INVEST_008", "[고급]데이터가 초기화되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     SESSION_NOT_FOUND("ADV_INVEST_009", "[고급]세션을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
     DATA_NOT_FOUND("ADV_INVEST_008", "필요한 데이터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    GAME_ALREADY_STARTED("ADV_INVEST_011", "[고급]현재 게임이 이미 시작되었습니다.", HttpStatus.CONFLICT),
     TRANSACTION_FAILED("ADV_INVEST_010", "[고급]거래 처리에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
