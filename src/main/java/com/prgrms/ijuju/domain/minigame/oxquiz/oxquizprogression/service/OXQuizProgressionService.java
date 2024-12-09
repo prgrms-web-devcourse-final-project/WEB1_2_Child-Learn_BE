@@ -6,6 +6,8 @@ import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.constant.Answer
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizAnswerResponseDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.dto.response.QuizResponseDto;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.entity.OXQuizProgression;
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.exception.OXQuizInvalidAnswerException;
+import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.exception.OXQuizNotFoundException;
 import com.prgrms.ijuju.domain.minigame.oxquiz.oxquizprogression.repository.OXQuizProgressionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,10 @@ public class OXQuizProgressionService  {
                 .filter(quiz -> quiz.getDifficulty().equalsIgnoreCase(difficulty))  // 난이도 필터링
                 .collect(Collectors.toList());
 
+        if (quizzes.isEmpty()) {
+            throw new OXQuizNotFoundException();
+        }
+
         // 문제를 랜덤으로 섞기
         Collections.shuffle(quizzes);
 
@@ -70,11 +76,11 @@ public class OXQuizProgressionService  {
 
     public QuizAnswerResponseDto checkAnswer(Long oxQuizDataId, String userAnswer) {
         if (!userAnswer.equalsIgnoreCase("O") && !userAnswer.equalsIgnoreCase("X")) {
-            throw new IllegalArgumentException("O 또는 X 만이 가능합니다 " + userAnswer);
+            throw new OXQuizInvalidAnswerException();
         }
 
         OXQuizData quiz = oxQuizDataRepository.findById(oxQuizDataId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 퀴즈의 Id 가 틀렸습니다"));
+                .orElseThrow(OXQuizNotFoundException::new);
 
         Answer correctAnswer = Answer.fromString(quiz.getAnswer());
         boolean isCorrect = correctAnswer == Answer.fromString(userAnswer);
