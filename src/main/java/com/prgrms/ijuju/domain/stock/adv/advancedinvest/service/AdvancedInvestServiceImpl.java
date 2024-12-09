@@ -86,12 +86,12 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                         sendReferenceData(session);
                         liveSentCounter.put(gameId, 0);
 
-                    } else if (second >= 60 && second <= 360 && second % 60 == 0) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
-                        int livePhase = (second - 60) / 60;
+                    } else if (second >= 15 && second <= 90 && second % 15 == 0) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
+                        int livePhase = (second - 15) / 15;
                         sendLiveData(session, livePhase);
                         liveSentCounter.put(gameId, liveSentCounter.getOrDefault(gameId, 0) + 1);
 
-                    } else if (second == 420) {
+                    } else if (second == 105) {
                         endGame(gameId); // 게임 종료
                         sendEndSignal(session);
 
