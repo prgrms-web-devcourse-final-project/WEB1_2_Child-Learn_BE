@@ -12,6 +12,9 @@ import com.prgrms.ijuju.domain.avatar.exception.ItemException;
 import com.prgrms.ijuju.domain.avatar.repository.AvatarRepository;
 import com.prgrms.ijuju.domain.avatar.repository.ItemRepository;
 import com.prgrms.ijuju.domain.avatar.repository.PurchaseRepository;
+import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.member.exception.MemberErrorCode;
+import com.prgrms.ijuju.domain.member.exception.MemberException;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,6 @@ public class AvatarService {
     private final AvatarRepository avatarRepository;
     private final ItemRepository itemRepository;
     private final MemberRepository memberRepository;
-    private final FileStorageService fileStorageService;
     private final PurchaseRepository purchaseRepository;
 
     // 아이템 장착
@@ -57,6 +59,7 @@ public class AvatarService {
         // 4. 아바타 저장
         avatarRepository.save(avatar);
 
+        // 5. 착용여부 변경
         Optional<Purchase> purchase = purchaseRepository.findByItemIdAndMemberId(item.getId(), memberId);
 
         if (purchase.isPresent()) {
@@ -66,7 +69,7 @@ public class AvatarService {
         // 아이템 이미지 URL 반환(프론트에서 합성할 수 있도록)
         String itemImageUrl = "/uploads/" + item.getImageUrl();
 
-        return new ItemResponseDTO.ItemEquipResponseDTO("아이템이 장착되었습니다", itemImageUrl);
+        return new ItemResponseDTO.ItemEquipResponseDTO("아이템이 장착되었습니다", itemImageUrl, purchase.get().isEquipped(), purchase.get().isPurchased());
     }
 
     // 아이템 해제
@@ -106,7 +109,7 @@ public class AvatarService {
             itemImageUrl = combineItemImages(avatar);   // 남아있는 아이템들로 합성된 이미지 생성
         }
 
-        return new ItemResponseDTO.ItemRemoveResponseDTO("아이템이 성공적으로 해제되었습니다.", itemImageUrl);
+        return new ItemResponseDTO.ItemRemoveResponseDTO("아이템이 성공적으로 해제되었습니다.", itemImageUrl, purchase.get().isEquipped(), purchase.get().isPurchased());
     }
 
     // 아이템 합성

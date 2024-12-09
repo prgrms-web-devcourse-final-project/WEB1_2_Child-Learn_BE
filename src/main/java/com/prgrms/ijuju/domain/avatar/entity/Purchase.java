@@ -33,6 +33,7 @@ public class Purchase {
     @CreatedDate
     private LocalDateTime purchaseDate;
 
+    private boolean isPurchased;
     private boolean isEquipped; // 구매 시 장착여부
 
     @Builder
@@ -40,10 +41,15 @@ public class Purchase {
         this.member = member;
         this.item = item;
         this.isEquipped = false;
+        this.isPurchased = true;
         this.purchaseDate = purchaseDate;
     }
 
     public void changeIsEquipped(boolean isEquipped) {
         this.isEquipped = isEquipped;
+    }
+
+    public void changeIsPurchased(boolean isPurchased) {
+        this.isPurchased = isPurchased;
     }
 }
