@@ -1,10 +1,19 @@
 package com.prgrms.ijuju.domain.chat.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
+
 import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+
+import com.prgrms.ijuju.domain.chat.exception.ChatException;
+
+import jakarta.annotation.PostConstruct;
+
+import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -12,12 +21,28 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatSessionService { // Redis를 이용한 세션 관리 서비스
     
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisConnectionFactory redisConnectionFactory;
+    
     private static final String USER_SESSION_KEY = "chat:session:";
     private static final String USER_STATUS_KEY = "chat:status:";
     private static final int SESSION_TIMEOUT = 30;
-    private static final int HEARTBEAT_INTERVAL = 30;
     private static final int HEARTBEAT_TIMEOUT = 90; 
 
+    @PostConstruct
+    public void init() {
+        validateRedisConnection();
+    }
+    
+    private void validateRedisConnection() {
+        try {
+            redisConnectionFactory.getConnection().ping();
+            log.info("Redis 연결 성공");
+        } catch (Exception e) {
+            log.error("Redis 연결 실패: {}", e.getMessage());
+            throw new ChatException(ChatErrorCode.REDIS_CONNECTION_ERROR);
+        }
+    }
+    
     public void connectUser(Long userId, String sessionId) {
         saveSession(userId, sessionId);
         updateUserStatus(userId, true);
@@ -56,12 +81,14 @@ public class ChatSessionService { // Redis를 이용한 세션 관리 서비스
     }
 
     public void heartbeat(Long userId) {
-        String key = "user:heartbeat:" + userId;
-        redisTemplate.opsForValue().set(key, System.currentTimeMillis());
-        redisTemplate.expire(key, HEARTBEAT_TIMEOUT, TimeUnit.SECONDS);
-        
-        // 사용자 상태 업데이트
-        updateUserStatus(userId, true);
+        try {
+            String key = "user:heartbeat:" + userId;
+            redisTemplate.opsForValue().set(key, System.currentTimeMillis());
+            redisTemplate.expire(key, HEARTBEAT_TIMEOUT, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("하트비트 업데이트 실패: {}", e.getMessage());
+            throw new ChatException(ChatErrorCode.REDIS_CONNECTION_ERROR);
+        }
     }
 
     public boolean testConnection() {
