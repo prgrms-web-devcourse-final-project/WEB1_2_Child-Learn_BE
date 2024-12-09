@@ -28,18 +28,22 @@ public class ChatMessageController {
 
     // 채팅방 메시지 전송
     @MessageMapping("/chat/message")
-    public void handleMessage(
-            @Payload ChatMessageRequestDTO request,
+    public void handleChatMessage(
+            @Payload ChatMessageRequestDTO messageRequest,
             @Header("simpUser") SecurityUser user) {
         
         ChatMessageResponseDTO response = chatService.sendMessage(
-            request.getRoomId(),
+            messageRequest.getRoomId(),
             user.getId(),
-            request.getContent(),
-            request.getImage()
+            messageRequest.getContent(),
+            messageRequest.getImage()
         );
-
-        messagingTemplate.convertAndSend("/topic/chat/room/" + request.getRoomId(), response);
+        
+        messagingTemplate.convertAndSendToUser(
+            messageRequest.getRoomId(),
+            "/queue/messages",
+            response
+        );
     }
 
     // 채팅방 메시지 조회 - 페이지네이션 적용

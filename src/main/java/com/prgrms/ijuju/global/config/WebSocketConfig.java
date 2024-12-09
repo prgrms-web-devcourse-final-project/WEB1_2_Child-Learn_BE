@@ -28,8 +28,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
         this.chatWebSocketHandler = chatWebSocketHandler;
     }
 
-
-  
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(chatWebSocketHandler, "/ws")
@@ -39,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer, WebSoc
     }
 
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/queue", "/topic");
         registry.setApplicationDestinationPrefixes("/app");
     }
 
