@@ -1,0 +1,224 @@
+package com.prgrms.ijuju.domain.wallet.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import com.prgrms.ijuju.domain.member.entity.Member;
+import com.prgrms.ijuju.domain.wallet.dto.request.ExchangeRequestDTO;
+import com.prgrms.ijuju.domain.wallet.dto.request.GamePointRequestDTO;
+import com.prgrms.ijuju.domain.wallet.dto.request.StockPointRequestDTO;
+import com.prgrms.ijuju.domain.wallet.dto.request.AttendanceRequestDTO;
+import com.prgrms.ijuju.domain.wallet.dto.response.WalletResponseDTO;
+import com.prgrms.ijuju.domain.wallet.entity.ExchangeTransaction;
+import com.prgrms.ijuju.domain.wallet.entity.PointTransaction;
+import com.prgrms.ijuju.domain.wallet.entity.PointType;
+import com.prgrms.ijuju.domain.wallet.entity.TransactionType;
+import com.prgrms.ijuju.domain.wallet.entity.Wallet;
+import com.prgrms.ijuju.domain.wallet.exception.WalletException;
+import com.prgrms.ijuju.domain.wallet.exception.WalletErrorCode;
+import com.prgrms.ijuju.domain.wallet.repository.PointTransactionRepository;
+import com.prgrms.ijuju.domain.wallet.repository.WalletRepository;
+import com.prgrms.ijuju.domain.wallet.repository.ExchangeTransactionRepository;
+import com.prgrms.ijuju.domain.wallet.handler.WebSocketHandler;
+
+import jakarta.persistence.LockModeType;
+
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Slf4j
+public class WalletService {
+    private final WalletRepository walletRepository;
+    private final PointTransactionRepository pointTransactionRepository;
+    private final WebSocketHandler webSocketHandler;
+    private final ExchangeTransactionRepository exchangeTransactionRepository;
+
+    // 게임 포인트 유효성 검사
+    private void validateGamePoints(GamePointRequestDTO request) {
+        if (request == null) {
+            throw new WalletException(WalletErrorCode.GAME_POINT_NOT_FOUND);
+        }
+        
+        if (request.getMemberId() == null) {
+            throw new WalletException(WalletErrorCode.MEMBER_INVALID_ID);
+        }
+        
+        if (request.getPoints() == null || request.getPoints() < 0) {
+            throw new WalletException(WalletErrorCode.TRANSACTION_AMOUNT_INVALID);
+        }
+        
+        if (request.getGameType() == null) {
+            throw new WalletException(WalletErrorCode.GAME_TYPE_INVALID);
+        }
+    }
+
+    // 환전 처리 유효성 검사
+    private void validateExchange(Wallet wallet, Long points) {
+        if (points < 100 || points % 100 != 0) {
+            throw new WalletException(WalletErrorCode.EXCHANGE_MINIMUM_AMOUNT);
+        }
+        if (wallet.getCurrentPoints() < points) {
+            throw new WalletException(WalletErrorCode.POINT_INSUFFICIENT);
+        }
+    }
+
+    // 주식 투자 유효성 검사
+    private void validateStockTransaction(Wallet wallet, StockPointRequestDTO request) {
+        if (request.getTransactionType() == TransactionType.USED 
+                && wallet.getCurrentPoints() < request.getPoints()) {
+            throw new WalletException(WalletErrorCode.POINT_INSUFFICIENT);
+        }
+    }
+
+    // 현재 포인트 및 코인 조회
+    public WalletResponseDTO showCurrentBalance(Long memberId) {
+        Wallet wallet = walletRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+        return new WalletResponseDTO(memberId, wallet.getCurrentPoints(), wallet.getCurrentCoins());
+    }
+
+    // 환전 처리
+    @Transactional
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public WalletResponseDTO exchangePointsToCoin(ExchangeRequestDTO request) {
+        // 최소 환전 포인트 검증
+        if (request.getPointsExchanged() < 100) {
+            throw new WalletException(WalletErrorCode.EXCHANGE_MINIMUM_AMOUNT);
+        }
+
+        Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+        
+        validateExchange(wallet, request.getPointsExchanged());
+        
+        // 포인트/코인 업데이트
+        wallet.updatePointsAndCoins(request.getPointsExchanged(), TransactionType.EXCHANGED);
+
+        // 1. 포인트 거래 내역 저장
+        savePointTransaction(wallet.getMember(), 
+                TransactionType.EXCHANGED, 
+                request.getPointsExchanged(), 
+                PointType.EXCHANGE, 
+                "POINTS_TO_COINS");
+
+        // 2. 환전 거래 내역 저장
+        ExchangeTransaction exchangeTransaction = ExchangeTransaction.builder()
+                .member(wallet.getMember())
+                .transactionType(TransactionType.EXCHANGED)
+                .pointsExchanged(request.getPointsExchanged())
+                .coinsReceived(request.getPointsExchanged() / 100)
+                .pointType(PointType.EXCHANGE)
+                .build();
+        exchangeTransactionRepository.save(exchangeTransaction);
+        
+        notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+
+        return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+    }
+
+    // 출석 체크
+    @Transactional
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public WalletResponseDTO processAttendancePoints(AttendanceRequestDTO request) {
+        Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+        
+        // 오늘 날짜의 시작(00:00:00)과 끝(23:59:59) 설정
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = now.toLocalDate().atTime(23, 59, 59);
+
+        // 오늘의 출석체크 거래내역 확인
+        boolean alreadyCheckedIn = pointTransactionRepository.existsByMemberIdAndPointTypeAndCreatedAtBetween(
+                request.getMemberId(), 
+                PointType.ATTENDANCE, 
+                startOfDay, 
+                endOfDay
+        );
+
+        if (alreadyCheckedIn) {
+            throw new WalletException(WalletErrorCode.ATTENDANCE_ALREADY_CHECKED);
+        }
+
+        Long attendancePoints = 100L;
+        wallet.updatePointsAndCoins(attendancePoints, TransactionType.EARNED);
+
+        savePointTransaction(wallet.getMember(), TransactionType.EARNED, 
+                attendancePoints, PointType.ATTENDANCE, "CHECKIN");
+
+        notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+
+        return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+    }
+
+    // 미니 게임
+    @Transactional
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public WalletResponseDTO processMiniGamePoints(GamePointRequestDTO request) {
+        validateGamePoints(request);
+
+        // 패배한 경우 현재 지갑 상태만 반환
+        if (!request.isWin()) {
+            Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                    .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+            return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+        }
+
+        Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+
+        // 승리한 경우에만 포인트 업데이트 및 거래 내역 저장
+        wallet.updatePointsAndCoins(request.getPoints(), TransactionType.EARNED);
+        String description = request.getGameType().toString();
+        savePointTransaction(wallet.getMember(), TransactionType.EARNED, request.getPoints(), PointType.GAME, description);
+
+        // 실시간 업데이트
+        notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+
+        return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+    }
+    
+    // 주식 투자
+    @Transactional
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public WalletResponseDTO simulateStockInvestment(StockPointRequestDTO request) {
+        Wallet wallet = walletRepository.findByMemberId(request.getMemberId())
+                .orElseThrow(() -> new WalletException(WalletErrorCode.WALLET_NOT_FOUND));
+
+        validateStockTransaction(wallet, request);
+
+        wallet.updatePointsAndCoins(request.getPoints(), request.getTransactionType());
+
+        savePointTransaction(wallet.getMember(), request.getTransactionType(), 
+                request.getPoints(), PointType.STOCK, request.getStockType().toString());
+
+        notifyPointUpdate(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+
+        return new WalletResponseDTO(request.getMemberId(), wallet.getCurrentPoints(), wallet.getCurrentCoins());
+    }
+
+    // 포인트 거래 내역 저장
+    private void savePointTransaction(Member member, TransactionType transactionType, 
+            Long points, PointType pointType, String subType) {
+        PointTransaction transaction = PointTransaction.builder()
+                .member(member)
+                .transactionType(transactionType)
+                .points(points)
+                .pointType(pointType)
+                .subType(subType)
+                .build();
+        pointTransactionRepository.save(transaction);
+    }
+
+    // 실시간 업데이트
+    private void notifyPointUpdate(Long memberId, Long currentPoints, Long currentCoins) {
+        WalletResponseDTO response = new WalletResponseDTO(memberId, currentPoints, currentCoins);
+        webSocketHandler.sendPointUpdate(memberId, response);
+    }
+}

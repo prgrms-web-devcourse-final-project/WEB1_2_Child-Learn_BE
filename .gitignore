@@ -37,6 +37,10 @@ out/
 ### VS Code ###
 .vscode/
 
-### H2 DB file ###
+# Ignore H2 database files
 *.mv.db
 *.trace.db
+
+#secret yml#
+application-secret.yml
+/src/main/resources/firebase/firebase_service_key.json
