@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ChatRoomRepository extends MongoRepository<ChatRoom, String> {
 
-    Optional<ChatRoom> findByMemberIdAndFriendIdAndIsDeletedFalse(Long memberId, Long friendId);
+    Optional<ChatRoom> findByMemberIdAndFriendId(Long memberId, Long friendId);
 
     List<ChatRoom> findByMemberIdOrFriendId(Long memberId, Long friendId);
 

@@ -46,6 +46,9 @@ public class ChatRoom {
     @DBRef
     private List<Chat> chat = new ArrayList<>();
 
+    @Field("deleted_by_users")
+    private List<Long> deletedByUsers = new ArrayList<>();
+
     // 채팅 목록 조회
     public List<Chat> getChat() {
         if (chat == null) {
@@ -113,9 +116,22 @@ public class ChatRoom {
     }
 
     // 채팅방 삭제
-    public void markAsDeleted() {
-        this.isDeleted = true;
+    public void markAsDeleted(Long userId) {
+        if (!deletedByUsers.contains(userId)) {
+            deletedByUsers.add(userId);
+        }
+        
+        // 양쪽 사용자가 모두 삭제했는지 확인
+        if (deletedByUsers.size() == 2) {
+            this.isDeleted = true;
+        }
+        
         this.deletedAt = LocalDateTime.now();
+    }
+
+    // 채팅방이 완전히 삭제되어야 하는지 확인
+    public boolean shouldBeCompletelyDeleted() {
+        return deletedByUsers.size() == 2;
     }
 
     // 채팅방 삭제 복구

@@ -15,13 +15,12 @@ import java.util.stream.Collectors;
 public class ChatCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String RECENT_MESSAGES_KEY = "chat:recent:";
-    private static final int CACHE_DURATION = 24; // 시간 단위
 
     // 최근 메시지 캐싱
-    public void cacheRecentMessages(String roomId, List<ChatMessageResponseDTO> messages) {
+    public void cacheRecentMessages(String roomId, List<ChatMessageResponseDTO> messages, int ttlMinutes) {
         String key = RECENT_MESSAGES_KEY + roomId;
         redisTemplate.opsForList().rightPushAll(key, messages.toArray());
-        redisTemplate.expire(key, CACHE_DURATION, TimeUnit.HOURS);
+        redisTemplate.expire(key, ttlMinutes, TimeUnit.MINUTES);
     }
 
     // 캐시된 최근 메시지 조회

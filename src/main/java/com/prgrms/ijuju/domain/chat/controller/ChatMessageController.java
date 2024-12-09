@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.chat.dto.request.ChatReadRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatReadResponseDTO;
 import com.prgrms.ijuju.domain.chat.service.ChatService;
+import com.prgrms.ijuju.domain.chat.service.ChatSessionService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 
@@ -23,21 +24,26 @@ public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final ChatSessionService chatSessionService;
 
     // 채팅방 메시지 전송
     @MessageMapping("/chat/message")
-    public void handleMessage(
-            @Payload ChatMessageRequestDTO request,
+    public void handleChatMessage(
+            @Payload ChatMessageRequestDTO messageRequest,
             @Header("simpUser") SecurityUser user) {
         
         ChatMessageResponseDTO response = chatService.sendMessage(
-            request.getRoomId(),
+            messageRequest.getRoomId(),
             user.getId(),
-            request.getContent(),
-            request.getImage()
+            messageRequest.getContent(),
+            messageRequest.getImage()
         );
-
-        messagingTemplate.convertAndSend("/topic/chat/room/" + request.getRoomId(), response);
+        
+        messagingTemplate.convertAndSendToUser(
+            messageRequest.getRoomId(),
+            "/queue/messages",
+            response
+        );
     }
 
     // 채팅방 메시지 조회 - 페이지네이션 적용
@@ -96,5 +102,11 @@ public class ChatMessageController {
             "/queue/chat/unread",
             unreadCount
         );
+    }
+
+    // 하트비트 체크
+    @MessageMapping("/chat/heartbeat")
+    public void handleHeartbeat(@Header("simpUser") SecurityUser user) {
+        chatSessionService.heartbeat(user.getId());
     }
 }

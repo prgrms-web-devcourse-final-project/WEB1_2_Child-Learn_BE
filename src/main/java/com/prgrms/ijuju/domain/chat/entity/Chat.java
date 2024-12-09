@@ -45,6 +45,15 @@ public class Chat {
     @Indexed
     @Field(name = "sender_id")
     private Long senderId;
+
+    @NotNull
+    @Indexed
+    @Field(name = "sender_login_id")
+    private String senderLoginId;
+
+    @NotNull
+    @Field(name = "sender_username")
+    private String senderUsername;
     
     @NotNull
     @Field(name = "sender_profile_image")
@@ -55,7 +64,7 @@ public class Chat {
 
     @ValidImage
     @Field(name = "image_url")
-    private MultipartFile imageUrl;
+    private String imageUrl;
 
     @Field(name = "is_read")
     private boolean isRead;
@@ -71,14 +80,15 @@ public class Chat {
     private LocalDateTime deletedAt;
 
     // 메시지 생성
-    public static Chat createChatMessage(ChatRoom chatRoom, Member sender, String content, MultipartFile imageUrl) {
+    public static Chat createChatMessage(ChatRoom chatRoom, Member sender, String content, String imageUrl) {
         if (content == null && imageUrl == null) {
             throw new IllegalArgumentException("메시지 내용이나 이미지 중 하나는 반드시 있어야 합니다.");
         }
         
         return Chat.builder()
                 .roomId(chatRoom.getId())
-                .senderId(sender.getId())
+                .senderLoginId(sender.getLoginId())
+                .senderUsername(sender.getUsername())
                 .senderProfileImage(sender.getProfileImage())
                 .content(content)
                 .imageUrl(imageUrl)

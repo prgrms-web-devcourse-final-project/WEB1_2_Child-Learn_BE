@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,13 +23,14 @@ import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatMessageRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
+import com.prgrms.ijuju.domain.avatar.service.FileStorageService;
 
 import java.util.stream.Collectors;
 import java.util.List;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,9 +43,11 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
+    private final FileStorageService fileStorageService;
+    private final FriendListRepository friendListRepository;
+
     private static final int PAGE_SIZE = 20;
 
     // 채팅 저장
@@ -58,45 +60,59 @@ public class ChatService {
     
     // 채팅방 생성 또는 조회
     @Transactional
-    public ChatRoomListResponseDTO createChatRoom(Long memberId, Long friendId) {
-        // 자기 자신과의 채팅 방지
-        if (memberId.equals(friendId)) {
-            throw new ChatException(ChatErrorCode.USER_SELF_CHAT);
+    public ChatRoom createChatRoom(Long memberId, Long friendId) {
+        // 친구 관계 확인
+        if (!friendListRepository.existsByMemberIdAndFriendId(memberId, friendId)) {
+            throw new ChatException(ChatErrorCode.NOT_FRIENDS);
         }
 
-        // 사용자 존재 여부 확인
-        memberRepository.findById(memberId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-        Member friend = memberRepository.findById(friendId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-
-        // 중복 채팅방 검사 (양방향 체크)
-        if (chatRoomRepository.existsByMemberIdAndFriendId(memberId, friendId) ||
-            chatRoomRepository.existsByMemberIdAndFriendId(friendId, memberId)) {
-            throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_EXISTS);
+        // 이미 존재하는 채팅방 확인
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByMemberIdAndFriendId(memberId, friendId);
+        if (existingRoom.isPresent()) {
+            return existingRoom.get();
         }
 
-        // 새로운 채팅방 생성
+        // 새 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
             .memberId(memberId)
             .friendId(friendId)
             .build();
-        
-        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
-        return ChatRoomListResponseDTO.from(savedChatRoom, friend, memberId);
+
+        return chatRoomRepository.save(chatRoom);
     }
 
     // 채팅방 삭제 (논리적 삭제)
+    @Transactional
     public void deleteChatRoom(String roomId, Long userId) {
+        // 채팅방이 존재하는지 먼저 확인
+        if (!chatRoomRepository.existsById(roomId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND);
+        }
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+
+        // 이미 삭제된 채팅방인지 확인
+        if (chatRoom.isDeleted() && chatRoom.getDeletedByUsers().contains(userId)) {
+            throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_DELETED);
+        }
 
         if (!chatRoom.getMemberId().equals(userId) && !chatRoom.getFriendId().equals(userId)) {
             throw new ChatException(ChatErrorCode.CHATROOM_ACCESS_DENIED);
         }
 
-        chatRoom.markAsDeleted();
-        chatRoomRepository.save(chatRoom);
+        chatRoom.markAsDeleted(userId);
+        
+        if (chatRoom.shouldBeCompletelyDeleted()) {
+            // 채팅방과 관련된 모든 메시지 삭제
+            chatMessageRepository.deleteByRoomId(roomId);
+            // 채팅방 삭제
+            chatRoomRepository.delete(chatRoom);
+            // 캐시 삭제
+            chatCacheService.invalidateCache(roomId);
+        } else {
+            log.info("채팅방 {}는 완전히 삭제되지 않았습니다.", roomId);
+        }
     }
 
     // 채팅방 목록 조회
@@ -106,34 +122,18 @@ public class ChatService {
         
         List<ChatRoom> rooms = chatRoomRepository.findByMemberIdOrFriendId(userId, userId);
         
-        if (rooms.isEmpty()) {
-            log.info("사용자 {}의 채팅방이 없습니다.", userId);
-            return Collections.emptyList();
-        }
-
-        // 친구 ID 목록 추출
-        List<Long> friendIds = rooms.stream()
-                .map(room -> room.getMemberId().equals(userId) ? 
-                     room.getFriendId() : room.getMemberId())
-                .collect(Collectors.toList());
-
-        // 친구 정보 한 번에 조회
-        List<Member> friends = memberRepository.findAllById(friendIds);
-        Map<Long, Member> friendMap = friends.stream()
-                .collect(Collectors.toMap(Member::getId, f -> f));
-
-        // DTO 변환
-        List<ChatRoomListResponseDTO> result = rooms.stream()
-                .map(room -> {
-                    Long friendId = room.getMemberId().equals(userId) ? 
-                                  room.getFriendId() : room.getMemberId();
-                    Member friend = friendMap.get(friendId);
-                    return ChatRoomListResponseDTO.from(room, friend, userId);
-                })
-                .collect(Collectors.toList());
-
-        log.info("사용자 {}의 채팅방 {}개 조회 완료", userId, result.size());
-        return result;
+        return rooms.stream()
+            .filter(room -> {
+                return !room.isDeleted() || 
+                       (room.isDeleted() && !room.getDeletedByUsers().contains(userId));
+            })
+            .map(room -> {
+                Member friend = memberRepository.findById(
+                    room.getMemberId().equals(userId) ? room.getFriendId() : room.getMemberId()
+                ).orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
+                return ChatRoomListResponseDTO.from(room, friend, userId);
+            })
+            .collect(Collectors.toList());
     }
 
     // 채팅 메시지 조회
@@ -153,7 +153,7 @@ public class ChatService {
             List<ChatMessageResponseDTO> messageDTOs = messages.getContent().stream()
                 .map(ChatMessageResponseDTO::from)
                 .collect(Collectors.toList());
-            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+            chatCacheService.cacheRecentMessages(roomId, messageDTOs, 24 * 60); // 24시간 캐시
         }
 
         return messages.map(ChatMessageResponseDTO::from);
@@ -161,15 +161,39 @@ public class ChatService {
 
     // 메시지 전송
     public ChatMessageResponseDTO sendMessage(String roomId, Long senderId, String content, MultipartFile image) {
-        validateMessage(content, image);
-        
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+
+        // 친구 관계 확인
+
+        validateMessage(content, image);
         validateChatRoomAccess(chatRoom, senderId);
 
         Member sender = memberRepository.findById(senderId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
-        Chat chat = Chat.createChatMessage(chatRoom, sender, content, image);   
+
+        String imageUrl = null;
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = fileStorageService.storeFile(image);
+            } catch (IOException e) {
+                throw new ChatException(ChatErrorCode.FILE_UPLOAD_ERROR);
+            }
+        }
+
+        // 추후 메시지 암호화 추가하기
+        Chat chat = Chat.builder()
+            .roomId(chatRoom.getId())
+            .senderLoginId(sender.getLoginId())
+            .senderUsername(sender.getUsername())
+            .senderProfileImage(sender.getProfileImage())
+            .content(content)
+            .imageUrl(imageUrl)
+            .createdAt(LocalDateTime.now())
+            .isRead(false)
+            .isDeleted(false)
+            .build();
         
         chatMessageRepository.save(chat);
         
@@ -260,26 +284,28 @@ public class ChatService {
 
     // 초기 로딩시 캐시 저장
     public List<ChatMessageResponseDTO> showMessages(String roomId, String lastMessageId, int size) {
-        // 캐시 확인 (초기 로딩시)
-        if (lastMessageId == null) {
-            List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
-            if (cachedMessages != null && !cachedMessages.isEmpty()) {
-                return cachedMessages;
-            }
-        }
-    
-        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
-        Page<Chat> messages = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        // 캐시 확에 페이지 정보 포함
+        String cacheKey = String.format("%s:%s:%d", roomId, lastMessageId, size);
         
-        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
-            .map(ChatMessageResponseDTO::from)
-            .collect(Collectors.toList());
-    
-        // 초기 로딩시 캐시 저장
-        if (lastMessageId == null) {
-            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+        // 캐시 확인
+        List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(cacheKey);
+        if (cachedMessages != null) {
+            return cachedMessages;
         }
-    
+
+        // 커서 기반 페이징으로 변경
+        Pageable pageable = PageRequest.of(0, size);
+        Page<Chat> messages = lastMessageId == null ?
+                chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable) :
+                chatMessageRepository.findByRoomIdAndIdLessThanOrderByCreatedAtDesc(roomId, lastMessageId, pageable);
+
+        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+                .map(ChatMessageResponseDTO::from)
+                .collect(Collectors.toList());
+
+        // 캐시 저장 (짧은 TTL 설정)
+        chatCacheService.cacheRecentMessages(cacheKey, messageDTOs, 5); // 5분 캐시
+
         return messageDTOs;
     }
 
