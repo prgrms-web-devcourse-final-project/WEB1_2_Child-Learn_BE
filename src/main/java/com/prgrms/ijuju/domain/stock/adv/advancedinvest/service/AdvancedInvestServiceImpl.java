@@ -82,12 +82,6 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                 try {
                     countDown.put(gameId, second);
 
-                    if (second == 60) { // 장전 시간 종료 시점
-                        WebSocketUtil.send(session, "장전 거래 시간이 종료되었습니다. 장이 열렸습니다.");
-                    } else if (second == 360) { // 거래 시간 종료 시점
-                        WebSocketUtil.send(session, "장이 닫혔습니다. 장후 거래 시간으로 거래 마무리를 해주세요");
-                    }
-
                     if (second == 0) { // 장전 거래 시간 1분 > ReferenceData
                         sendReferenceData(session);
                         liveSentCounter.put(gameId, 0);
