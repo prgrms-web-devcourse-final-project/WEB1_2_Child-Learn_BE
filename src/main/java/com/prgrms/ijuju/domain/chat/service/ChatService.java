@@ -111,7 +111,7 @@ public class ChatService {
             // 캐시 삭제
             chatCacheService.invalidateCache(roomId);
         } else {
-            chatRoomRepository.save(chatRoom);
+            log.info("채팅방 {}는 완전히 삭제되지 않았습니다.", roomId);
         }
     }
 
