@@ -15,6 +15,8 @@ public class ChatSessionService { // Redis를 이용한 세션 관리 서비스
     private static final String USER_SESSION_KEY = "chat:session:";
     private static final String USER_STATUS_KEY = "chat:status:";
     private static final int SESSION_TIMEOUT = 30;
+    private static final int HEARTBEAT_INTERVAL = 30;
+    private static final int HEARTBEAT_TIMEOUT = 90; 
 
     public void connectUser(Long userId, String sessionId) {
         saveSession(userId, sessionId);
@@ -56,7 +58,10 @@ public class ChatSessionService { // Redis를 이용한 세션 관리 서비스
     public void heartbeat(Long userId) {
         String key = "user:heartbeat:" + userId;
         redisTemplate.opsForValue().set(key, System.currentTimeMillis());
-        redisTemplate.expire(key, 1, TimeUnit.MINUTES);
+        redisTemplate.expire(key, HEARTBEAT_TIMEOUT, TimeUnit.SECONDS);
+        
+        // 사용자 상태 업데이트
+        updateUserStatus(userId, true);
     }
 
     public boolean testConnection() {

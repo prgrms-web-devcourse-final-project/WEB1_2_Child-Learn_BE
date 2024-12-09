@@ -5,6 +5,7 @@ import com.prgrms.ijuju.domain.chat.dto.request.ChatReadRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatMessageResponseDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatReadResponseDTO;
 import com.prgrms.ijuju.domain.chat.service.ChatService;
+import com.prgrms.ijuju.domain.chat.service.ChatSessionService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final ChatSessionService chatSessionService;
 
     // 채팅방 메시지 전송
     @MessageMapping("/chat/message")
@@ -96,5 +98,11 @@ public class ChatMessageController {
             "/queue/chat/unread",
             unreadCount
         );
+    }
+
+    // 하트비트 체크
+    @MessageMapping("/chat/heartbeat")
+    public void handleHeartbeat(@Header("simpUser") SecurityUser user) {
+        chatSessionService.heartbeat(user.getId());
     }
 }
