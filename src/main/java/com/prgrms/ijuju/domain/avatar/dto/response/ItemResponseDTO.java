@@ -26,36 +26,31 @@ public class ItemResponseDTO {
 
     // 아이템 구매
     @Data
+    @AllArgsConstructor
     public static class ItemPurchaseResponseDTO {
         private String message;
-
-        public ItemPurchaseResponseDTO(String message) {
-            this.message = message;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
     // 아이템 장착
     @Data
+    @AllArgsConstructor
     public static class ItemEquipResponseDTO {
         private String message;
         private String itemImageUrl;
-
-        public ItemEquipResponseDTO(String message, String itemImageUrl) {
-            this.message = message;
-            this.itemImageUrl=itemImageUrl;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
     // 아이템 해제
     @Data
+    @AllArgsConstructor
     public static class ItemRemoveResponseDTO {
         private String message;
         private String itemImageUrl;
-
-        public ItemRemoveResponseDTO(String message, String itemImageUrl) {
-            this.message = message;
-            this.itemImageUrl = itemImageUrl;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
     // 아이템 조회

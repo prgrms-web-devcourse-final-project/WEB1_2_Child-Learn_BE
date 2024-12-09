@@ -237,7 +237,7 @@ public class MemberService {
         }
     }
 
-    // 다른 회원 정보 조회
+    // 다른 회원 정보 조회(프론트 x)
     public MemberResponseDTO.ReadOthersInfoResponseDTO readOthersInfo(Long id) {
         Optional<Member> opMember = memberRepository.findById(id);
         if (opMember.isPresent()) {
@@ -250,7 +250,7 @@ public class MemberService {
         }
     }
 
-    // 전체 회원 목록
+    // 전체 회원 목록(필요 x)
     public Page<MemberResponseDTO.ReadAllResponseDTO> readAll(MemberRequestDTO.PageRequestDTO dto, Long memberId) {
         Pageable pageable = dto.getPageable();
 
@@ -322,10 +322,29 @@ public class MemberService {
         }
     }
 
-    // 회원 정보 수정
+    // 유저네임 수정
     @Transactional
-    public MemberResponseDTO.UpdateMyInfoResponseDTO update(MemberRequestDTO.UpdateMyInfoRequestDTO dto) {
-        Optional<Member> opMember = memberRepository.findById(dto.getId());
+    public MemberResponseDTO.UpdateMyInfoResponseDTO updateUsername(MemberRequestDTO.UpdateUsernameRequestDTO dto, Long memberId) {
+        Optional<Member> opMember = memberRepository.findById(memberId);
+
+        if (opMember.isPresent()) {
+            Member member = opMember.get();
+
+            if (dto.getUsername() != null) {
+                member.changeUsername(dto.getUsername());
+            }
+            memberRepository.save(member);
+
+            return new MemberResponseDTO.UpdateMyInfoResponseDTO("회원 정보 수정이 완료되었습니다.");
+        } else {
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_MODIFIED);
+        }
+    }
+
+    // 비밀번호 수정
+    @Transactional
+    public MemberResponseDTO.UpdateMyInfoResponseDTO updatePw(MemberRequestDTO.UpdatePwRequestDTO dto, Long memberId) {
+        Optional<Member> opMember = memberRepository.findById(memberId);
 
         if (opMember.isPresent()) {
             Member member = opMember.get();
@@ -333,11 +352,7 @@ public class MemberService {
                 member.changePw(passwordEncoder.encode(dto.getPw()));
             }
 
-            if (dto.getUsername() != null) {
-                member.changeUsername(dto.getUsername());
-            }
             memberRepository.save(member);
-
             return new MemberResponseDTO.UpdateMyInfoResponseDTO("회원 정보 수정이 완료되었습니다.");
         } else {
             throw new MemberException(MemberErrorCode.MEMBER_NOT_MODIFIED);

@@ -62,9 +62,10 @@ public class ItemService {
                 .build();
         log.info("아이템 구매 완료");
 
+
         purchaseRepository.save(newPurchase);
 
-        return new ItemResponseDTO.ItemPurchaseResponseDTO("아이템을 구매했습니다");
+        return new ItemResponseDTO.ItemPurchaseResponseDTO("아이템을 구매했습니다", newPurchase.isEquipped(), newPurchase.isPurchased());
 
     }
 
@@ -86,7 +87,7 @@ public class ItemService {
 
         Page<Item> itemPage = itemRepository.findAll(pageable);
 
-        // Member ID를 기반으로 Member 조회 (필요 시 추가)
+        // Member ID를 기반으로 Member 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 

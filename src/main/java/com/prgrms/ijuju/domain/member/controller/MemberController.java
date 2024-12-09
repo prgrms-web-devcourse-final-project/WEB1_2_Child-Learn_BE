@@ -139,24 +139,22 @@ public class MemberController {
     }
 
     // 회원 정보 수정
-    @PatchMapping("/my-info")
-    public ResponseEntity<MemberResponseDTO.UpdateMyInfoResponseDTO> updateMyInfo(@AuthenticationPrincipal SecurityUser user,
-                                                                                  @Validated @RequestBody MemberRequestDTO.UpdateMyInfoRequestDTO dto,
-                                                                                  BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            // 오류 메세지 생성
-            String errorMessage = bindingResult.getAllErrors().stream()
-                    .map(error -> error.getDefaultMessage())
-                    .collect(Collectors.joining(", "));
-
-            // 오류 응답 반환
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MemberResponseDTO.UpdateMyInfoResponseDTO(errorMessage));
-        }
+    @PatchMapping("/update-username")
+    public ResponseEntity<MemberResponseDTO.UpdateMyInfoResponseDTO> updateUsername(@AuthenticationPrincipal SecurityUser user,
+                                                                                  @Validated @RequestBody MemberRequestDTO.UpdateUsernameRequestDTO dto) {
         // 부분 업데이트 로직 처리
         long id = user.getId();
-        dto.setId(id);
-        MemberResponseDTO.UpdateMyInfoResponseDTO updateDTO = memberService.update(dto);
-        return ResponseEntity.ok(memberService.update(dto));
+        MemberResponseDTO.UpdateMyInfoResponseDTO updateDTO = memberService.updateUsername(dto, id);
+        return ResponseEntity.ok(updateDTO);
+    }
+
+    // 비밀번호 수정
+    @PatchMapping("/update-pw")
+    public ResponseEntity<MemberResponseDTO.UpdateMyInfoResponseDTO> updatePw(@AuthenticationPrincipal SecurityUser user,
+                                                                              @Validated @RequestBody MemberRequestDTO.UpdatePwRequestDTO dto) {
+        Long id = user.getId();
+        MemberResponseDTO.UpdateMyInfoResponseDTO updateDTO = memberService.updatePw(dto, id);
+        return ResponseEntity.ok(updateDTO);
     }
 
     // 아이디 찾기

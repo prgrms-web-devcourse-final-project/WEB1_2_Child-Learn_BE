@@ -2,7 +2,6 @@ package com.prgrms.ijuju.domain.member.entity;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
-import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
