@@ -95,6 +95,7 @@ public class FriendService {
                 .map(FriendResponseDTO::new)
                 .collect(Collectors.toList());
     }
+
     // 친구 요청 읽음 표시
     @Transactional
     public void markRequestAsRead(Long requestId) {
@@ -227,7 +228,7 @@ public class FriendService {
     }
 
     // 친구 관계 상태 확인
-    public FriendshipStatus getFriendshipStatus(Long memberId, Long targetId) {
+    public FriendshipStatus showFriendshipStatus(Long memberId, Long targetId) {
         if (friendListRepository.existsByMemberIdAndFriendId(memberId, targetId)) {
             return FriendshipStatus.FRIEND;
         }

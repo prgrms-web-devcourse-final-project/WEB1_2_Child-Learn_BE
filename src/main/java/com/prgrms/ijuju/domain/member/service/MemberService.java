@@ -258,7 +258,7 @@ public class MemberService {
 
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
                 member,
-                friendService.getFriendshipStatus(memberId, member.getId())
+                friendService.showFriendshipStatus(memberId, member.getId())
         ));
     }
 
@@ -289,7 +289,7 @@ public class MemberService {
             }
             return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
                     member,
-                    friendService.getFriendshipStatus(memberId, member.getId())
+                    friendService.showFriendshipStatus(memberId, member.getId())
             ));
         }
         
@@ -301,7 +301,7 @@ public class MemberService {
         
         return memberPage.map(member -> new MemberResponseDTO.ReadAllResponseDTO(
                 member,
-                friendService.getFriendshipStatus(memberId, member.getId())
+                friendService.showFriendshipStatus(memberId, member.getId())
         ));
     }
     

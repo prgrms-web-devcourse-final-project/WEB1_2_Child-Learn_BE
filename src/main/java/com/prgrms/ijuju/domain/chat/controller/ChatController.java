@@ -12,6 +12,11 @@ import com.prgrms.ijuju.domain.chat.dto.request.ChatRoomRequestDTO;
 import com.prgrms.ijuju.domain.chat.dto.response.ChatRoomListResponseDTO;
 import com.prgrms.ijuju.domain.chat.service.ChatService;
 import com.prgrms.ijuju.global.auth.SecurityUser;
+import com.prgrms.ijuju.domain.chat.exception.ChatException;
+import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
+import com.prgrms.ijuju.domain.chat.entity.ChatRoom;
+import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -27,15 +32,23 @@ public class ChatController {
 
     private final ChatService chatService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FriendListRepository friendListRepository;
 
     // 채팅방 생성
     @PostMapping("/rooms")
-    public ResponseEntity<Map<String, Object>> createChatRoom(
+    public ResponseEntity<?> createChatRoom(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody ChatRoomRequestDTO request) {
-        chatService.createChatRoom(request.getFriendId(), user.getId());
+        
+        // 친구 관계 확인
+        if (!friendListRepository.existsByMemberIdAndFriendId(user.getId(), request.getFriendId())) {
+            throw new ChatException(ChatErrorCode.NOT_FRIENDS);
+        }
+
+        ChatRoom chatRoom = chatService.createChatRoom(user.getId(), request.getFriendId());
         
         Map<String, Object> response = new HashMap<>();
+        response.put("roomId", chatRoom.getId());
         response.put("message", "채팅방이 성공적으로 생성되었습니다.");
         
         return ResponseEntity.ok(response);

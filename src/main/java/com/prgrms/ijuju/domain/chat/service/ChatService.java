@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,14 +23,12 @@ import com.prgrms.ijuju.domain.chat.exception.ChatErrorCode;
 import com.prgrms.ijuju.domain.chat.repository.ChatRoomRepository;
 import com.prgrms.ijuju.domain.chat.repository.ChatMessageRepository;
 import com.prgrms.ijuju.domain.member.repository.MemberRepository;
+import com.prgrms.ijuju.domain.friend.repository.FriendListRepository;
 import com.prgrms.ijuju.domain.avatar.service.FileStorageService;
 
 import java.util.stream.Collectors;
 import java.util.List;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -49,6 +46,8 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatCacheService chatCacheService;
     private final FileStorageService fileStorageService;
+    private final FriendListRepository friendListRepository;
+
     private static final int PAGE_SIZE = 20;
 
     // 채팅 저장
@@ -61,26 +60,25 @@ public class ChatService {
     
     // 채팅방 생성 또는 조회
     @Transactional
-    public ChatRoomListResponseDTO createChatRoom(Long memberId, Long friendId) {
-        // 이미 존재하는 채팅방 확인 (삭제된 채팅방 포함)
-        Optional<ChatRoom> existingRoom = chatRoomRepository
-            .findByMemberIdAndFriendId(memberId, friendId);
-            
-        // 삭제되지 않은 채팅방이 있다면 예외 발생
-        if (existingRoom.isPresent() && !existingRoom.get().isDeleted()) {
-            throw new ChatException(ChatErrorCode.CHATROOM_ALREADY_EXISTS);
+    public ChatRoom createChatRoom(Long memberId, Long friendId) {
+        // 친구 관계 확인
+        if (!friendListRepository.existsByMemberIdAndFriendId(memberId, friendId)) {
+            throw new ChatException(ChatErrorCode.NOT_FRIENDS);
         }
 
-        Member friend = memberRepository.findById(friendId)
-            .orElseThrow(() -> new ChatException(ChatErrorCode.MEMBER_NOT_FOUND));
+        // 이미 존재하는 채팅방 확인
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByMemberIdAndFriendId(memberId, friendId);
+        if (existingRoom.isPresent()) {
+            return existingRoom.get();
+        }
 
+        // 새 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
             .memberId(memberId)
             .friendId(friendId)
             .build();
-        
-        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
-        return ChatRoomListResponseDTO.from(savedChatRoom, friend, memberId);
+
+        return chatRoomRepository.save(chatRoom);
     }
 
     // 채팅방 삭제 (논리적 삭제)
@@ -163,10 +161,12 @@ public class ChatService {
 
     // 메시지 전송
     public ChatMessageResponseDTO sendMessage(String roomId, Long senderId, String content, MultipartFile image) {
-        validateMessage(content, image);
-        
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new ChatException(ChatErrorCode.CHATROOM_NOT_FOUND));
+
+        // 친구 관계 확인
+
+        validateMessage(content, image);
         validateChatRoomAccess(chatRoom, senderId);
 
         Member sender = memberRepository.findById(senderId)
