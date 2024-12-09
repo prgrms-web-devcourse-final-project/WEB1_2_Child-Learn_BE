@@ -66,6 +66,8 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
     private final Map<Long, Integer> liveSentCounter = new ConcurrentHashMap<>();
 
+    private final Map<Long, Long> memberIdToGameId = new ConcurrentHashMap<>();
+
 
     //게임 타이머. 게임은 총 7분 진행되며, 1분은 장전 거래 시간, 5분은 거래 시간, 마지막 1분은 장후 거래 시간
     //SechduledExecutorService 를 사용하였습니다.   >>>  https://lslagi.tistory.com/entry/JAVA-ScheduledExecutorService-Timer-%EC%A0%81%EC%9A%A9%EC%9E%90%EB%8F%99-%EB%A6%AC%ED%94%8C%EB%A0%88%EC%89%AC
@@ -102,6 +104,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                         // activeGame.remove(gameId) 시 남는것은 activeTimer (activeGame 은 {id, activeTimer} 이기 때문)
                         // 즉 현재 진행중인 activeTimer 를 저장하는 과정.
                         ScheduledFuture<?> activeTimer = activeGames.remove(gameId);
+                        memberIdToGameId.values().remove(gameId);
                         if (activeTimer != null) {
                             activeTimer.cancel(false); //타이머 정지
                         }
@@ -220,7 +223,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
             throw new InvalidGameTimeException();
         }
 
-        if (activeGames.containsKey(memberId)) {
+        if (memberIdToGameId.containsKey(memberId)) {
             throw new GameAlreadyStartedException();
         }
 
@@ -241,6 +244,8 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                         .paused(false)
                         .build()
         );
+
+        memberIdToGameId.put(memberId, advancedInvest.getId());
 
         // 게임 타이머 시작
         startGameTimer(session, advancedInvest.getId(), 0);
