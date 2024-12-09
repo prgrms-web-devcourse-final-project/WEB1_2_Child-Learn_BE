@@ -24,23 +24,49 @@ public class OXQuizProgressionService  {
     private final OXQuizProgressionRepository oxQuizProgressionRepository;
     private final OXQuizDataRepository oxQuizDataRepository;
 
-    public boolean checkDailyLimit(Long memberId) {
-        Optional<OXQuizProgression> progression = oxQuizProgressionRepository.findByMemberId(memberId);
+    public boolean checkDailyLimit(Long memberId, String difficulty) {
+        Optional<OXQuizProgression> progressionOpt = oxQuizProgressionRepository.findByMemberId(memberId);
 
-        if (progression.isPresent()) {
-            LocalDate lastPlayedDate = progression.get().getLastPlayedDate();
-            return !LocalDate.now().equals(lastPlayedDate); // 오늘 날짜와 비교
+        if (progressionOpt.isPresent()) {
+            OXQuizProgression progression = progressionOpt.get();
+            LocalDate today = LocalDate.now();
+
+            switch (difficulty.toLowerCase()) {
+                case "easy":
+                    return !today.equals(progression.getLastEasyPlayedDate());
+                case "medium":
+                    return !today.equals(progression.getLastMediumPlayedDate());
+                case "hard":
+                    return !today.equals(progression.getLastHardPlayedDate());
+                default:
+                    throw new IllegalArgumentException("잘못된 난이도: " + difficulty);
+            }
         }
 
         return true; // 진행 상태가 없으면 제한 없음
     }
 
-    public void updateLastPlayedDate(Long memberId) {
+    public void updateLastPlayedDate(Long memberId, String difficulty) {
         OXQuizProgression progression = oxQuizProgressionRepository.findByMemberId(memberId)
                 .orElse(new OXQuizProgression());
 
         progression.setMemberId(memberId);
-        progression.setLastPlayedDate(LocalDate.now());
+
+        LocalDate today = LocalDate.now();
+        switch (difficulty.toLowerCase()) {
+            case "easy":
+                progression.setLastEasyPlayedDate(today);
+                break;
+            case "medium":
+                progression.setLastMediumPlayedDate(today);
+                break;
+            case "hard":
+                progression.setLastHardPlayedDate(today);
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 난이도: " + difficulty);
+        }
+
         oxQuizProgressionRepository.save(progression);
     }
 
