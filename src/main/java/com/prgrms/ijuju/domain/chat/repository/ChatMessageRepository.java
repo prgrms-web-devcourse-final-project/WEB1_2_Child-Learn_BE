@@ -36,4 +36,7 @@ public interface ChatMessageRepository extends MongoRepository<Chat, String> {
     Page<Chat> findByRoomIdAndIsReadFalseAndSenderIdNotOrderByCreatedAtDesc(String roomId, Long senderId, Pageable pageable);
 
     Page<Chat> findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(String roomId, LocalDateTime createdAt, Pageable pageable);
+
+    Page<Chat> findByRoomIdAndIdLessThanOrderByCreatedAtDesc(String roomId, String lastMessageId, Pageable pageable);
+
 }

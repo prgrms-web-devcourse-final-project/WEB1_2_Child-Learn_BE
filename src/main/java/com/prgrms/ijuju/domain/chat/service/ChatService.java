@@ -153,7 +153,7 @@ public class ChatService {
             List<ChatMessageResponseDTO> messageDTOs = messages.getContent().stream()
                 .map(ChatMessageResponseDTO::from)
                 .collect(Collectors.toList());
-            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+            chatCacheService.cacheRecentMessages(roomId, messageDTOs, 24 * 60); // 24시간 캐시
         }
 
         return messages.map(ChatMessageResponseDTO::from);
@@ -182,6 +182,7 @@ public class ChatService {
             }
         }
 
+        // 추후 메시지 암호화 추가하기
         Chat chat = Chat.builder()
             .roomId(chatRoom.getId())
             .senderLoginId(sender.getLoginId())
@@ -283,26 +284,28 @@ public class ChatService {
 
     // 초기 로딩시 캐시 저장
     public List<ChatMessageResponseDTO> showMessages(String roomId, String lastMessageId, int size) {
-        // 캐시 확인 (초기 로딩시)
-        if (lastMessageId == null) {
-            List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(roomId);
-            if (cachedMessages != null && !cachedMessages.isEmpty()) {
-                return cachedMessages;
-            }
-        }
-    
-        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
-        Page<Chat> messages = chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        // 캐시 확에 페이지 정보 포함
+        String cacheKey = String.format("%s:%s:%d", roomId, lastMessageId, size);
         
-        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
-            .map(ChatMessageResponseDTO::from)
-            .collect(Collectors.toList());
-    
-        // 초기 로딩시 캐시 저장
-        if (lastMessageId == null) {
-            chatCacheService.cacheRecentMessages(roomId, messageDTOs);
+        // 캐시 확인
+        List<ChatMessageResponseDTO> cachedMessages = chatCacheService.getRecentMessages(cacheKey);
+        if (cachedMessages != null) {
+            return cachedMessages;
         }
-    
+
+        // 커서 기반 페이징으로 변경
+        Pageable pageable = PageRequest.of(0, size);
+        Page<Chat> messages = lastMessageId == null ?
+                chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable) :
+                chatMessageRepository.findByRoomIdAndIdLessThanOrderByCreatedAtDesc(roomId, lastMessageId, pageable);
+
+        List<ChatMessageResponseDTO> messageDTOs = messages.stream()
+                .map(ChatMessageResponseDTO::from)
+                .collect(Collectors.toList());
+
+        // 캐시 저장 (짧은 TTL 설정)
+        chatCacheService.cacheRecentMessages(cacheKey, messageDTOs, 5); // 5분 캐시
+
         return messageDTOs;
     }
 
