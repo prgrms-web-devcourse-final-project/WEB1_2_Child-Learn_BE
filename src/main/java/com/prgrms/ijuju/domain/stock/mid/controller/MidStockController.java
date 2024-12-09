@@ -97,10 +97,9 @@ public class MidStockController {
     public ResponseEntity<Map<String, Long>> sellMidStock(@PathVariable @Positive Long midStockId, @AuthenticationPrincipal SecurityUser securityUser) {
         log.info("중급 주식 매도 요청");
         Long memberId = securityUser.getId();
-        long profit = midStockTradeService.sellStock(memberId, midStockId);
-        Map<String, Long> response = Map.of("earnedPoints", profit);
+        Map<String, Long> result = midStockTradeService.sellStock(memberId, midStockId);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/init-data")

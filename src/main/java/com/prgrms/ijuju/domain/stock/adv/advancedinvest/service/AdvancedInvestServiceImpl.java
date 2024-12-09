@@ -66,6 +66,8 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
     private final Map<Long, Integer> liveSentCounter = new ConcurrentHashMap<>();
 
+    private final Map<Long, Long> memberIdToGameId = new ConcurrentHashMap<>();
+
 
     //게임 타이머. 게임은 총 7분 진행되며, 1분은 장전 거래 시간, 5분은 거래 시간, 마지막 1분은 장후 거래 시간
     //SechduledExecutorService 를 사용하였습니다.   >>>  https://lslagi.tistory.com/entry/JAVA-ScheduledExecutorService-Timer-%EC%A0%81%EC%9A%A9%EC%9E%90%EB%8F%99-%EB%A6%AC%ED%94%8C%EB%A0%88%EC%89%AC
@@ -80,28 +82,23 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                 try {
                     countDown.put(gameId, second);
 
-                    if (second == 60) { // 장전 시간 종료 시점
-                        WebSocketUtil.send(session, "장전 거래 시간이 종료되었습니다. 장이 열렸습니다.");
-                    } else if (second == 360) { // 거래 시간 종료 시점
-                        WebSocketUtil.send(session, "장이 닫혔습니다. 장후 거래 시간으로 거래 마무리를 해주세요");
-                    }
-
                     if (second == 0) { // 장전 거래 시간 1분 > ReferenceData
                         sendReferenceData(session);
                         liveSentCounter.put(gameId, 0);
 
-                    } else if (second >= 60 && second <= 360 && second % 60 == 0) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
-                        int livePhase = (second - 60) / 60;
+                    } else if (second >= 15 && second <= 90 && second % 15 == 0) { // 거래 시간 5분 > LiveData >> 총 6개의 데이터가 전돨되어야 한다.
+                        int livePhase = (second - 15) / 15;
                         sendLiveData(session, livePhase);
                         liveSentCounter.put(gameId, liveSentCounter.getOrDefault(gameId, 0) + 1);
 
-                    } else if (second == 420) {
+                    } else if (second == 105) {
                         endGame(gameId); // 게임 종료
                         sendEndSignal(session);
 
                         // activeGame.remove(gameId) 시 남는것은 activeTimer (activeGame 은 {id, activeTimer} 이기 때문)
                         // 즉 현재 진행중인 activeTimer 를 저장하는 과정.
                         ScheduledFuture<?> activeTimer = activeGames.remove(gameId);
+                        memberIdToGameId.values().remove(gameId);
                         if (activeTimer != null) {
                             activeTimer.cancel(false); //타이머 정지
                         }
@@ -220,7 +217,7 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
             throw new InvalidGameTimeException();
         }
 
-        if (activeGames.containsKey(memberId)) {
+        if (memberIdToGameId.containsKey(memberId)) {
             throw new GameAlreadyStartedException();
         }
 
@@ -241,6 +238,8 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
                         .paused(false)
                         .build()
         );
+
+        memberIdToGameId.put(memberId, advancedInvest.getId());
 
         // 게임 타이머 시작
         startGameTimer(session, advancedInvest.getId(), 0);

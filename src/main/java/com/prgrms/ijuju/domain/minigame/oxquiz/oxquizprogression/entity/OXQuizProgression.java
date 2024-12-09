@@ -18,6 +18,8 @@ public class OXQuizProgression {
 
     private Long memberId;
 
-    private LocalDate lastPlayedDate;
+    private LocalDate lastEasyPlayedDate;
+    private LocalDate lastMediumPlayedDate;
+    private LocalDate lastHardPlayedDate;
 
 }
