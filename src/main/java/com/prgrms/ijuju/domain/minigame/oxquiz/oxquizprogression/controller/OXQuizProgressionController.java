@@ -24,16 +24,17 @@ public class OXQuizProgressionController {
     @PostMapping("/start")
     public ResponseEntity<List<QuizResponseDto>> getQuizzesForUser(@RequestBody QuizRequestDto requestDTO) {
         Long memberId = requestDTO.getMemberId();
+        String difficulty = requestDTO.getDifficulty();
 
-        if (!progressionService.checkDailyLimit(memberId)) {
+        if (!progressionService.checkDailyLimit(memberId, difficulty)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Collections.singletonList(
-                            new QuizResponseDto(null, "하루에 한 번만 플레이할 수 있습니다.", null)
+                            new QuizResponseDto(null, "해당 난이도는 하루에 한 번만 플레이할 수 있습니다.", null)
                     ));
         }
         
         List<QuizResponseDto> quizzes = progressionService.getQuizzesForUser(requestDTO.getMemberId(), requestDTO.getDifficulty());
-        progressionService.updateLastPlayedDate(memberId);
+        progressionService.updateLastPlayedDate(memberId, difficulty);
 
         return ResponseEntity.ok(quizzes);
     }
