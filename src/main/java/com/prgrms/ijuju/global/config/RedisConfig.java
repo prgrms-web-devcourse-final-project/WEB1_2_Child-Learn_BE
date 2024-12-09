@@ -5,12 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 
 @Slf4j
 @Configuration
@@ -25,28 +24,29 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisHost, redisPort);
-        testRedisConnection(factory);
-        return factory;
-    }
-    
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
-        return template;
-    }
-
-    private void testRedisConnection(RedisConnectionFactory factory) {
         try {
-            RedisConnection connection = factory.getConnection();
-            connection.ping();
-            log.info("Redis 서버 연결 성공");
+            LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory(redisHost, redisPort);
+            connectionFactory.afterPropertiesSet();
+            connectionFactory.start();
+            log.info("Redis 서버 연결 성공: {}:{}", redisHost, redisPort);
+            return connectionFactory;
         } catch (Exception e) {
             log.error("Redis 서버 연결 실패: {}", e.getMessage());
-            // 연결 실패 시에도 애플리케이션이 시작될 수 있도록 예외를 던지지 않음
+            throw new RuntimeException("Redis 연결 실패", e);
         }
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
     }
 }
