@@ -1,6 +1,7 @@
 package com.prgrms.ijuju.domain.stock.adv.advancedinvest.service;
 
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.GameAlreadyPlayedException;
+import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.GameAlreadyStartedException;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.GameNotFoundException;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.gameexception.InvalidGameTimeException;
 import com.prgrms.ijuju.domain.stock.adv.advancedinvest.exception.otherexception.MemberNotFoundException;
@@ -217,6 +218,10 @@ public class AdvancedInvestServiceImpl implements AdvancedInvestService {
 
         if (!now.isBefore(startRestrictedTime) && !now.isAfter(endRestrictedTime)) {
             throw new InvalidGameTimeException();
+        }
+
+        if (activeGames.containsKey(memberId)) {
+            throw new GameAlreadyStartedException();
         }
 
 
