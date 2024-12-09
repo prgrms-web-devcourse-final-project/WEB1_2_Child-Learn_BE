@@ -34,7 +34,7 @@ public class AdvStockScheduler {
     private final AdvStockService advStockService;
     private final AdvStockRepository advStockRepository;
 
-    @Scheduled(cron = "0 55 8 * * ?")
+    @Scheduled(cron = "0 25 9 * * ?")
     @Transactional
     public void fetchAndUpdateStockDataDaily() {
         log.info("스케줄러 시작: fetchAndUpdateStockDataDaily");
