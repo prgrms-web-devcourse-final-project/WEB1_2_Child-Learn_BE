@@ -26,6 +26,7 @@ import com.prgrms.ijuju.domain.wallet.exception.WalletException;
 import com.prgrms.ijuju.domain.wallet.exception.WalletErrorCode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -82,7 +83,7 @@ public class MidStockTradeService {
     }
 
     // 매도 주문
-    public long sellStock(Long memberId, Long midStockId) {
+    public Map<String, Long> sellStock(Long memberId, Long midStockId) {
         long totalPoints = 0; // 매도시 포인트
         long investedPoints = 0; //투자한 포인트
         // 보유중인 주식 조회
@@ -120,7 +121,11 @@ public class MidStockTradeService {
                 .build();
         WalletService.simulateStockInvestment(stockPointRequestDTO);
 
-        return totalPoints - investedPoints;
+        long earnedPoints = totalPoints - investedPoints;
+        return Map.of(
+                "totalPoints", totalPoints,
+                "earnedPoints", earnedPoints
+        );
     }
 
     // 하루한번 거래가능 체크
