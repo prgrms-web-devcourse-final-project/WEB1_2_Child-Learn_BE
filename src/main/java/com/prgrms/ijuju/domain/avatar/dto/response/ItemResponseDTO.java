@@ -26,39 +26,34 @@ public class ItemResponseDTO {
 
     // 아이템 구매
     @Data
+    @AllArgsConstructor
     public static class ItemPurchaseResponseDTO {
         private String message;
-
-        public ItemPurchaseResponseDTO(String message) {
-            this.message = message;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
     // 아이템 장착
     @Data
+    @AllArgsConstructor
     public static class ItemEquipResponseDTO {
         private String message;
         private String itemImageUrl;
-
-        public ItemEquipResponseDTO(String message, String itemImageUrl) {
-            this.message = message;
-            this.itemImageUrl=itemImageUrl;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
     // 아이템 해제
     @Data
+    @AllArgsConstructor
     public static class ItemRemoveResponseDTO {
         private String message;
         private String itemImageUrl;
-
-        public ItemRemoveResponseDTO(String message, String itemImageUrl) {
-            this.message = message;
-            this.itemImageUrl = itemImageUrl;
-        }
+        private boolean isEquipped;
+        private boolean isPurchased;
     }
 
-    // 아이템 목록 조회
+    // 아이템 조회
     @Data
     @AllArgsConstructor
     public static class ItemReadResponseDTO {
@@ -79,6 +74,32 @@ public class ItemResponseDTO {
         }
 
 
+    }
+
+    // 아이템 목록 조회
+    @Data
+    @AllArgsConstructor
+    public static class ItemReadAllResponseDTO {
+        private Long id;
+        private String name;
+        private Long price;
+        private String imageUrl;
+        private String description;
+        private String category;
+        private boolean isEquipped; // 착용 여부
+        private boolean isPurchased;
+
+
+        public ItemReadAllResponseDTO(Item item, boolean isEquipped, boolean isPurchased) {
+            this.id = item.getId();
+            this.name = item.getName();
+            this.price = item.getPrice();
+            this.imageUrl = item.getImageUrl();
+            this.description = item.getDescription();
+            this.category = item.getCategory().toString();
+            this.isEquipped = isEquipped;
+            this.isPurchased = isPurchased;
+        }
     }
 
 }

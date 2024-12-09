@@ -3,6 +3,8 @@ package com.prgrms.ijuju.domain.article.service;
 import com.prgrms.ijuju.domain.article.contant.DataType;
 import com.prgrms.ijuju.domain.article.data.Trend;
 import com.prgrms.ijuju.domain.article.entity.Article;
+import com.prgrms.ijuju.domain.article.exception.ArticleErrorCode;
+import com.prgrms.ijuju.domain.article.exception.ArticleGenerationException;
 import com.prgrms.ijuju.domain.article.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +93,7 @@ public class ArticleGenerationService {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
         if (choices == null || choices.isEmpty()) {
-            throw new IllegalStateException("GPT 응답에 choices 데이터가 없습니다.");
+            throw new ArticleGenerationException(ArticleErrorCode.NO_RESPONSE_CHOICES);
         }
 
         Map<String, Object> firstChoice = choices.get(0);
@@ -130,7 +132,7 @@ public class ArticleGenerationService {
                     .build();
         } catch (Exception e) {
             log.error("GPT 응답 파싱 실패: {}", response, e);
-            throw new IllegalArgumentException("GPT 응답 파싱 에러 발생: " + response, e);
+            throw new ArticleGenerationException(ArticleErrorCode.PARSE_FAILURE);
         }
     }
 
@@ -139,7 +141,7 @@ public class ArticleGenerationService {
             case "SHORT_TERM" -> 3;
             case "MID_TERM" -> 7;
             case "LONG_TERM" -> 14;
-            default -> throw new IllegalArgumentException("알 수 없는 트렌드 타입: " + trendType);
+            default -> throw new ArticleGenerationException(ArticleErrorCode.UNKNOWN_TREND_TYPE);
         };
     }
 }

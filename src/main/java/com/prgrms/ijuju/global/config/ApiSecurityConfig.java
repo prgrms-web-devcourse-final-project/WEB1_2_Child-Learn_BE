@@ -62,6 +62,9 @@ public class ApiSecurityConfig {
                         // redis 허용
                         .requestMatchers("/api/v1/redis-test/**").permitAll()
 
+                        // healthCheck 허용
+                        .requestMatchers("/api/v1/healthcheck").permitAll()
+
                         // API 엔드포인트 허용
                         .requestMatchers(
                             "/api/v1/member/join",

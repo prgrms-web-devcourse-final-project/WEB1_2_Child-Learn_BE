@@ -2,7 +2,6 @@ package com.prgrms.ijuju.domain.member.entity;
 
 import com.prgrms.ijuju.domain.avatar.entity.Avatar;
 import com.prgrms.ijuju.domain.avatar.entity.Purchase;
-import com.prgrms.ijuju.domain.ranking.entity.Ranking;
 import com.prgrms.ijuju.domain.wallet.entity.Wallet;
 import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -76,7 +75,7 @@ public class Member extends BaseTimeEntity {
     }
 
     // 회원의 아바타(착용한 아이템들을 포함)
-    @OneToOne(mappedBy = "member", orphanRemoval = true)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 

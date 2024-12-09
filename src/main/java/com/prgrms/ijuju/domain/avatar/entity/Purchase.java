@@ -1,7 +1,6 @@
 package com.prgrms.ijuju.domain.avatar.entity;
 
 import com.prgrms.ijuju.domain.member.entity.Member;
-import com.prgrms.ijuju.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,13 +33,23 @@ public class Purchase {
     @CreatedDate
     private LocalDateTime purchaseDate;
 
+    private boolean isPurchased;
     private boolean isEquipped; // 구매 시 장착여부
 
     @Builder
-    public Purchase(Member member, Item item, LocalDateTime purchaseDate, boolean isEquipped) {
+    public Purchase(Member member, Item item, LocalDateTime purchaseDate) {
         this.member = member;
         this.item = item;
+        this.isEquipped = false;
+        this.isPurchased = true;
         this.purchaseDate = purchaseDate;
+    }
+
+    public void changeIsEquipped(boolean isEquipped) {
         this.isEquipped = isEquipped;
+    }
+
+    public void changeIsPurchased(boolean isPurchased) {
+        this.isPurchased = isPurchased;
     }
 }
