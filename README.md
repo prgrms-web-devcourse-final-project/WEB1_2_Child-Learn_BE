@@ -2,19 +2,24 @@
  
 ![프로젝트이미지](https://github.com/user-attachments/assets/6e0bdf74-a374-4c70-952d-fc22e0ba3413)
 
+### 버전 및 개발 기간
+* v1.0.0: 2024/11/18 ~ 2024/12/09
+* v1.1.0: 2024/12/19 ~ 2024/12/31
+* v2.0.0: 2025/01/01 ~ (예정)
+
+<br>
+
 ## 🍀 프로젝트 소개
-아이주주는 초등학생들이 돈과 투자의 기본 개념을 쉽고 재미있게 배울 수 있도록 설계된 모의투자 학습 플랫폼입니다.
+아이주주는 초등학생들이 돈과 투자의 기본 개념을 쉽고 재미있게 배울 수 있도록 설계된  
+모의투자 학습 플랫폼입니다.
 
 [🔗 기획서](https://www.notion.so/13f336d06fda80d4a0dfc9e9ac30e96b?pvs=4)
-[🔗 디자인](https://www.figma.com/design/HfCXjOdS1CcDWLJbhci0dI/%EC%95%84%EC%9D%B4%EC%A3%BC%EC%A3%BC-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=0-1&t=WB1ZEVppjZTp8DY5-1)
+[🔗 와이어프레임](https://www.figma.com/design/HfCXjOdS1CcDWLJbhci0dI/%EC%95%84%EC%9D%B4%EC%A3%BC%EC%A3%BC-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=0-1&t=WB1ZEVppjZTp8DY5-1)
 [🔗 프론트 깃허브](https://github.com/prgrms-web-devcourse-final-project/WEB1_2_Child-Learn_FE)
 [🔗 백엔드 깃허브](https://github.com/prgrms-web-devcourse-final-project/WEB1_2_Child-Learn_BE)
 [🔗 아이주주 바로가기](http://ijuju.site)
 
-### 개발기간 : 2024/11/18 ~ 2024/12/09
-
 <br>
-
 
 ## 🍀 주요 기능
 > **주식 그래프**
@@ -35,7 +40,7 @@
 - 여러가지 아이템으로 흥미 제공.
 
 <br>
- 
+
 ## 🍀 개발 환경 및 기술 스택
 ### 통합 시스템 아키텍처
 ![통합 시스템 아키텍처](https://github.com/user-attachments/assets/f6ddd958-6a68-4305-84c3-3e6f8098633f)
@@ -45,32 +50,36 @@
 ## 🍀 개발 문서
 <details>
   <summary>ERD</summary>
+
+[🔗 ERD 바로가기](https://www.erdcloud.com/d/FrEWNLqLuTPQ6rx2r)
+![ERD](https://github.com/user-attachments/assets/a3ab7508-4e59-48d0-9b99-f068861037ce)
+
 </details>
 <details>
-  <summary>아키텍처</summary>
+  <summary>인프라 아키텍처</summary>
 
-![백엔드 서버 아키텍처](https://github.com/user-attachments/assets/f96d2c88-223c-47b4-a673-ac613be39063)
+![백엔드 인프라 아키텍처](https://github.com/user-attachments/assets/f96d2c88-223c-47b4-a673-ac613be39063)
 
 </details>
 <details>
   <summary>요구사항 명세서</summary>
 
-[🔗 요구사항 명세서](https://foggy-move-190.notion.site/67c1e522ca8047d98094580d9bdc8f87?pvs=74)
+[🔗 요구사항 명세서 바로가기](https://foggy-move-190.notion.site/67c1e522ca8047d98094580d9bdc8f87?pvs=74)
 </details>
 <details>
   <summary>API 명세서</summary>
 
-[🔗 API 명세서](https://foggy-move-190.notion.site/API-b44b55ec93c9478c9a25c9f75150b773?pvs=73)
+[🔗 API 명세서 바로가기](https://foggy-move-190.notion.site/API-b44b55ec93c9478c9a25c9f75150b773?pvs=73)
 </details>
 
 ## 🍀 팀 소개
 
 ### FRONTEND
-|                           👑 이희주                           |                           📋 박우현                           |                  류민주                  |
-|:----------------------------------------------------------:|:----------------------------------------------------------:|:-------------------------------------:|
-|                       FE TeamLeader                        |                             PM                             |               Git_Admin               |
-|          [tree0000](https://github.com/tree0000)           |         [hjlee2778](https://github.com/hjlee2778)          | [minij02](https://github.com/minij02) |
-| ![](https://avatars.githubusercontent.com/u/141895600?v=4) | ![](https://avatars.githubusercontent.com/u/144092849?v=4) | ![](https://avatars.githubusercontent.com/u/135093109?v=4)|
+|                           👑 이희주                           |                           📋 박우현                           |                             류민주                             |
+|:----------------------------------------------------------:|:----------------------------------------------------------:|:-----------------------------------------------------------:|
+|                       FE TeamLeader                        |                             PM                             |                          Git_Admin                          |
+|          [hjlee2778](https://github.com/hjlee2778)           |         [tree0000](https://github.com/tree0000)          |            [minij02](https://github.com/minij02)            |
+| ![](https://avatars.githubusercontent.com/u/144092849?v=4) | ![](https://avatars.githubusercontent.com/u/141895600?v=4) | ![](https://avatars.githubusercontent.com/u/135093109?v=4)  |
 
 ### BACKEND
 |              👑 임지은               |                    신은화                    |               최재형                |                   이수빈                   |                   박찬서                   |
